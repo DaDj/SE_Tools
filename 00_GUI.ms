@@ -34,18 +34,7 @@ rollout SETOOLS_SCENE "Set up Scene/Models" width:210 height:504
             MySE.i_LODS = val
             MySE.run "Scene_Setup.ms"	
 		)			
-   
-	
-	on Cut_Names pressed do ( 
-	try ( fileIn (scriptspath+"\\BTLC_TOOLKIT\\00_CUT_NAMES.ms") quiet:true   ) 
-		catch messagebox "Error!" title:"Can't find script")		
-	
-	button 'Reord_Textures' "Re-order Textures"  width:185 height:25 toolTip:"Reorder Textures in Matlist(selected)" align:#left
-	on Reord_Textures pressed do ( 
-	try ( fileIn (scriptspath+"\\BTLC_TOOLKIT\\10_ReshuffleTextureorder.ms") quiet:true   ) 
-		catch messagebox "Error!" title:"Can't find script" )			
 
-	)
 )
 		
 try (closeRolloutFloater SETOOLS) catch () 
