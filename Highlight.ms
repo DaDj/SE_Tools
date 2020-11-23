@@ -17,15 +17,15 @@ SizeX = 0;
 SizeY = 0;
 SizeZ =0;
 for obj in selection do ( 
--- 	test = obj.name
--- 	custAttributes.delete  obj 1
--- 	print(obj.name)
--- 	CustAttributes.add obj cust_attrib #unique 
--- 	test = obj.name
--- 	obj.highlight= test
--- 	old_def = custAttributes.getDef obj 1
--- 	old_def_data = custAttributes.getDefData old_def -- get my defData from it
--- 	print(custAttributes.getPBlockDefs old_def)
+ 	test = obj.name
+ 	custAttributes.delete  obj 1
+ 	print(obj.name)
+	CustAttributes.add obj cust_attrib #unique 
+ 	test = obj.name
+ 	obj.highlight= test
+ 	old_def = custAttributes.getDef obj 1
+ 	old_def_data = custAttributes.getDefData old_def -- get my defData from it
+ 	print(custAttributes.getPBlockDefs old_def)
 	)
 
 SizeX = abs(selection.max.x - selection.min.x + 0.01);
