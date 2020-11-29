@@ -53,9 +53,9 @@ global  round_1digit = theState
 			obj2 = getnodebyname "Boundbox_Small"
 			if obj != undefined then( delete obj)
 			else if obj2 != undefined do ( delete obj2)
-			leng = bound_leng.value * size_mult 
-			height = bound_height.value  * size_mult 
-			width = bound_width.value * size_mult 
+			leng = bound_leng.value * (size_mult-0.01) 
+			height = bound_height.value  * (size_mult-0.01) 
+			width = bound_width.value *(size_mult-0.01) 
 			Boundingbox = box length:leng width:width  height:height
 			boundingbox.pos = [0 ,0,-height/2 ]
 			Boundingbox.visibility = bezier_float()
@@ -82,10 +82,11 @@ global  round_1digit = theState
 				planefront.lengthsegs = 1
 				planefront.widthsegs = 1			
 				planefront.pos = [0,bound_leng.value*size_mult_half ,0]
+			--	planefront.wirecolor = color 150 255 255
 				obj = getnodebyname "Boundbox_Large"
 				obj2 = getnodebyname "Boundbox_Small"
-				if obj != undefined  then (planefront.parent = obj ) 
-				else if obj2 != undefined  do (planefront.parent = obj2)
+			---	if obj != undefined  then (planefront.parent = obj ) 
+				--else if obj2 != undefined  do (planefront.parent = obj2)
 			)
 			
 		)		
@@ -101,8 +102,8 @@ global  round_1digit = theState
 			planes.pos = [0,-bound_leng.value*size_mult_half ,0]
 			obj = getnodebyname "Boundbox_Large"
 			obj2 = getnodebyname "Boundbox_Small"
-			if obj != undefined  then (planes.parent = obj ) 
-			else if obj2 != undefined  do ( planes.parent = obj2 )
+		--	if obj != undefined  then (planes.parent = obj ) 
+			--else if obj2 != undefined  do ( planes.parent = obj2 )
 		)		
 			
 		button left "Left - Plane " width:140 align:#center
@@ -117,8 +118,8 @@ global  round_1digit = theState
 			planes.pos = [- bound_width.value*size_mult_half,0 ,0]
 			obj = getnodebyname "Boundbox_Large"
 			obj2 = getnodebyname "Boundbox_Small"
-			if obj != undefined  then (planes.parent = obj ) 
-			else if obj2 != undefined  do ( planes.parent = obj2 )
+		---	if obj != undefined  then (planes.parent = obj ) 
+			--else if obj2 != undefined  do ( planes.parent = obj2 )
 		)		
 			
 			button right "Right - Plane" width:140 align:#center
@@ -133,8 +134,8 @@ global  round_1digit = theState
 			planes.pos = [bound_width.value*size_mult_half,0 ,0]
 			obj = getnodebyname "Boundbox_Large"
 			obj2 = getnodebyname "Boundbox_Small"
-			if obj != undefined  then (planes.parent = obj ) 
-			else if obj2 != undefined  do ( planes.parent = obj2 )
+		--	if obj != undefined  then (planes.parent = obj ) 
+			--else if obj2 != undefined  do ( planes.parent = obj2 )
 		)		
 		
 			
@@ -148,8 +149,8 @@ global  round_1digit = theState
 			planes.pos = [0,0 ,bound_height.value *size_mult_half]
 			obj = getnodebyname "Boundbox_Large"
 			obj2 = getnodebyname "Boundbox_Small"
-			if obj != undefined  then (planes.parent = obj ) 
-			else if obj2 != undefined  do ( planes.parent = obj2 )
+			--if obj != undefined  then (planes.parent = obj ) 
+			--else if obj2 != undefined  do ( planes.parent = obj2 )
 		)		
 			
 		button bottom "Bottom - Plane" width:140 align:#center
@@ -162,8 +163,8 @@ global  round_1digit = theState
 			planes.pos = [0,0 ,-bound_height.value *size_mult_half]
 			obj = getnodebyname "Boundbox_Large"
 			obj2 = getnodebyname "Boundbox_Small"
-			if obj != undefined  then (planes.parent = obj ) 
-			else if obj2 != undefined  do ( planes.parent = obj2 )
+			--if obj != undefined  then (planes.parent = obj ) 
+			--else if obj2 != undefined  do ( planes.parent = obj2 )
 		)		
 		
 	)
