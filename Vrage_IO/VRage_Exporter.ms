@@ -58,12 +58,12 @@ fn VRageExp_FBXSettings =
 		Tool_Success = 0
 		for i = 1 to Logdata.count do 
 		(
-			logsystem.logEntry Logdata[i] debug:0 info:1 warning:0 error:0	
+			VrageLog.Info Logdata[i]
 			 if matchPattern Logdata[i]  pattern: "Saved tag file:*" do Tool_Success = 1
 			--if matchPattern Logdata[i]  pattern: "Output path:*" do	logsystem.logEntry Logdata[i] debug:0 info:1 warning:0 error:0	
 		)			
 		LogMessage = "FBXimporter Failed to Export:  " + "C:\\Users\\patgr\\Desktop\\result.hkt"
-		if  Tool_Success == 0 do Vrage_LogError LogMessage
+		if  Tool_Success == 0 do VrageLog.Error LogMessage
 	
 		
 		 

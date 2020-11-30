@@ -144,7 +144,7 @@ rollout VrageUtils_Settings"VRage Utilities Settings" width:210 height:504
 	on btn_Settings pressed do OpenSettings()
 	
 	button btn_LOg "Open Log" width:120 height:25 toolTip:" " align:#center
-	on btn_LOg pressed do Showlog()
+	on btn_LOg pressed do VRageLog_Show()
 
 	
 -- 	on VrageUtils_Settings open do (	btn_Settings.images = #(
