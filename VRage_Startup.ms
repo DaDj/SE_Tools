@@ -21,4 +21,7 @@ global VrageScene = MyVRageBlockdef()
 
 filein "Vrage_Settings.ms"
 filein "Vrage_Havok\\Vrage_CollisionPlugins.ms"
- filein "Vrage_Havok\\Vrage_RigidBodies.ms"
+filein "Vrage_Havok\\Vrage_RigidBodies.ms"
+
+filein "Vrage_IO\\Vrage_DOSCommand.ms"
+filein  "Vrage_testing\\Logging.ms"

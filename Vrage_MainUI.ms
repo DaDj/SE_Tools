@@ -11,8 +11,6 @@ rollout VrageUtils_Scene "Set up Scene/Models" width:210 height:104
 	(
 				
 		dropdownlist scale_dd "Blocksize" items:#("Large","Small") 
-
-		
 		spinner  bound_leng "Length" fieldwidth:45 range:[1,100,1] type:#integer across: 3
 		spinner bound_width "Width" fieldwidth:45 range:[1,100,1] type:#integer
 		spinner  bound_height "Height" fieldwidth:45 range:[1,100,1] type:#integer
@@ -142,8 +140,12 @@ rollout VrageUtils_Collision "Collisions" width:330 height:504
 
 rollout VrageUtils_Settings"VRage Utilities Settings" width:210 height:504
 (
-	button btn_Settings "Open Settings" width:185 height:25 toolTip:" " align:#center
+	button btn_Settings "Open Settings" width:120 height:25 toolTip:" " align:#center across:2
 	on btn_Settings pressed do OpenSettings()
+	
+	button btn_LOg "Open Log" width:120 height:25 toolTip:" " align:#center
+	on btn_LOg pressed do Showlog()
+
 	
 -- 	on VrageUtils_Settings open do (	btn_Settings.images = #(
 -- "Containers_24i.bmp",
@@ -153,12 +155,21 @@ rollout VrageUtils_Settings"VRage Utilities Settings" width:210 height:504
 )
 
 
+rollout VRageUtils_Export"VRage I/O"
+(
+	button 'Btn_export' "Export" width:185 height:25 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
+	on Prep_scene pressed do MySE.run "Scene_Setup.ms"		
+
+)
+
+
 try (closeRolloutFloater VrageFloater1) catch () 
-VrageFloater1 = newRolloutFloater  "VRage Utilies"320 600 300 300 
+VrageFloater1 = newRolloutFloater  "VRage Utilies"320 800 300 300 
 clearListener()
 addRollout VrageUtils_Scene VrageFloater1
 addRollout VrageUtils_Collision VrageFloater1
 addRollout VrageUtils_Mountpoints VrageFloater1
+addRollout VRageUtils_Export VrageFloater1
 addRollout VrageUtils_Settings VrageFloater1
 
 AddSubRollout VrageUtils_Scene .ExtendedSettings VRageUtils_extBlocksets rolledUp:true

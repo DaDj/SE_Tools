@@ -1,20 +1,24 @@
-logsystem.logName "c:\\extra.log"
 
-logsystem.logEntry "What thtte heack" debug:0 info:0 warning:1 error:0
-logsystem.logEntry "What the  actual thing ist this  " debug:0 info:1 warning:1 error:0
-logsystem.logEntry "What thtte heack" debug:0 info:0 warning:1 error:0
-logsystem.logEntry "What the  actual thing ist this  " debug:0 info:1 warning:1 error:0
-logsystem.logEntry "What the heack" debug:0 info:0 warning:1 error:0
-logsystem.logEntry "What the  actual thing ist this  " debug:0 info:1 warning:1 error:0
-logsystem.logEntry "What thtztze heack" debug:0 info:0 warning:1 error:0
-logsystem.logEntry "What the  actual thing ist this  " debug:0 info:1 warning:1 error:0
-logsystem.logEntry "What the  actual thing ist this  " debug:0 info:1 warning:1 error:0
-logsystem.logEntry "What the heack" debug:0 info:0 warning:1 error:0
-logsystem.logEntry "What the  actual thing ist this  " debug:0 info:1 warning:1 error:0
+Vrage_Logfile = "c:\\extra3.log"
+deletefile Vrage_Logfile
+logsystem.logName Vrage_Logfile
+logsystem.logEntry "Start Logging" debug:1 info:0 warning:0 error:0
 
-rollout Rollout_VragLog "Untitled" width:849 height:400
+
+
+rollout Rollout_VragLog "VRage Utilies Log" width:900 height:500
 (
-	dotNetControl textboxctrl "System.Windows.Forms.TextBox" pos:[16,16] width:800 height:400
+	
+	
+	button btn_ClearLog "Clear Log" width:120 height:25 toolTip:"Clears the Logfile " align:#center
+	on btn_ClearLog pressed do
+	(		
+		deletefile Vrage_Logfile
+		logsystem.logEntry "Start Logging" debug:1 info:0 warning:0 error:0
+		Showlog()
+	)	
+	
+	dotNetControl textboxctrl "System.Windows.Forms.TextBox" width:850 height:450 align: #center
 	
 	on Rollout_VragLog open do
 	(
@@ -22,34 +26,58 @@ rollout Rollout_VragLog "Untitled" width:849 height:400
 	textboxctrl.AcceptsTab = true;
 	textboxctrl.WordWrap = false;
 	textboxctrl.Multiline = true;
-	textboxctrl.ScrollBars = textboxctrl.ScrollBars.both;
+	textboxctrl.ScrollBars = textboxctrl.ScrollBars.vertical;
 		
-	fs = openFile "c:\\extra.log"
+	fs = openFile Vrage_Logfile
 	while not eof fs do
 		(
 			Theline = readline fs
 		
 			Tmp = filterstring Theline " "
+
 			
-			MyNewHeader = Tmp[1] + "    |    " + Tmp[2]  + "    |    " + Tmp[3]      
+			--MyNewHeader = Tmp[1] + " | " + Tmp[2]  + " | " + Tmp[3]      
+			MyNewHeader =  Tmp[2]  + " | " + Tmp[3]      
 			MyNewText = ""
 			for i = 6 to Tmp.count do MyNewText = MyNewText + " " + Tmp[i] 
 			
+
+			
 			--2020/11/28 22:25:35 WRN: [08532] [07356] What the  actual thing ist this  
-			textboxctrl.text = textboxctrl.text + MyNewHeader + "\r\n\r\n" +  MyNewText +"\r\n\r\n" +"\r\n\r\n" 
+			textboxctrl.text = textboxctrl.text + MyNewHeader  +  MyNewText +"\r\n\r\n"
 		)
 		close fs
 	)
+
 )
 
-showmethods (dotNetObject "TextBox")
+--showmethods (dotNetObject "TextBox")
+
+
+fn Vrage_LogWarning Data =
+(
+	logsystem.logEntry Data debug:0 info:0 warning:0 error:1
+	messagebox  Data title:"Warning"
+	Showlog()
+)
+
+fn Vrage_LogError Data =
+(
+	logsystem.logEntry Data debug:0 info:0 warning:0 error:1
+	messagebox  Data  title:"Error"
+	Showlog()
+)
 
 
 
+fn Showlog = 
+(
 try (closeRolloutFloater LogFloater) catch () 
-LogFloater = newRolloutFloater  "VRage Utilies Log" 820 430 300 300 
-
+LogFloater = newRolloutFloater  "VRage Utilies Log" 900 520 
 addRollout Rollout_VragLog LogFloater
+	)
+
+
 
 
 
