@@ -75,7 +75,8 @@ fn Showlog =
 try (closeRolloutFloater LogFloater) catch () 
 LogFloater = newRolloutFloater  "VRage Utilies Log" 900 520 
 addRollout Rollout_VragLog LogFloater
-	)
+
+)
 
 
 

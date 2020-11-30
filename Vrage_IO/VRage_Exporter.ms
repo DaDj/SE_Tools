@@ -1,7 +1,6 @@
 	
-fn VRageExp_FBXSettings
+fn VRageExp_FBXSettings =
 	(
-
 	--Geometry------------------------------------------------------------------------
 	FBXExporterSetParam "SmoothingGroups" true
 	FBXExporterSetParam "NormalsPerPoly" false
@@ -36,19 +35,20 @@ fn VRageExp_FBXSettings
 	--OpenFbxSetting()
 	
 	
-	fn VRageExp_ExportFBX_Normal
+	fn VRageExp_ExportFBX =
 	(
 		pluginManager.loadClass FbxExporter
 		VRageExp_FBXSettings()
 		exportFile (theFileName) #noprompt selectedOnly:on using:FBXEXPORTER  
 	)
 	
-	fn VRageExp_ExportFBX_Collision
+	fn VRageExp_Collision =
 	(
-		
+		-- VRageExp_ExportFBX
+		-- VRageExp_Generate_HKT
 	)
 	
-	fn VRageExp_Generate_HKT SrcPath DestPath 
+	fn VRageExp_Generate_HKT SrcPath DestPath =
 	( 
 	-- 1. generate an readable HKT from exprted .fbx	
 		logsystem.logEntry "Starting Fbximport.exe " debug:0 info:1 warning:0 error:0	
@@ -74,7 +74,7 @@ fn VRageExp_FBXSettings
 	
 	)
 	
-	fn VRageEXP_Generate_MWM
+	fn VRageEXP_Generate_MWM =
 	(
 		
 	)
