@@ -1,0 +1,39 @@
+
+Naming Convention: "{Type} ({ModelName})"
+{Type} z.b. Collision
+{ModelName} z.b. Slidedoor
+
+<Model.fbx>
+    <LOD0>
+    <LOD1>
+    <LOD2>
+    <Dummies>
+    <Collision>
+    <Construction>
+        <Construction1.fbx>
+            <LOD0>
+            <LOD1>
+            <LOD2>
+        <Construction2.fbx>
+            <LOD0>
+            <LOD1>
+            <LOD2>
+        <Construction3.fbx>
+            <LOD0>
+            <LOD1>
+            <LOD2>
+    <Subparts>
+        <Subpart1.fbx>
+            <LOD0>
+            <LOD1>
+            <LOD2>
+            <Dummies> <- not needed??
+            <Collision>
+        <Subpart2.fbx>
+            <LOD0>
+            <LOD1>
+            <LOD2>
+            <Dummies>  <-- not needed??
+            <Collision>
+
+            
