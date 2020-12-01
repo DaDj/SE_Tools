@@ -35,23 +35,24 @@ fn VRageExp_FBXSettings =
 	--OpenFbxSetting()
 	
 	
-	fn VRageExp_ExportFBX =
+	fn VRageExp_ExportFBX DestPath =
 	(
 		pluginManager.loadClass FbxExporter
 		VRageExp_FBXSettings()
-		exportFile (theFileName) #noprompt selectedOnly:on using:FBXEXPORTER  
+
+		exportFile (DestPath) #noprompt selectedOnly:on using:FBXEXPORTER  
 	)
 	
 	fn VRageExp_Collision =
-	(
+	(		SourcePath = "C:\Users\patgr\Desktop\hkt.FBX"
+			DestPath =  "C:\\Users\\patgr\\Desktop\\result.hkt"
 		--1. Export an FBX with the Collision Data
+			VRageExp_ExportFBX SourcePath
 		--2. Generate Havok .hkt file from the Fbx
 
-		-- VRageExp_ExportFBX
-		SourcePath = "C:\Users\patgr\Desktop\hkt.FBX"
-		DestPath =  "C:\\Users\\patgr\\Desktop\\result.hkt"
-	Error = VRageExp_Generate_HKT SourcePath DestPath
-	VrageLog.Info ("VRageExp_Generate_HKT exited with Code: " +  Error as string  + "   (1 = success, -1= fail)")
+
+		Error = VRageExp_Generate_HKT SourcePath DestPath
+		VrageLog.Info ("VRageExp_Generate_HKT exited with Code: " +  Error as string  + "   (1 = success, -1= fail)")
 	)
 	
 	fn VRageExp_Generate_HKT SrcPath DestPath =
@@ -78,18 +79,19 @@ fn VRageExp_FBXSettings =
 
 		 
 	-- 2. Generate an binary hkt from the readable hkt
-	VrageLog.Info ("hctStandAloneFilterManager "  + DestPath)
+		VrageLog.Info ("hctStandAloneFilterManager "  + DestPath)
 		PathHavokConfig = " \"" + GetDir #userScripts + "\\VRageToolbox\\Vrage_Havok\\VRage_FilterConfig.hko" + "\""
 		Program = VRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe"
 
 		Logdata = Dos_Command.run Program arg_array:#("-t","-s", PathHavokConfig, "-p", DestPath, TmpHktPath)
 		Tool_Success = 0
+
 		for i = 1 to Logdata.count do 
 		(
 			VrageLog.Info Logdata[i]
 			if matchPattern Logdata[i]  pattern: "*0 Errors*" do Tool_Success = 1
 		)
-		
+
 		if  Tool_Success == 0 do
 		(
 			LogMessage = "hctStandAloneFilterManager Failed to Export:  " + DestPath
@@ -101,5 +103,7 @@ fn VRageExp_FBXSettings =
 	
 	fn VRageEXP_Generate_MWM =
 	(
+		---\MwmBuilder.exe  /o:".\out" /l:".\out\log.log" /x:"E:\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\Materials" /showWarnings /e /f
+		---\MwmBuilder.exe  /o:".\out" /l:".\out\log.log" /x:"(VRageCfg.ModSDK + \\OriginalContent\\Materials)" /showWarnings /e /f
 		
 	)
