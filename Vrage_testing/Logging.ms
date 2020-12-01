@@ -65,14 +65,14 @@ struct VrageLogSys
 	(
 		logsystem.logEntry Data debug:0 info:0 warning:0 error:1
 		messagebox  Data title:"Warning"
-		Showlog()
+		VRageLog_Show()
 	),
 
 	fn Error Data =
 	(
 		logsystem.logEntry Data debug:0 info:0 warning:0 error:1
 		messagebox  Data  title:"Error"
-		Showlog()
+		VRageLog_Show()
 	)
 )
 

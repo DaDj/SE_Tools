@@ -44,34 +44,59 @@ fn VRageExp_FBXSettings =
 	
 	fn VRageExp_Collision =
 	(
+		--1. Export an FBX with the Collision Data
+		--2. Generate Havok .hkt file from the Fbx
+
 		-- VRageExp_ExportFBX
-		-- VRageExp_Generate_HKT
+		SourcePath = "C:\Users\patgr\Desktop\hkt.FBX"
+		DestPath =  "C:\\Users\\patgr\\Desktop\\result.hkt"
+	Error = VRageExp_Generate_HKT SourcePath DestPath
+	VrageLog.Info ("VRageExp_Generate_HKT exited with Code: " +  Error as string  + "   (1 = success, -1= fail)")
 	)
 	
 	fn VRageExp_Generate_HKT SrcPath DestPath =
 	( 
 	-- 1. generate an readable HKT from exprted .fbx	
-		logsystem.logEntry "Starting Fbximport.exe " debug:0 info:1 warning:0 error:0	
+		VrageLog.Info "Starting Fbximport.exe " 
 		
-		Logdata = Dos_Command.run VRageCfg.PathFBXImporter arg_array:#("C:\Users\patgr\Desktop\hkt.FBX", "C:\\Users\\patgr\\Desktop\\result.hkt")
+		TmpHktPath =" \"" + GetDir #plugcfg +  "\\VRageUtilities\\Tmp.hkt" + "\""
+		Logdata = Dos_Command.run VRageCfg.PathFBXImporter arg_array:#(SrcPath,TmpHktPath)
 		
 		Tool_Success = 0
 		for i = 1 to Logdata.count do 
 		(
 			VrageLog.Info Logdata[i]
-			 if matchPattern Logdata[i]  pattern: "Saved tag file:*" do Tool_Success = 1
-			--if matchPattern Logdata[i]  pattern: "Output path:*" do	logsystem.logEntry Logdata[i] debug:0 info:1 warning:0 error:0	
+			if matchPattern Logdata[i]  pattern: "Saved tag file:*" do Tool_Success = 1
 		)			
-		LogMessage = "FBXimporter Failed to Export:  " + "C:\\Users\\patgr\\Desktop\\result.hkt"
-		if  Tool_Success == 0 do VrageLog.Error LogMessage
 	
-		
+		if  Tool_Success == 0 do
+		(
+			LogMessage = "FBXimporter Failed to Export:  " + TmpHktPath
+			VrageLog.Error LogMessage
+			return -1
+		)
+
 		 
-	-- 2. Generate and bianry hkt from the readable hkt
-		-- VRageCfg.PathHavokContentTools 
+	-- 2. Generate an binary hkt from the readable hkt
+	VrageLog.Info ("hctStandAloneFilterManager "  + DestPath)
+		PathHavokConfig = " \"" + GetDir #userScripts + "\\VRageToolbox\\Vrage_Havok\\VRage_FilterConfig.hko" + "\""
+		Program = VRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe"
+
+		Logdata = Dos_Command.run Program arg_array:#("-t","-s", PathHavokConfig, "-p", DestPath, TmpHktPath)
+		Tool_Success = 0
+		for i = 1 to Logdata.count do 
+		(
+			VrageLog.Info Logdata[i]
+			if matchPattern Logdata[i]  pattern: "*0 Errors*" do Tool_Success = 1
+		)
 		
-			 --"C:\\Program Files\\Havok\\HavokContentTools\\hctStandAloneFilterManager.exe"  -s "C:\\Users\\patgr\\Desktop\\SE_Config.hko" -i -o "C:\\Users\\patgr\\Desktop\\done\\" -p  "test.hkt"  "hkt.hkt"
-	
+		if  Tool_Success == 0 do
+		(
+			LogMessage = "hctStandAloneFilterManager Failed to Export:  " + DestPath
+			VrageLog.Error LogMessage
+			return -1
+		)
+		return 1
 	)
 	
 	fn VRageEXP_Generate_MWM =
