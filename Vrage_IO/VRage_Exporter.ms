@@ -22,7 +22,7 @@ fn VRageExp_FBXSettings =
 	FBXExporterSetParam "EmbedTextures" false
 	--Units----------------------------------------------------------------------------
 	--Axis Conversion-----------------------------------------------------------------
-	FBXExporterSetParam "AxisConversionMethod" "None"
+	FBXExporterSetParam "AxisConversionMethod" "Animation"
 	FBXExporterSetParam "UpAxis" "Y" 
 	--UI----------------------------------------------------------------
 	FBXExporterSetParam "ShowWarnings" true
@@ -33,7 +33,11 @@ fn VRageExp_FBXSettings =
 	)
 	
 	--OpenFbxSetting()
-	
+	fn VRageExp_ExportModel =
+	(
+		SourcePath = @"C:\Users\patgr\Desktop\test.FBX"
+		VRageExp_ExportFBX SourcePath
+	)
 	
 	fn VRageExp_ExportFBX DestPath =
 	(
@@ -45,7 +49,7 @@ fn VRageExp_FBXSettings =
 	
 	fn VRageExp_Collision =
 	(		SourcePath = "C:\Users\patgr\Desktop\hkt.FBX"
-			DestPath =  "C:\\Users\\patgr\\Desktop\\result.hkt"
+			DestPath =  "C:\\Users\\patgr\\Desktop\\test.hkt"
 		--1. Export an FBX with the Collision Data
 			VRageExp_ExportFBX SourcePath
 		--2. Generate Havok .hkt file from the Fbx
