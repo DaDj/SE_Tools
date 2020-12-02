@@ -8,6 +8,15 @@ logsystem.logName Vrage_Logfile
 logsystem.logEntry "Start Logging" debug:1 info:0 warning:0 error:0
 
 
+
+fn VRageLog_Show =
+(
+		try (closeRolloutFloater LogFloater) catch () 
+	LogFloater = newRolloutFloater  "VRage Utilies Log" 900 520 
+	addRollout Rollout_VrageLog LogFloater
+)
+
+
 rollout Rollout_VrageLog "VRage Utilies Log" width:900 height:500
 (
 	button btn_ClearLog "Clear Log" width:120 height:25 toolTip:"Clears the Logfile " align:#center
@@ -15,7 +24,7 @@ rollout Rollout_VrageLog "VRage Utilies Log" width:900 height:500
 	(		
 		deletefile Vrage_Logfile
 		logsystem.logEntry "Start Logging" debug:1 info:0 warning:0 error:0
-		VRageLog_Show()
+	--	VRageLog_Show()
 	)	
 	
 	dotNetControl textboxctrl "System.Windows.Forms.TextBox" width:850 height:450 align: #center
@@ -77,14 +86,6 @@ struct VrageLogSys
 )
 
 
-
-
-fn VRageLog_Show =
-(
-		try (closeRolloutFloater LogFloater) catch () 
-	LogFloater = newRolloutFloater  "VRage Utilies Log" 900 520 
-	addRollout Rollout_VrageLog LogFloater
-)
 
 
 

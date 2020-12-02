@@ -4,7 +4,8 @@ struct MyVrageConfig
 	PathHavokContentTools = "none",
 	PathMwmBuilder = "none",
 	PathTextures = "none",
-	ModSDK = "none"
+	PathModSDK = "none",
+	TextureType = ".dds"
 )
 
 
@@ -19,8 +20,8 @@ global VrageConfigPath = VRageConfigDir + @"\VRageCfg.ini"
  VRageCfg.PathHavokContentTools = getINISetting VrageConfigPath "Directories" "HavokContentTools"
  VRageCfg.PathMwmBuilder = getINISetting VrageConfigPath "Directories" "MwMBuilder"
  VRageCfg.PathTextures = getINISetting VrageConfigPath "Directories" "TexturePath"
- VRageCfg.ModSDK = getINISetting VrageConfigPath "Directories" "ModSDK"
-
+ VRageCfg.PathModSDK = getINISetting VrageConfigPath "Directories" "PathModSDK"
+ VRageCfg.TextureType = getINISetting VrageConfigPath "Textures" "TextureType"
 
 
 fn OpenSettings = (
@@ -63,26 +64,45 @@ rollout VrageUtils_Scene "VRage Utilities - Config" width:210 height:400
 			)
 		)		 
 			 
-			 
-	label lbl_PathTextures  "Textures path"align:#left across:2
-	button btn_PathTextures VRageCfg.PathTextures width:400 height:20 align:#right tooltip:" path to the  directory with the Textures"
-		on btn_PathTextures pressed do (
-			FilePath   = getSavePath caption:"Test path..."
-			 if(FilePath != undefined ) do ( 
-				btn_PathTextures.text = VRageCfg.PathTextures = FilePath
-				setINISetting VrageConfigPath "Directories" "TexturePath" FilePath
-			)
-		)
 		
-	label lbl_PathModSDK "ModSDK" align:#left across:2
-	button btn_PathModSDK VRageCfg.ModSDK width:400 height:20 align:#right tooltip:" path to the directory of the SE/ME ModSDK"
-		on btn_PathModSDK pressed do (
+	label lbl_PathPathModeSDK "PathModSDK" align:#left across:2
+	button btn_PathPathModeSDK VRageCfg.PathModSDK width:400 height:20 align:#right tooltip:" path to the directory of the SE/ME PathModSDK"
+		on btn_PathPathModeSDK pressed do (
 			FilePath   = getSavePath caption:"Test path..."
 			 if(FilePath != undefined ) do ( 
-				btn_PathModSDK.text = VRageCfg.ModSDK = FilePath
-				setINISetting VrageConfigPath "Directories" "ModSDK" FilePath
+				btn_PathPathModeSDK.text = VRageCfg.PathModSDK = FilePath
+				setINISetting VrageConfigPath "Directories" "PathModSDK" FilePath
 			)
 		)
+		group "Textures"
+		(
+			label lbl_PathTextures  "Textures path"align:#left across:2
+			button btn_PathTextures VRageCfg.PathTextures width:400 height:20 align:#right tooltip:" path to the  directory with the Textures"
+			on btn_PathTextures pressed do (
+					FilePath   = getSavePath caption:"Test path..."
+					 if(FilePath != undefined ) do ( 
+						btn_PathTextures.text = VRageCfg.PathTextures = FilePath
+						setINISetting VrageConfigPath "Directories" "TexturePath" FilePath
+					)
+				)
+
+			button btn_ConvertTxt "Convert Textures" width:210 height:25 toolTip:"---" align:#center  offset:[0,15]  across:2
+			dropdownlist ddl_TexType "Type of Textures" items:#(".dds", ".tif", ".png") enabled: true
+
+			on VrageUtils_Scene open do (
+				ddl_TexType.selection = findItem ddl_TexType.items VRageCfg.TextureType
+			)
+			
+			on ddl_TexType selected sel do (
+				 VRageCfg.TextureType = ddl_TexType.selected
+				setINISetting VrageConfigPath "Textures" "TextureType" VRageCfg.TextureType 
+			)
+		
+		)
+
+
+		
+
 )
 
 	
