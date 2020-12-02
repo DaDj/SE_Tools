@@ -123,7 +123,7 @@ rollout VrageUtils_Collision "Collisions" width:330 height:504
 	button btn_RigidBox "Box" width:50 height:40 toolTip:"Box" align:#center across:5
 	button btn_RigidSphere "Sphere" width:50 height:40 toolTip:"Sphere" align:#center
 	button btn_RigidCylinder "Cylinder" width:50 height:40 toolTip:"Cylinder" align:#center
-	button btn_RigidMesh "Mesh" width:50 height:40 toolTip:"Mesh" align:#center
+	button btn_RigidMesh "Hull" width:50 height:40 toolTip:"Hull" align:#center
 	button btn_RigidCapsule "Capsule" width:50 height:40 toolTip:"Capsule" align:#center enabled:false
 	
 	checkbox chbox_FitSelec "Fit to Selection" align:#center tooltip:"Fits the generated Rididbody to the selected Object. Generates an Convex Hull if mesh is choosen,"
@@ -131,7 +131,7 @@ rollout VrageUtils_Collision "Collisions" width:330 height:504
 	on btn_RigidBox pressed do  CreateRigidBodyObject   "Box" chbox_FitSelec.checked 
 	on btn_RigidSphere pressed do  CreateRigidBodyObject "Sphere"  chbox_FitSelec.checked 
 	on btn_RigidCylinder pressed do  CreateRigidBodyObject "Cylinder" chbox_FitSelec.checked 
-	on btn_RigidMesh pressed do  CreateRigidBodyObject "Mesh" chbox_FitSelec.checked 
+	on btn_RigidMesh pressed do  CreateRigidBodyObject "Hull" chbox_FitSelec.checked 
 	
 
 	)

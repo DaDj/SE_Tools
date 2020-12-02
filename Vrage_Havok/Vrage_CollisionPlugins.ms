@@ -99,6 +99,7 @@ extends:Sphere
 				at time 0 (selfnode.visibility = 0 )
 				(addNewKey selfnode.visibility.controller 30).value = 0.3
 				custAttributes.add selfnode RigidBodyCA
+				selfnode.shapeType = "Sphere"
 				selfnode.wirecolor = collisionWirecolor
 			)
 			
@@ -150,6 +151,7 @@ extends:Cylinder
 				at time 0 (selfnode.visibility = 0 )
 				(addNewKey selfnode.visibility.controller 30).value = 0.3
 				custAttributes.add selfnode RigidBodyCA
+				selfnode.shapeType = "Cylinder"
 				selfnode.wirecolor = collisionWirecolor
 			)
 			
