@@ -1,5 +1,5 @@
 global VRage_FontLib
-fileIn (getdir #scripts + @"\SE_Tools\VRage_IO\VRage_MaterialLibrary.ms")
+fileIn (VRage_ROOTPATH + @"\VRage_IO\VRage_MaterialLibrary.ms")
 
 fn sumArray arr =(
 

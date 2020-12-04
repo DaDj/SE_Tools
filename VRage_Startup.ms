@@ -1,4 +1,4 @@
-
+VRage_ROOTPATH = pathConfig.removePathLeaf (getSourceFileName());
 
 -- Struct of Global Scence Settings
 struct MyVRageBlockdef

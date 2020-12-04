@@ -1,5 +1,4 @@
 
-
 -- Scene Settings
 rollout VrageUtils_Scene "Set up Scene/Models" width:210 height:104
 (		
