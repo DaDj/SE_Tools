@@ -191,6 +191,8 @@ fn OpenSettings = (
 			on btn_ConvertTxt pressed do (
 				--TODO: Shell Launch BulkTextureConverter.exe "switches go here (In Theory)"
 				--TODO: Alternately use DosCommand/HiddenDosCommand
+				--REF: <full path to your texconv foldere>\texconv -nologo -ft png <path to the folder where your texture is>/<filename of the texture>
+				--Rel. Path from SDK: SpaceEngineersModSDK\Tools\TexturePacking\Tools\texconv.exe
 			)
 	
 	)
