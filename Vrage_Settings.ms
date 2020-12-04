@@ -176,7 +176,7 @@ fn OpenSettings = (
 			)
 			
 		checkbutton cbn_UseGameTextures "Use Game Textures" align:#right width:150 height:25\ 
-			tooltip:"Check if you want to use DDS Textures straight from the Game files"
+			tooltip:"Check if you want to use DDS Textures straight from the Game files" state:VrageCfg.UseGameTextures
 			on cbn_UseGameTextures changed state do (
 				if not (doesDirectoryExist VrageCfg.PathGame) then (
 					state = False

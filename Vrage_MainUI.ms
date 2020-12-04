@@ -164,7 +164,8 @@ rollout VRageUtils_Export"VRage I/O"
 
 try (closeRolloutFloater VrageFloater1) catch () 
 VrageFloater1 = newRolloutFloater  "VRage Utilies"320 800 300 300 
-clearListener()
+--clearListener()
+
 addRollout VrageUtils_Scene VrageFloater1
 addRollout VrageUtils_Collision VrageFloater1
 addRollout VrageUtils_Mountpoints VrageFloater1
