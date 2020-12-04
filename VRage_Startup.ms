@@ -23,5 +23,8 @@ filein "Vrage_Settings.ms"
 filein "Vrage_Havok\\Vrage_CollisionPlugins.ms"
 filein "Vrage_Havok\\Vrage_RigidBodies.ms"
 
+--Load all Plugins to keep scenes from breaking upon opening
+for f in (getFiles "Vrage_Plugins\\*.ms") do fileIn f
+
 filein "Vrage_IO\\Vrage_DOSCommand.ms"
 filein  "Vrage_testing\\Logging.ms"
