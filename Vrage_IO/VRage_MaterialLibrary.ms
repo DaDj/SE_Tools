@@ -1,6 +1,5 @@
 
 placeholder_texture = "E:\Program Files (x86)\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\textures\\fake.png"
-material_xml_dir = "E:\\Program Files (x86)\\Steam\\SteamApps\\common\\SpaceEngineersModSDK\\OriginalContent\\Materials\\"
 
 tex_dir = "C:\\SteamLibrary\\steamapps\\common\\SpaceEngineers\\Content\\"
 tex_ext = ".dds"
@@ -98,21 +97,27 @@ struct VRage_materialLib (
 	fn main =(
 		
 		if VRageCfg != undefined then (
-			dir = getFiles (VRageCfg.PathModSDK + "\\OriginalContent\\Materials\\" + "*.xml")
-			
-			files = getFiles (VRageCfg.PathModSDK + "\\OriginalContent\\Materials\\" + "*.xml")
-			xmlDoc = dotNetObject "system.xml.xmlDocument"
-			
-			xmlDoc.load files[1]
-			
-			for f = 2 to files.count do (
-				tempDoc = dotNetObject "system.xml.xmlDocument"
-				tempDoc.load files[f]
-				theNode = xmlDoc.ImportNode tempDoc.documentElement True
-				xmlDoc.documentElement.appendchild theNode
+			dir = VRageCfg.PathModSDK + "\\OriginalContent\\Materials\\"
+			if doesDirectoryExist dir then (
+				files = getFiles (dir + "*.xml")
+				xmlDoc = dotNetObject "system.xml.xmlDocument"
+				
+				xmlDoc.load files[1]
+				
+				for f = 2 to files.count do (
+					tempDoc = dotNetObject "system.xml.xmlDocument"
+					tempDoc.load files[f]
+					theNode = xmlDoc.ImportNode tempDoc.documentElement True
+					xmlDoc.documentElement.appendchild theNode
+				)
+			)
+			else (
+				--TODO: Errormessage Materialdirectory not found
 			)
 		)
-		
+		else (
+			--TODO: Errormessage ModSDK not set	
+		)
 	)
 	
 )
@@ -293,5 +298,5 @@ fn VRage_write_material_xml obj_list =(
 )
 
 VRage_MatLib = VRage_materialLib()
---VRage_MatLib.main()
+VRage_MatLib.main()
 --format "VRage Material Library initialised\n"
