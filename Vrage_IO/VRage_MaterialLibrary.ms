@@ -14,7 +14,7 @@ fn VRage_report_Error msg =(
 	
 )
 
-VRage_material_CA = attributes VRage_materialattribID:#(0x162d47c4, 0x6a278b17)
+VRage_material_CA = attributes VRage_material attribID:#(0x162d47c4, 0x6a278b17)
 (
 	parameters main rollout:params (
 		'is_se_material' Type:#boolean Default:True
@@ -64,10 +64,10 @@ struct VRage_material (
 )
 
 struct VRage_materialLib (
-
-	files = getFiles (VRageCfg.ModSDK + "\\OriginalContent\\Materials\\" + "*.xml"),
 	
-	xmlDoc = dotNetObject "system.xml.xmlDocument",
+	files,
+		
+	xmlDoc,
 	
 	--Fetch Material by material name
 	fn get_mat_by_name name =(
@@ -97,17 +97,23 @@ struct VRage_materialLib (
 		
 	fn main =(
 		
-		xmlDoc.load files[1]
-		
-		for f = 2 to files.count do (
-			tempDoc = dotNetObject "system.xml.xmlDocument"
-			tempDoc.load files[f]
-			theNode = xmlDoc.ImportNode tempDoc.documentElement True
-			xmlDoc.documentElement.appendchild theNode
+		if VRageCfg != undefined then (
+			dir = getFiles (VRageCfg.PathModSDK + "\\OriginalContent\\Materials\\" + "*.xml")
+			
+			files = getFiles (VRageCfg.PathModSDK + "\\OriginalContent\\Materials\\" + "*.xml")
+			xmlDoc = dotNetObject "system.xml.xmlDocument"
+			
+			xmlDoc.load files[1]
+			
+			for f = 2 to files.count do (
+				tempDoc = dotNetObject "system.xml.xmlDocument"
+				tempDoc.load files[f]
+				theNode = xmlDoc.ImportNode tempDoc.documentElement True
+				xmlDoc.documentElement.appendchild theNode
+			)
 		)
 		
 	)
-	
 	
 )
 

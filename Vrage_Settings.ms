@@ -175,8 +175,8 @@ fn OpenSettings = (
 				VRageCfg.save()
 			)
 			
-		checkbutton cbn_UseGameTextures "Use Game Textures" align:#right width:150 height:25\ 
-			tooltip:"Check if you want to use DDS Textures straight from the Game files" state:VrageCfg.UseGameTextures
+		checkbutton cbn_UseGameTextures "Use Game Textures" align:#right width:150 height:25 checked:VrageCfg.UseGameTextures
+			tooltip:"Check if you want to use DDS Textures straight from the Game files" 
 			on cbn_UseGameTextures changed state do (
 				if not (doesDirectoryExist VrageCfg.PathGame) then (
 					state = False
