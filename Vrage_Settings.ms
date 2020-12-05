@@ -32,7 +32,6 @@ struct VRageConfig
 		setINISetting VRageConfigFile "Directories" "pathgame" PathGame
 		setINISetting VRageConfigFile "Textures" "UseGameTextures" (if UseGameTextures then "1" else "0")
 		
-		"Teststring"
 	),
 
 	fn load =(
