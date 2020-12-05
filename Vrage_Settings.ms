@@ -23,7 +23,6 @@ struct VRageConfig
 			messageBox title:"Permission Error!"
 		)
 
-		setINISetting VRageConfigFile "Directories" "MwMBuilder" PathMwmBuilder
 		setINISetting VRageConfigFile "Directories" "FBXImporter" PathFBXImporter
 		setINISetting VRageConfigFile "Directories" "HavokContentTools" PathHavokContentTools
 		setINISetting VRageConfigFile "Directories" "MwMBuilder" PathMwmBuilder
