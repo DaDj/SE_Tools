@@ -27,6 +27,7 @@
 
 */
 
+clearListener()
 Transparent_materials = @"C:\SteamLibrary\steamapps\common\SpaceEngineers\Content\Data\TransparentMaterials.sbc"
 
 xmlDoc = dotNetObject "system.xml.xmlDocument"
@@ -34,3 +35,23 @@ xmlDoc = dotNetObject "system.xml.xmlDocument"
 xmlDoc.load Transparent_materials
 
 Materials = xmlDoc.selectNodes "//TransparentMaterial"
+
+
+for i = 0 to materials.count-1 do (
+	m = Materials.ItemOf[i]
+	name = (m.selectSingleNode "Id/SubtypeId").innertext
+	t = (m.selectSingleNode "Texture")
+	g= (m.selectSingleNode "GlossTexture")
+	
+	c=  (m.selectSingleNode "Color")
+	ca=  (m.selectSingleNode "ColorAdd")
+	if (t != undefined or g != undefined) and matchpattern name pattern:"*glass*" do (
+		format "Name:% Index(%)\n" name i
+		if t != undefined do format "\tTexture: %\n" t.innertext
+		if g != undefined do format "\tGlossTexture: %\n" t.innertext
+			
+		if c!= undefined do format "\tColor R:% G:% B% A:%\n" c.item["X"].innertext c.item["Y"].innertext c.item["Z"].innertext c.item["W"].innertext
+		if ca!= undefined do format "\tColorAdd R:% G:% B% A:%\n" ca.item["X"].innertext ca.item["Y"].innertext ca.item["Z"].innertext ca.item["W"].innertext
+		format "\n"
+	)
+)
