@@ -23,16 +23,18 @@ global MyVrageScene = MyVRageBlockdef()
 
 fn Vrage_LoadToolbox =(
 
+	fileIn "Vrage_Common.ms"
 	fileIn "Vrage_Settings.ms"
+	--fileIn "Vrage_MainUI"
 
-	files = getFiles ((trimright MyVRageRoot "\\") +"\\*.ms")
+	files = #()
 	dirs = getDirectories ((trimright MyVRageRoot "\\") +"\\*")
 
 	for d in dirs do (
 		join dirs (getDirectories ((trimright d "\\") +"\\*"))
 	)
 	
-	for d in dirs where not (matchpattern d pattern:"*vrage_testing*") and not (matchpattern d pattern:"*startup*") do (
+	for d in dirs where not (matchpattern d pattern:"*vrage_testing*") do (
 		join files (getFiles ((trimright d "\\") +"\\*.ms"))
 	)
 		
