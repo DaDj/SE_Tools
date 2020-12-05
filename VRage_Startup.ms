@@ -32,7 +32,7 @@ fn Vrage_LoadToolbox =(
 		join dirs (getDirectories ((trimright d "\\") +"\\*"))
 	)
 	
-	for d in dirs where not (matchpattern d pattern:"*vrage_testing*") do (
+	for d in dirs where not (matchpattern d pattern:"*vrage_testing*") and not (matchpattern d pattern:"*startup*") do (
 		join files (getFiles ((trimright d "\\") +"\\*.ms"))
 	)
 		
