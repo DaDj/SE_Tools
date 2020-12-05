@@ -59,7 +59,7 @@ struct VrageFBXImporter (
 		FbxImporterSetParam "AxisConversion" true
 		FbxImporterSetParam "BakeAnimationLayers" true
 		FbxImporterSetParam "Cameras" true
-		FbxImporterSetParam "ConvertUnit" #custom unit
+		FbxImporterSetParam "ConvertUnit" #custom_unit
 		FbxImporterSetParam "FillTimeline" false
 		FbxImporterSetParam "FilterKeyReducer" false
 		FbxImporterSetParam "FilterKeySync" false
@@ -67,21 +67,15 @@ struct VrageFBXImporter (
 		FbxImporterSetParam "ImportBoneAsDummy" true
 		FbxImporterSetParam "KeepFrameRate" false
 		FbxImporterSetParam "Lights" true
-		FbxImporterSetParam "LoadImportPresetFile" unsupplied
 		FbxImporterSetParam "Markers" false
 		FbxImporterSetParam "Mode" #merge
-		FbxImporterSetParam "PopSettings" unsupplied
-		FbxImporterSetParam "PushSettings" unsupplied
 		FbxImporterSetParam "PointCache" true
 		FbxImporterSetParam "Resampling" 30.0
-		FbxImporterSetParam "ResetImport" unsupplied
 		FbxImporterSetParam "ScaleConversion" true
 		FbxImporterSetParam "ScaleFactor" 1.0
 		FbxImporterSetParam "Shape" true
 		FbxImporterSetParam "Skin" true
 		FbxImporterSetParam "SmoothingGroups" false
-		FbxImporterSetParam "TakeCount" unsupplied
-		FbxImporterSetParam "TakeIndex" unsupplied
 		FbxImporterSetParam "UpAxis" #z
 		
 	),
@@ -179,10 +173,10 @@ struct VrageFBXImporter (
 
 		if doesFileExist filename then (
 
-			SetImportSettings()
-
-			LastImport = importFBX (filename)
-			Vrage_cleanLayers()
+			--SetImportSettings()
+			
+			LastImport = importFBX filename
+			--Vrage_cleanLayers LastImport
 
 			Vrage_cleanMats LastImport
 		)

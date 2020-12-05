@@ -149,7 +149,7 @@ struct VRageMaterialLibrary (
 	fn main =(
 		
 		if MyVRageCfg != undefined then (
-			dir = MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials\\"
+			dir = (trimright MyVRageCfg.PathModSDK "\\") + "\\OriginalContent\\Materials\\"
 			if doesDirectoryExist dir then (
 				files = getFiles (dir + "*.xml")
 				xmlDoc = dotNetObject "system.xml.xmlDocument"
@@ -167,10 +167,12 @@ struct VRageMaterialLibrary (
 			)
 			else (
 				--TODO: Errormessage Materialdirectory not found
+				messageBox "Materialdirectory not found"
 			)
 		)
 		else (
-			--TODO: Errormessage ModSDK not set	
+			--TODO: Errormessage ModSDK not set
+			messageBox "ModSDK not set"
 		)
 	)
 	
@@ -182,7 +184,7 @@ fn VRage_getMatByName name tex_dir:undefined=(
 	sceneMats = for m in (getClassInstances Standardmaterial) where custAttributes.get m VrageMaterial_CA != undefined collect m
 	
 	--collect list of Names from SceneMats
-	sceneMatNames = for m in sceneMats collect m.namem
+	sceneMatNames = for m in sceneMats collect m.name
 		
 	index = findItem sceneMatNames name
 	
