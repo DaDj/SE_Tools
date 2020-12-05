@@ -231,7 +231,7 @@ struct VRage_Fonts (
 	
 	fn loadFonts =(
 		
-		font_files = getFiles (getdir #scripts + @"\SE_Tools\Vrage_Plugins\Fonts\*.xml")
+		font_files = getFiles (VRage_ROOTPATH + @"\Vrage_Plugins\Fonts\*.xml")
 		print font_files
 		
 		fonts = for f in font_files collect Vrage_Font file:f
@@ -514,7 +514,12 @@ classID:#(0x7db4d221, 0x27f7b37b)
 			meshop.autoEdge mesh mesh.Edges 1.0
 			update mesh
 			selfnode = (refs.dependentnodes this)[1]
-			try selfnode.material = SE_MatLib.get_mat_by_name font.material_name catch()
+			
+			if Vrage_MatLib.mat_list.count == 0 do (
+				Vrage_MatLib.main()
+			)
+			
+			try selfnode.material = Vrage_MatLib.get_mat_by_name font.material_name catch()
 		)
 		else (
 			setMesh mesh width:10 length:10 widthsegs:1 lengthsegs:1

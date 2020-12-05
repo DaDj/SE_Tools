@@ -235,5 +235,5 @@ fn OpenSettings = (
 	addRollout VrageUtils_CfgGame VrageCfgFloater
 )
 
-OpenSettings()
+--OpenSettings()
 

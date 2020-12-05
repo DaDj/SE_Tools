@@ -1,11 +1,11 @@
 
 placeholder_texture = "E:\Program Files (x86)\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\textures\\fake.png"
 
-tex_dir = "C:\\SteamLibrary\\steamapps\\common\\SpaceEngineers\\Content\\"
-tex_ext = ".dds"
-
 global VRage_MatLib
 
+if VRageCfg == undefined do (
+	fileIn 
+)
 
 fn VRage_report_Error msg =(
 
@@ -16,7 +16,8 @@ fn VRage_report_Error msg =(
 VRage_material_CA = attributes VRage_material attribID:#(0x162d47c4, 0x6a278b17)
 (
 	parameters main rollout:params (
-		'is_se_material' Type:#boolean Default:True
+		is_se_material Type:#boolean Default:True
+		timeGen type:#integer Default:(timestamp())
 	)
 	Rollout params "Space Engineers Material" (
 		label lb_info "Space Engineers Material"
@@ -27,8 +28,22 @@ struct VRage_material (
 	
 	xml_mat,
 	
-	fn get_path m =(
-		tex_dir + (substituteString m ".dds" tex_ext)
+	fn get_path m tex_dir:undefined =(
+		
+		if tex_dir == undefined do (
+			tex_dir = VRage_MatLib.get_tex_dir()
+		)
+
+		if not VrageCfg.UseGameTextures then (
+			outpath = tex_dir + (substituteString m ".dds" VRageTexTypes[VrageCfg.TextureType])
+		)
+		else (
+			outpath = tex_dir + m
+		)
+		print outpath
+		print (doesFileExist outpath)
+		
+		outpath
 	),
 	
 	fn get_material =(
@@ -68,14 +83,37 @@ struct VRage_materialLib (
 		
 	xmlDoc,
 	
+	mat_list = #(),
+	mat_names = #(),
+	
+	fn get_tex_dir =(
+		if VRageCfg.UseGameTextures then (
+			tex_dir = VRageCfg.PathGame + @"\Content\"
+		)
+		else (
+			split = filterString VRageCfg.PathTextures "\\"
+			
+			if toLower(split[split.count]) == "textures" then (
+				tex_dir = getFilenamePath VRageCfg.PathTextures
+			)
+			else (
+				tex_dir = VRageCfg.PathTextures
+			)
+			
+			tex_dir = VRageCfg.PathTextures + "\\"
+		)
+		
+		tex_dir
+	),
+	
 	--Fetch Material by material name
-	fn get_mat_by_name name =(
+	fn get_mat_by_name name tex_dir:undefined =(
 		
 		xpath = substituteString "//Material[@Name='%']" "%" (name as string)
 		xml_mat = xmlDoc.selectSingleNode xpath
 		
 		if xml_mat != undefined then (
-			mat = (VRage_Material xml_mat:xml_mat).get_material()
+			mat = (VRage_Material xml_mat:xml_mat).get_material tex_dir:tex_dir
 		)
 		else (
 			mat = undefined
@@ -90,8 +128,8 @@ struct VRage_materialLib (
 		
 		mat_names = for i=0 to xml_mats.count-1 collect xml_mats.itemOf[i].attributes.itemOf["Name"].value
 		
-		sorted = sort mat_names
-		print sorted
+		sort mat_names
+		mat_list = mat_names
 	),
 		
 	fn main =(
@@ -110,6 +148,8 @@ struct VRage_materialLib (
 					theNode = xmlDoc.ImportNode tempDoc.documentElement True
 					xmlDoc.documentElement.appendchild theNode
 				)
+				
+				get_mat_list()
 			)
 			else (
 				--TODO: Errormessage Materialdirectory not found
@@ -185,13 +225,13 @@ fn CleanLayers =( --Deletes empty layers after import
 	)
 )
 
-fn VRage_getMatByName name =(
+fn VRage_getMatByName name tex_dir:undefined=(
 	
 	--Get Array of Materials in Scene
 	sceneMats = for m in (getClassInstances Standardmaterial) where custAttributes.get m VRage_material_CA != undefined collect m
 	
 	--collect list of Names from SceneMats
-	sceneMatNames = for m in sceneMats collect m.name
+	sceneMatNames = for m in sceneMats collect m.namem
 		
 	index = findItem sceneMatNames name
 	
@@ -203,7 +243,7 @@ fn VRage_getMatByName name =(
 			VRage_MatLib = VRage_materialLib()
 			VRage_MatLib.main()
 		)
-		material = VRage_MatLib.get_mat_by_name name
+		material = VRage_MatLib.get_mat_by_name name tex_dir:tex_dir
 	)
 	
 	material
@@ -213,7 +253,7 @@ fn VRage_getMatByName name =(
 fn VRage_cleanMats obj_list =(
 	
 	obj_list = obj_list as array
-	
+	this_tex_dir = Vrage_Matlib.get_tex_dir()
 	for o in obj_list do(
 		
 		condense_material_ids o
@@ -225,7 +265,7 @@ fn VRage_cleanMats obj_list =(
 				
 				if (custAttributes.get old_material VRage_material_CA) == undefined do (
 					
-					new_material = VRage_getMatByName old_material.name --error kommt hier her
+					new_material = VRage_getMatByName old_material.name tex_dir:this_tex_dir
 					
 					if new_material != undefined then (
 						
