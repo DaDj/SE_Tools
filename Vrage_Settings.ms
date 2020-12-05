@@ -23,6 +23,7 @@ struct VRageConfig
 			messageBox title:"Permission Error!"
 		)
 
+		setINISetting VRageConfigFile "Directories" "MwMBuilder" PathMwmBuilder
 		setINISetting VRageConfigFile "Directories" "FBXImporter" PathFBXImporter
 		setINISetting VRageConfigFile "Directories" "HavokContentTools" PathHavokContentTools
 		setINISetting VRageConfigFile "Directories" "MwMBuilder" PathMwmBuilder
@@ -31,6 +32,7 @@ struct VRageConfig
 		setINISetting VRageConfigFile "Textures" "TextureType" (TextureType as string)
 		setINISetting VRageConfigFile "Directories" "pathgame" PathGame
 		setINISetting VRageConfigFile "Textures" "UseGameTextures" (if UseGameTextures then "1" else "0")
+
 	),
 
 	fn load =(
