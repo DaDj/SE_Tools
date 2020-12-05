@@ -65,7 +65,7 @@ fn VRageExp_FBXSettings =
 		VrageLog.Info "Starting Fbximport.exe " 
 		
 		TmpHktPath =" \"" + GetDir #plugcfg +  "\\VRageUtilities\\Tmp.hkt" + "\""
-		Logdata = Dos_Command.run VRageCfg.PathFBXImporter arg_array:#(SrcPath,TmpHktPath)
+		Logdata = Dos_Command.run MyVRageCfg.PathFBXImporter arg_array:#(SrcPath,TmpHktPath)
 		
 		Tool_Success = 0
 		for i = 1 to Logdata.count do 
@@ -85,7 +85,7 @@ fn VRageExp_FBXSettings =
 	-- 2. Generate an binary hkt from the readable hkt
 		VrageLog.Info ("hctStandAloneFilterManager "  + DestPath)
 		PathHavokConfig = " \"" + GetDir #userScripts + "\\VRageToolbox\\Vrage_Havok\\VRage_FilterConfig.hko" + "\""
-		Program = VRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe"
+		Program = MyVRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe"
 
 		Logdata = Dos_Command.run Program arg_array:#("-t","-s", PathHavokConfig, "-p", DestPath, TmpHktPath)
 		Tool_Success = 0
@@ -108,6 +108,6 @@ fn VRageExp_FBXSettings =
 	fn VRageEXP_Generate_MWM =
 	(
 		---\MwmBuilder.exe  /o:".\out" /l:".\out\log.log" /x:"E:\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\Materials" /showWarnings /e /f
-		---\MwmBuilder.exe  /o:".\out" /l:".\out\log.log" /x:"(VRageCfg.ModSDK + \\OriginalContent\\Materials)" /showWarnings /e /f
+		---\MwmBuilder.exe  /o:".\out" /l:".\out\log.log" /x:"(MyVRageCfg.ModSDK + \\OriginalContent\\Materials)" /showWarnings /e /f
 		
 	)

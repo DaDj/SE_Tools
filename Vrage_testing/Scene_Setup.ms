@@ -9,11 +9,11 @@ if (LayerManager.getLayerFromName("Main") == undefined) then (
 -- Create Layers for LODS 
 for i = 1 to 4 do 
 (
-		if (LayerManager.getLayerFromName("LOD" + i as string) == undefined  and i < VrageScene.i_LODS) then (
+		if (LayerManager.getLayerFromName("LOD" + i as string) == undefined  and i < MyVrageScene.i_LODS) then (
 			layer = LayerManager.newLayer()
 			layer.setname ("LOD" + i as string)
 		)
-		else if(LayerManager.getLayerFromName("LOD" + i as string) != undefined  and i >=VrageScene.i_LODS) then
+		else if(LayerManager.getLayerFromName("LOD" + i as string) != undefined  and i >=MyVrageScene.i_LODS) then
 		(
 			LayerManager.deleteLayerByName ("LOD" + i as string)
 			)
@@ -22,11 +22,11 @@ for i = 1 to 4 do
 -- Create Layers for Buildstages 
 for i = 1 to 4 do 
 (
-		if (LayerManager.getLayerFromName("BS" + i as string) == undefined  and i < VrageScene.i_Buildstages) then (
+		if (LayerManager.getLayerFromName("BS" + i as string) == undefined  and i < MyVrageScene.i_Buildstages) then (
 			layer = LayerManager.newLayer()
 			layer.setname ("BS" + i as string)
 		)
-		else if(LayerManager.getLayerFromName("BS" + i as string) != undefined  and i >=VrageScene.i_Buildstages) then
+		else if(LayerManager.getLayerFromName("BS" + i as string) != undefined  and i >=MyVrageScene.i_Buildstages) then
 		(
 			LayerManager.deleteLayerByName ("BS" + i as string)
 			)
@@ -36,11 +36,11 @@ for i = 1 to 4 do
 --Create Layers for Buildstages LoDs not sdone yet
 -- for i = 1 to 4 do 
 -- (
--- 		if (LayerManager.getLayerFromName("BS" + i as string) == undefined  and i < VrageScene.i_Buildstages) then (
+-- 		if (LayerManager.getLayerFromName("BS" + i as string) == undefined  and i < MyVrageScene.i_Buildstages) then (
 -- 			layer = LayerManager.newLayer()
 -- 			layer.setname ("BS" + i as string)
 -- 		)
--- 		else if(LayerManager.getLayerFromName("BS" + i as string) != undefined  and i >=VrageScene.i_Buildstages) then
+-- 		else if(LayerManager.getLayerFromName("BS" + i as string) != undefined  and i >=MyVrageScene.i_Buildstages) then
 -- 		(
 -- 			LayerManager.deleteLayerByName ("BS" + i as string)
 -- 			)

@@ -1,29 +1,22 @@
-global VRage_FontLib
-fileIn (VRage_ROOTPATH + @"\VRage_IO\VRage_MaterialLibrary.ms")
+global MyVrageFontLib
 
-fn sumArray arr =(
 
-    sum = 0
-
-    for a in arr do (
-
-        if classOf a == array then (
-            sum += sum_array a
+if MyVRageCfg == undefined do (
+    root = pathConfig.removePathLeaf (getSourceFileName());
+    
+    if matchpattern (toLower root) pattern:"*vragetoolbox*" then (
+        while toLower (a = filterString root "\\")[a.count] != "vragetoolbox" do (
+            root = getfilenamepath (trimright root "\\")
         )
-        else if a != undefined and a as float != undefined then (
-            sum += a as float
-        )
-        else (
-			print "Sum Error!"
-            return 0
-        )
+    
+        fileIn (root + "Vrage_Startup.ms")
     )
-	
-    sum
-	
+    else (
+        MessageBox "Vrage Toolbox can not be initialised!"
+    )
 )
 
-struct Vrage_Char (
+struct VrageFontCharacter (
 	
 	Name="",
 	min = [0,0,0],
@@ -32,7 +25,7 @@ struct Vrage_Char (
 
 )
 
-struct VRage_Font (
+struct VrageFont (
 	
 	name = "",
 	chars = #(),
@@ -226,15 +219,14 @@ struct VRage_Font (
 	
 )
 
-struct VRage_Fonts (
+struct VrageFontLibrary (
 	fonts = #(),
 	
 	fn loadFonts =(
 		
-		font_files = getFiles (VRage_ROOTPATH + @"\Vrage_Plugins\Fonts\*.xml")
-		print font_files
+		font_files = getFiles (MyVRageRoot + @"\Vrage_Plugins\Fonts\*.xml")
 		
-		fonts = for f in font_files collect Vrage_Font file:f
+		fonts = for f in font_files collect VrageFont file:f
 		for f in fonts do f.load_xml()
 	)
 
@@ -252,7 +244,7 @@ fn Vrage_TextMeshDataFromAtlas tex_path =(
         pxls = for p in (getPixels tex_bmp [0, r] tex_size.x) collect p as point3
 				
         /*Check if row is blank -> all black*/
-        sum = (sumArray (for p in pxls collect length(p)))
+        sum = (Vrage_sumArray (for p in pxls collect length(p)))
 		
         if sum == 0 then (
             /*if Current row of characters is not empty append it to the list */
@@ -284,7 +276,7 @@ fn Vrage_TextMeshDataFromAtlas tex_path =(
 			
 			col_pxls = for r in row collect r[2][i]
 				
-			sum = sumArray (for p in col_pxls collect length(p))
+			sum = Vrage_sumArray (for p in col_pxls collect length(p))
 			
 			if sum == 0 then (
 				if this_char != [0, 0] do (
@@ -319,27 +311,27 @@ fn Vrage_TextMeshDataFromAtlas tex_path =(
 			new_end = char_end
 			trimmed_height = #()
 			
-			sum0 = sumArray (for p in (getPixels tex_bmp [char.x, char_start] char_width) collect length(p as point3))
-			sum1 = sumArray (for p in (getPixels tex_bmp [char.x, char_end] char_width) collect length(p as point3))
+			sum0 = Vrage_sumArray (for p in (getPixels tex_bmp [char.x, char_start] char_width) collect length(p as point3))
+			sum1 = Vrage_sumArray (for p in (getPixels tex_bmp [char.x, char_end] char_width) collect length(p as point3))
 			
 			count = char_start
 			for i = char_start to char_end while sum0 == 0 do (
 				count = i
-				sum0 = sumArray (for p in (getPixels tex_bmp [char.x, i] char_width) collect length(p as point3))
+				sum0 = Vrage_sumArray (for p in (getPixels tex_bmp [char.x, i] char_width) collect length(p as point3))
 			)
 			new_start = count
 			
 			count = char_end
 			for j = char_end to char_start by -1 while sum1 == 0 do (
 				count = j
-				sum1 = sumArray (for p in (getPixels tex_bmp [char.x, j] char_width) collect length(p as point3))
+				sum1 = Vrage_sumArray (for p in (getPixels tex_bmp [char.x, j] char_width) collect length(p as point3))
 			)
 			new_end = count
 			
 			
 			char_y_bounds = [tex_size.y - new_start, tex_size.y - new_end - 1]
 			
-			new_char = Vrage_Char()
+			new_char = VrageFontCharacter()
 			new_char.min = [(char.x as float), (char_y_bounds.y as float), 0]
 			new_char.mx = [(char.y as float), (char_y_bounds.x as float), 0]
 			new_char.w = new_char.mx.x - new_char.min.x
@@ -358,7 +350,7 @@ fn Vrage_TextMeshDataFromAtlas tex_path =(
 		join char_list row_chars
     )
 	
-	Font = VRage_Font chars:char_list kerning:25
+	Font = VrageFont chars:char_list kerning:25
 	Font
 )
 
@@ -381,7 +373,7 @@ classID:#(0x7db4d221, 0x27f7b37b)
 	rollout r_TextDecal "Text Decal"(
 		
 		group "Font:" (
-			dropdownList ddl_Font "" items:(for f in VRage_FontLib.fonts collect f.name)
+			dropdownList ddl_Font "" items:(for f in MyVrageFontLib.fonts collect f.name)
 			spinner sp_fontSize "Size: " type:#worldunits range:[0.0, 100., 15.0] align:#left fieldwidth:(ddl_Font.width-38)
 		)
 
@@ -397,7 +389,6 @@ classID:#(0x7db4d221, 0x27f7b37b)
 		)
 		
 		fn just_buttons =(
-			print justification
 			case justification of (
 				1: (
 					cb_left.checked = True
@@ -418,12 +409,12 @@ classID:#(0x7db4d221, 0x27f7b37b)
 		)
 		
 		on r_TextDecal open do (
-			ddl_Font.items = (for f in VRage_FontLib.fonts collect f.name) as array
+			ddl_Font.items = (for f in MyVrageFontLib.fonts collect f.name) as array
 			just_buttons()
 		)
 		
 		on ddl_Font selected sel do (
-			ddl_Font.items = (for f in VRage_FontLib.fonts collect f.name) as array
+			ddl_Font.items = (for f in MyVrageFontLib.fonts collect f.name) as array
 		)
 		
 		on cb_left changed state do (
@@ -454,7 +445,7 @@ classID:#(0x7db4d221, 0x27f7b37b)
 	
 	on buildMesh do (
 		
-		font = if font_id <= VRage_FontLib.fonts.count then VRage_FontLib.fonts[font_id] else undefined
+		font = if font_id <= MyVrageFontLib.fonts.count then MyVrageFontLib.fonts[font_id] else undefined
 		
 		if font != undefined then (
 			font.load_xml()
@@ -515,11 +506,11 @@ classID:#(0x7db4d221, 0x27f7b37b)
 			update mesh
 			selfnode = (refs.dependentnodes this)[1]
 			
-			if Vrage_MatLib.mat_list.count == 0 do (
-				Vrage_MatLib.main()
+			if MyVRageMatLib.mat_list.count == 0 do (
+				MyVRageMatLib.main()
 			)
 			
-			try selfnode.material = Vrage_MatLib.get_mat_by_name font.material_name catch()
+			try selfnode.material = MyVRageMatLib.get_mat_by_name font.material_name catch()
 		)
 		else (
 			setMesh mesh width:10 length:10 widthsegs:1 lengthsegs:1
@@ -539,5 +530,5 @@ classID:#(0x7db4d221, 0x27f7b37b)
 	
 )
 
-VRage_FontLib = VRage_Fonts()
-VRage_FontLib.loadFonts()
+MyVrageFontLib = VrageFontLibrary()
+MyVrageFontLib.loadFonts()

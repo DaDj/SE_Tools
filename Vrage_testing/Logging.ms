@@ -2,7 +2,7 @@
 
 
 
-Vrage_Logfile =  VRageCfg.VRageConfigDir + "\\Info.log"
+Vrage_Logfile =  MyVRageCfg.VRageConfigDir + "\\Info.log"
 deletefile Vrage_Logfile
 logsystem.logName Vrage_Logfile
 logsystem.logEntry "Start Logging" debug:1 info:0 warning:0 error:0

@@ -1,9 +1,23 @@
+if MyVRageCfg == undefined do (
+    root = pathConfig.removePathLeaf (getSourceFileName());
+    
+    if matchpattern (toLower root) pattern:"*vragetoolbox*" then (
+        while toLower (a = filterString root "\\")[a.count] != "vragetoolbox" do (
+            root = getfilenamepath (trimright root "\\")
+        )
+    
+        fileIn (root + "Vrage_Startup.ms")
+    )
+    else (
+        MessageBox "Vrage Toolbox can not be initialised!"
+    )
+)
+	
+placeholder_texture = @"E:\Program Files (x86)\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\textures\\fake.png"
 
-placeholder_texture = "E:\Program Files (x86)\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\textures\\fake.png"
+global MyVRageMatLib
 
-global VRage_MatLib
-
-if VRageCfg == undefined do (
+if MyVRageCfg == undefined do (
 	fileIn 
 )
 
@@ -13,7 +27,7 @@ fn VRage_report_Error msg =(
 	
 )
 
-VRage_material_CA = attributes VRage_material attribID:#(0x162d47c4, 0x6a278b17)
+VrageMaterial_CA = attributes VrageMaterial attribID:#(0x162d47c4, 0x6a278b17)
 (
 	parameters main rollout:params (
 		is_se_material Type:#boolean Default:True
@@ -24,18 +38,18 @@ VRage_material_CA = attributes VRage_material attribID:#(0x162d47c4, 0x6a278b17)
 	)
 )
 
-struct VRage_material (
+struct VrageMaterial (
 	
 	xml_mat,
 	
 	fn get_path m tex_dir:undefined =(
 		
 		if tex_dir == undefined do (
-			tex_dir = VRage_MatLib.get_tex_dir()
+			tex_dir = MyVRageMatLib.get_tex_dir()
 		)
 
-		if not VrageCfg.UseGameTextures then (
-			outpath = tex_dir + (substituteString m ".dds" VRageTexTypes[VrageCfg.TextureType])
+		if not MyVRageCfg.UseGameTextures then (
+			outpath = tex_dir + (substituteString m ".dds" VRageTexTypes[MyVRageCfg.TextureType])
 		)
 		else (
 			outpath = tex_dir + m
@@ -68,7 +82,7 @@ struct VRage_material (
 		)
 		
 		try (
-			custAttributes.add material VRage_material_CA
+			custAttributes.add material VrageMaterial_CA
 		)
 		catch ()
 		
@@ -77,7 +91,7 @@ struct VRage_material (
 	
 )
 
-struct VRage_materialLib (
+struct VRageMaterialLibrary (
 	
 	files,
 		
@@ -87,20 +101,20 @@ struct VRage_materialLib (
 	mat_names = #(),
 	
 	fn get_tex_dir =(
-		if VRageCfg.UseGameTextures then (
-			tex_dir = VRageCfg.PathGame + @"\Content\"
+		if MyVRageCfg.UseGameTextures then (
+			tex_dir = MyVRageCfg.PathGame + @"\Content\"
 		)
 		else (
-			split = filterString VRageCfg.PathTextures "\\"
+			split = filterString MyVRageCfg.PathTextures "\\"
 			
 			if toLower(split[split.count]) == "textures" then (
-				tex_dir = getFilenamePath VRageCfg.PathTextures
+				tex_dir = getFilenamePath MyVRageCfg.PathTextures
 			)
 			else (
-				tex_dir = VRageCfg.PathTextures
+				tex_dir = MyVRageCfg.PathTextures
 			)
 			
-			tex_dir = VRageCfg.PathTextures + "\\"
+			tex_dir = MyVRageCfg.PathTextures + "\\"
 		)
 		
 		tex_dir
@@ -113,7 +127,7 @@ struct VRage_materialLib (
 		xml_mat = xmlDoc.selectSingleNode xpath
 		
 		if xml_mat != undefined then (
-			mat = (VRage_Material xml_mat:xml_mat).get_material tex_dir:tex_dir
+			mat = (VrageMaterial xml_mat:xml_mat).get_material tex_dir:tex_dir
 		)
 		else (
 			mat = undefined
@@ -134,8 +148,8 @@ struct VRage_materialLib (
 		
 	fn main =(
 		
-		if VRageCfg != undefined then (
-			dir = VRageCfg.PathModSDK + "\\OriginalContent\\Materials\\"
+		if MyVRageCfg != undefined then (
+			dir = MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials\\"
 			if doesDirectoryExist dir then (
 				files = getFiles (dir + "*.xml")
 				xmlDoc = dotNetObject "system.xml.xmlDocument"
@@ -162,73 +176,10 @@ struct VRage_materialLib (
 	
 )
 
-fn get_faces_by_mat_id mesh =(
-	
-	mesh_faces_by_mat_id = #()
-	
-	for f = 1 to mesh.numfaces do (
-		mat_id = getFaceMatID mesh f
-		
-		if mesh_faces_by_mat_id[mat_id] != undefined then (
-			mesh_faces_by_mat_id[mat_id] += #(f)
-		)
-		else (
-			mesh_faces_by_mat_id[mat_id] = #(f)
-		)
-	)
-	
-	mesh_faces_by_mat_id
-)
-
-fn condense_material_ids obj nondestructive:false =(
-	
-	if classOf obj.material == Multimaterial do (
-		face_ids = get_faces_by_mat_id(obj.mesh)
-		
-		materials = #() 
-		
-		new_ids = #() 
-		
-		for i = 1 to face_ids.count where face_ids[i] != undefined do (
-			
-			mat = obj.material.materialList[i]
-			
-			append materials mat
-			append new_ids face_ids[i]
-		)
-		
-		if classOf obj == editable_mesh then (
-			for g = 1 to new_ids.count do (
-				for f in new_ids[g] do (
-					setFaceMatID obj f g
-				)
-			)
-		)
-		
-		new_material = Multimaterial numsubs:materials.count materialList:materials names:(for m in materials collect m.name)
-		
-		obj.material = new_material
-		
-		update obj
-	)
-)
-
-fn CleanLayers =( --Deletes empty layers after import
-	
-	for l=LayerManager.count-1 to 0 by -1 do (
-		local this_layer = LayerManager.getLayer l
-		
-		canDelete = (this_layer.canDelete()) and not (LayerManager.doesLayerHierarchyContainNodes this_layer.name)
-		if canDelete do (
-			LayerManager.deleteLayerByName this_layer.name
-		)
-	)
-)
-
 fn VRage_getMatByName name tex_dir:undefined=(
 	
 	--Get Array of Materials in Scene
-	sceneMats = for m in (getClassInstances Standardmaterial) where custAttributes.get m VRage_material_CA != undefined collect m
+	sceneMats = for m in (getClassInstances Standardmaterial) where custAttributes.get m VrageMaterial_CA != undefined collect m
 	
 	--collect list of Names from SceneMats
 	sceneMatNames = for m in sceneMats collect m.namem
@@ -239,11 +190,11 @@ fn VRage_getMatByName name tex_dir:undefined=(
 		material = sceneMats[index]
 	)
 	else (		
-		if VRage_MatLib == undefined do (
-			VRage_MatLib = VRage_materialLib()
-			VRage_MatLib.main()
+		if MyVRageMatLib == undefined do (
+			MyVRageMatLib = VRageMaterialLibrary()
+			MyVRageMatLib.main()
 		)
-		material = VRage_MatLib.get_mat_by_name name tex_dir:tex_dir
+		material = MyVRageMatLib.get_mat_by_name name tex_dir:tex_dir
 	)
 	
 	material
@@ -253,17 +204,17 @@ fn VRage_getMatByName name tex_dir:undefined=(
 fn VRage_cleanMats obj_list =(
 	
 	obj_list = obj_list as array
-	this_tex_dir = Vrage_Matlib.get_tex_dir()
+	this_tex_dir = MyVRageMatLib.get_tex_dir()
 	for o in obj_list do(
 		
-		condense_material_ids o
+		Vrage_condenseMatIds o
 		
 		if classOf o.material == Multimaterial then (
 			
 			for m = 1 to o.material.materialList.count do (
 				old_material = o.material.materialList[m]
 				
-				if (custAttributes.get old_material VRage_material_CA) == undefined do (
+				if (custAttributes.get old_material VrageMaterial_CA) == undefined do (
 					
 					new_material = VRage_getMatByName old_material.name tex_dir:this_tex_dir
 					
@@ -337,6 +288,6 @@ fn VRage_write_material_xml obj_list =(
 	
 )
 
-VRage_MatLib = VRage_materialLib()
-VRage_MatLib.main()
+MyVRageMatLib = VRageMaterialLibrary()
+MyVRageMatLib.main()
 --format "VRage Material Library initialised\n"

@@ -6,7 +6,7 @@ rollout VrageUtils_Scene "Set up Scene/Models" width:210 height:104
 -- 	on Prep_scene pressed do MySE.run "Scene_Setup.ms"		
 
 	
-	group "BLock Dimensions" 
+	group "Block Dimensions" 
 	(
 				
 		dropdownlist scale_dd "Blocksize" items:#("Large","Small") 
@@ -26,21 +26,21 @@ rollout VrageUtils_Scene "Set up Scene/Models" width:210 height:104
 	
         on SpinLodCount changed val do 
         (
-            VrageScene.i_LODS = val
-            --VrageScene.run "Scene_Setup.ms"	
+            MyVrageScene.i_LODS = val
+            --MyVrageScene.run "Scene_Setup.ms"	
 		)		
 
 	
         on SpinBSCount changed val do 
         (
-            VrageScene.i_Buildstages = val
-           -- VrageScene.run "Scene_Setup.ms"	
+            MyVrageScene.i_Buildstages = val
+           -- MyVrageScene.run "Scene_Setup.ms"	
 		)		
 	
         on SpinBSLodCount changed val do 
         (
-            VrageScene.i_BuildstagesLODS = val
-            --VrageScene.run "Scene_Setup.ms"	
+            MyVrageScene.i_BuildstagesLODS = val
+            --MyVrageScene.run "Scene_Setup.ms"	
 		)			
 		
 	)
@@ -85,12 +85,12 @@ rollout VRageUtils_extBlocksets "Extended Settings" height:240
 
 	
 	on VRageUtils_extBlocksets open do(
-	SpinLod1Dist.value = VrageScene.LodDistance1
-	SpinLod2Dist.value = VrageScene.LodDistance2
-	SpinLod3Dist.value = VrageScene.LodDistance3
-	SpinLod4Dist.value = VrageScene.LodDistance4
-	SpinLod5Dist.value = VrageScene.LodDistance5
-	SpinLod6Dist.value = VrageScene.LodDistance6
+	SpinLod1Dist.value = MyVrageScene.LodDistance1
+	SpinLod2Dist.value = MyVrageScene.LodDistance2
+	SpinLod3Dist.value = MyVrageScene.LodDistance3
+	SpinLod4Dist.value = MyVrageScene.LodDistance4
+	SpinLod5Dist.value = MyVrageScene.LodDistance5
+	SpinLod6Dist.value = MyVrageScene.LodDistance6
 	)
 	
 	on VRageUtils_extBlocksets rolledUp state do

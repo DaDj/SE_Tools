@@ -1,4 +1,6 @@
-VRage_ROOTPATH = pathConfig.removePathLeaf (getSourceFileName());
+global MyVRageRoot 
+
+MyVRageRoot = pathConfig.removePathLeaf (getSourceFileName());
 
 -- Struct of Global Scence Settings
 struct MyVRageBlockdef
@@ -17,17 +19,29 @@ struct MyVRageBlockdef
 )
 
 --deklaration of the global
-global VrageScene = MyVRageBlockdef()
+global MyVrageScene = MyVRageBlockdef()
 
-filein "Vrage_Settings.ms"
+fn Vrage_LoadToolbox =(
 
-filein "Vrage_IO\\Vrage_DOSCommand.ms"
-filein "Vrage_IO\\Vrage_MaterialLibrary.ms"
-filein  "Vrage_testing\\Logging.ms"
+	fileIn "Vrage_Settings.ms"
 
-filein "Vrage_Havok\\Vrage_CollisionPlugins.ms"
-filein "Vrage_Havok\\Vrage_RigidBodies.ms"
+	files = getFiles ((trimright MyVRageRoot "\\") +"\\*.ms")
+	dirs = getDirectories ((trimright MyVRageRoot "\\") +"\\*")
 
---Load all Plugins to keep scenes from breaking upon opening
-for f in (getFiles "Vrage_Plugins\\*.ms") do fileIn f
+	for d in dirs do (
+		join dirs (getDirectories ((trimright d "\\") +"\\*"))
+	)
+	
+	for d in dirs where not (matchpattern d pattern:"*vrage_testing*") do (
+		join files (getFiles ((trimright d "\\") +"\\*.ms"))
+	)
+		
+	for f in files where matchpattern (getfilenamefile f) pattern:"*vrage*" do (
+		
+		fileIn f
+		format "loaded script '%'\n" f
+		
+	)
+)
 
+Vrage_LoadToolbox()
