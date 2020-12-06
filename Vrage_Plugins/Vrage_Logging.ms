@@ -1,7 +1,4 @@
 
-
-
-
 Vrage_Logfile =  MyVRageCfg.VRageConfigDir + "\\Info.log"
 deletefile Vrage_Logfile
 logsystem.logName Vrage_Logfile
@@ -29,7 +26,7 @@ rollout Rollout_VrageLog "VRage Utilies Log" width:900 height:500
 	
 	dotNetControl textboxctrl "System.Windows.Forms.TextBox" width:850 height:450 align: #center
 	
-timer clock "testClock" interval:1000 --tick  every 2 sec
+	timer clock "testClock" interval:1000 --tick  every 2 sec
   on clock tick do
   (
 	fs = openFile Vrage_Logfile
@@ -46,8 +43,8 @@ timer clock "testClock" interval:1000 --tick  every 2 sec
 			textboxctrl.text =  MyNewHeader  +  MyNewText +"\r\n\r\n" + textboxctrl.text 
 		)
 		close fs
--- 		textboxctrl.SelectionStart = textboxctrl.Text.count;
--- 		textboxctrl.ScrollToCaret();
+	-- 		textboxctrl.SelectionStart = textboxctrl.Text.count;
+	-- 		textboxctrl.ScrollToCaret();
   )
 	
 	
@@ -74,14 +71,14 @@ struct VrageLogSys
 	(
 		logsystem.logEntry Data debug:0 info:0 warning:0 error:1
 		messagebox  Data title:"Warning"
-		VRageLog_Show()
+		--VRageLog_Show()
 	),
 
 	fn Error Data =
 	(
 		logsystem.logEntry Data debug:0 info:0 warning:0 error:1
 		messagebox  Data  title:"Error"
-		VRageLog_Show()
+		--VRageLog_Show()
 	)
 )
 
@@ -90,7 +87,7 @@ struct VrageLogSys
 
 
 
-VRageLog =VrageLogSys()
+global VRageLog =VrageLogSys()
 
 
 
