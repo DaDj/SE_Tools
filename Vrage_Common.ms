@@ -82,3 +82,15 @@ fn Vrage_sumArray arr =(
     sum
 	
 )
+
+
+fn Vrage_SetLayerbyName Name =(
+    
+    if LayerManager.getLayerFromName(Name) == undefined then(
+        return undefined  
+    ) 
+    else(
+        (LayerManager.getLayerFromName(Name)).current = true;
+        return LayerManager.getLayerFromName(Name)
+    ) 
+)

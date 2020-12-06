@@ -16,19 +16,32 @@ fn VRageLog_Show =
 
 rollout Rollout_VrageLog "VRage Utilies Log" width:900 height:500
 (
-	button btn_ClearLog "Clear Log" width:120 height:25 toolTip:"Clears the Logfile " align:#center
+	button btn_ClearLog "Clear Log" width:120 height:25 toolTip:"Clears the Logfile " align:#center across:3
 	on btn_ClearLog pressed do
 	(		
 		deletefile Vrage_Logfile
 		logsystem.logEntry "Start Logging" debug:1 info:0 warning:0 error:0
 	--	VRageLog_Show()
 	)	
-	
+
+	button btn_OpenLogFile "Open Log" width:120 height:25 toolTip:"Clears the Logfile " align:#center 
+	on btn_OpenLogFile pressed do
+	(		
+		shellLaunch Vrage_Logfile ""
+	--	VRageLog_Show()
+	)	
+
+	checkbox Chbx_AutoUpdate "AutoUpdate" checked:true
+
+
+
 	dotNetControl textboxctrl "System.Windows.Forms.TextBox" width:850 height:450 align: #center
 	
 	timer clock "testClock" interval:1000 --tick  every 2 sec
   on clock tick do
   (
+	  if Chbx_AutoUpdate.state then
+	(
 	fs = openFile Vrage_Logfile
 	  textboxctrl.text  = "";
 	while not eof fs do
@@ -40,11 +53,12 @@ rollout Rollout_VrageLog "VRage Utilies Log" width:900 height:500
 			MyNewText = ""
 			for i = 6 to Tmp.count do MyNewText = MyNewText + " " + Tmp[i] 
 			--2020/11/28 22:25:35 WRN: [08532] [07356] What the  actual thing ist this  
-			textboxctrl.text =  MyNewHeader  +  MyNewText +"\r\n\r\n" + textboxctrl.text 
+			textboxctrl.text = textboxctrl.text +  MyNewHeader  +  MyNewText +"\r\n\r\n" 
 		)
 		close fs
-	-- 		textboxctrl.SelectionStart = textboxctrl.Text.count;
-	-- 		textboxctrl.ScrollToCaret();
+	 		textboxctrl.SelectionStart = textboxctrl.Text.count;
+			textboxctrl.ScrollToCaret();
+	)
   )
 	
 	
