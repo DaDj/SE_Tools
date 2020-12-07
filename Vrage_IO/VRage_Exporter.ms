@@ -53,7 +53,7 @@ struct VRageExporter (
 
 	fn Generate_HKT SrcPath DestPath = ( 
 		-- 1. generate an readable HKT from exprted .fbx	
-		VrageLog.Info "Starting Fbximport.exe " 
+		MyVRageLog.Info "Starting Fbximport.exe " 
 		TmpHktPath =" \"" + GetDir #plugcfg +  "\\VRageUtilities\\Temp\\Tmp.hkt" + "\""
 		SrcPath = " \"" + SrcPath + " \"" 
 		Logdata = Dos_Command.run MyVRageCfg.PathFBXImporter arg_array:#(SrcPath,TmpHktPath)
@@ -61,18 +61,18 @@ struct VRageExporter (
 		Tool_Success = 0
 		for i = 1 to Logdata.count do 
 		(
-			VrageLog.Info Logdata[i]
+			MyVRageLog.Info Logdata[i]
 			if matchPattern Logdata[i]  pattern: "Saved tag file:*" do Tool_Success = 1
 		)			
 	
 		if  Tool_Success == 0 do
 		(
 			LogMessage = "FBXimporter Failed to Export:  " + TmpHktPath
-			VrageLog.Error LogMessage
+			MyVRageLog.Error LogMessage
 			return -1
 		)
 		-- 2. Generate an binary hkt from the readable hkt
-		VrageLog.Info ("Starting hctStandAloneFilterManager "  + DestPath)
+		MyVRageLog.Info ("Starting hctStandAloneFilterManager "  + DestPath)
 		PathHavokConfig = " \"" + GetDir #userScripts + "\\VRageToolbox\\Vrage_Havok\\VRage_FilterConfig.hko" + "\""
 		Program = MyVRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe"
 
@@ -82,14 +82,14 @@ struct VRageExporter (
 
 		for i = 1 to Logdata.count do 
 		(
-			VrageLog.Info Logdata[i]
+			MyVRageLog.Info Logdata[i]
 			if matchPattern Logdata[i]  pattern: "*0 Errors*" do Tool_Success = 1
 		)
 
 		if  Tool_Success == 0 do
 		(
 			LogMessage = "hctStandAloneFilterManager Failed to Export:  " + DestPath
-			VrageLog.Error LogMessage
+			MyVRageLog.Error LogMessage
 			return -1
 		)
 		return 1
@@ -99,7 +99,7 @@ struct VRageExporter (
 
 		Layer = Vrage_SetLayerbyName("Collision")
 		if Layer == undefined then (
-		 VrageLog.Error ("Collision Layer not found ") 
+		 MyVRageLog.Error ("Collision Layer not found ") 
 			return -1
 		)
 		Layer.select true;
@@ -110,7 +110,7 @@ struct VRageExporter (
 				continue
 			)
 			else (
-				VrageLog.Error ("Object is not a Havok Collider " + obj.name) 
+				MyVRageLog.Error ("Object is not a Havok Collider " + obj.name) 
 				return -1
 			)
 		) 
@@ -121,7 +121,7 @@ struct VRageExporter (
 
 		--2. Generate Havok .hkt file from the Fbx
 		Error =  Generate_HKT TmpFilePath DestPath 
-		VrageLog.Info ("VRageExp_Generate_HKT exited with Code: " +  Error as string  + "   (1 = success, -1= fail)")
+		MyVRageLog.Info ("VRageExp_Generate_HKT exited with Code: " +  Error as string  + "   (1 = success, -1= fail)")
 		return Error
 	),
 	
@@ -138,8 +138,8 @@ struct VRageExporter (
 
 		TmpFileDir = MyVRageCfg.VRageConfigDir + @"\Temp" --Tempfolder for hkt creation
 		TmpFileDir2 = MyVRageCfg.VRageConfigDir + @"\Temp\Expo\Content\Models"  -- Basically folder for mwmbuilder
-		try ( makedir TmpFileDir )	catch (	 VrageLog.Error ("Permission Error while trying to create: " + TmpFileDir) )
-		try ( makedir TmpFileDir2 )	catch (	 VrageLog.Error ("Permission Error while trying to create: " + TmpFileDir2) )
+		try ( makedir TmpFileDir )	catch (	 MyVRageLog.Error ("Permission Error while trying to create: " + TmpFileDir) )
+		try ( makedir TmpFileDir2 )	catch (	 MyVRageLog.Error ("Permission Error while trying to create: " + TmpFileDir2) )
 		
 		Destpath = Filepath + "\\" + Filename 
 		--2. Export the Main Model  Lod0 and dummies
@@ -149,7 +149,7 @@ struct VRageExporter (
 		TmpFilePath = TmpFileDir + @"\Tmp_HKT.fbx"
 		DestPathCol = TmpFileDir2 + @"\" + Filename +  ".hkt"
 		Error = ExportCollision TmpFilePath DestPathCol
-		if Error == 1 then VrageLog.Info ("Successfully Exported Collision "  + DestPathCol) else VrageLog.Error ("Failed Collsion export "  + DestPathCol)
+		if Error == 1 then MyVRageLog.Info ("Successfully Exported Collision "  + DestPathCol) else MyVRageLog.Error ("Failed Collsion export "  + DestPathCol)
 
 
 		--4.Build MWM'S
