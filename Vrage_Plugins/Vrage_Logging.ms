@@ -1,18 +1,11 @@
 
-Vrage_Logfile =  MyVRageCfg.VRageConfigDir + "\\Info.log"
+Vrage_Logfile = MyVRageCfg.VRageConfigDir + "\\Info.log"
 deletefile Vrage_Logfile
 logsystem.logName Vrage_Logfile
 logsystem.logEntry "Start Logging" debug:1 info:0 warning:0 error:0
 
-
-
-fn VRageLog_Show =
-(
-		try (closeRolloutFloater LogFloater) catch () 
-	LogFloater = newRolloutFloater  "VRage Utilies Log" 900 520 
-	addRollout Rollout_VrageLog LogFloater
-)
-
+global MyVrageGUI_LogFloater
+global MyVRageLog
 
 rollout Rollout_VrageLog "VRage Utilies Log" width:900 height:500
 (
@@ -72,6 +65,12 @@ rollout Rollout_VrageLog "VRage Utilies Log" width:900 height:500
 	)
 )
 
+fn VRageLog_Show =
+(
+	try (closeRolloutFloater MyVrageGUI_LogFloater) catch () 
+	MyVrageGUI_LogFloater = newRolloutFloater  "VRage Utilies Log" 900 520 
+	addRollout Rollout_VrageLog MyVrageGUI_LogFloater
+)
 
 struct VrageLogSys
 (
@@ -96,12 +95,7 @@ struct VrageLogSys
 	)
 )
 
-
-
-
-
-
-global VRageLog =VrageLogSys()
+MyVRageLog = VrageLogSys()
 
 
 

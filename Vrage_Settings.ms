@@ -14,6 +14,7 @@ struct VRageConfig
 	UseGameTextures = False,
 	TextureType = 1,
 	PathGame = " ",
+	UsePbrMats = False, --Needs GUI
 
 	/*Export Settings */
 	Exp_StartGameAfter = False, --start game after export for testing for example
@@ -39,6 +40,7 @@ struct VRageConfig
 		setINISetting VRageConfigFile "Textures" "TextureType" (TextureType as string)
 		setINISetting VRageConfigFile "Directories" "pathgame" PathGame
 		setINISetting VRageConfigFile "Textures" "UseGameTextures" (if UseGameTextures then "1" else "0")
+		setINISetting VRageConfigFile "Textures" "UsePbrMats" (if UsePbrMats then "1" else "0")
 
 		setINISetting VRageConfigFile "Export" "Exp_StartGameAfter" (if Exp_StartGameAfter then "1" else "0")
 		setINISetting VRageConfigFile "Export" "Exp_ToModFolder" (if Exp_ToModFolder then "1" else "0")
@@ -58,7 +60,8 @@ struct VRageConfig
 			PathTextures = if (tmp = getINISetting VRageConfigFile "Directories" "TexturePath") != undefined then tmp else "" 
 			PathModSDK = if (tmp = getINISetting VRageConfigFile "Directories" "ModSDK") != undefined then tmp else "" 
 			UseGameTextures = (getINISetting VRageConfigFile "Textures" "UseGameTextures") == "1"
-			
+			UsePbrMats = (getINISetting VRageConfigFile "Textures" "UsePbrMats") == "1"
+
 			TextureType = try (getINISetting VRageConfigFile "Textures" "TextureType" as integer) catch 1
 
 			PathGame =  if (tmp = getINISetting VRageConfigFile "Directories" "pathgame") != undefined then tmp else "" 

@@ -30,15 +30,29 @@
 clearListener()
 Transparent_materials = @"C:\SteamLibrary\steamapps\common\SpaceEngineers\Content\Data\TransparentMaterials.sbc"
 
+tex_dir = MyVrageCfg.PathTextures
+tex_ext = MyVrageCfg.TextureType
+
 xmlDoc = dotNetObject "system.xml.xmlDocument"
 
 xmlDoc.load Transparent_materials
 
-Materials = xmlDoc.selectNodes "//TransparentMaterial"
+
+ColX = xmlDoc.selectNodes "//TransparentMaterial/Color/X"
+ColY = xmlDoc.selectNodes "//TransparentMaterial/Color/Y"
+ColZ = xmlDoc.selectNodes "//TransparentMaterial/Color/Z"
+
+for c = 0 to Cols.count-1 do (
+	format "%\n" [ColX[c].innertext as float, ColY[c].innertext as float, ColZ[c].innertext as float]
+)
 
 
-for i = 0 to materials.count-1 do (
-	m = Materials.ItemOf[i]
+/*
+fn get_TransMatByName n =(
+	
+	xpath = "//TransparentMaterial[Id/SubtypeId[contains(text(),'" + n + "')]]"
+	
+	m = xmlDoc.selectSingleNode xpath
 	name = (m.selectSingleNode "Id/SubtypeId").innertext
 	t = m.selectSingleNode "Texture"
 	g= m.selectSingleNode "GlossTexture"
@@ -51,7 +65,7 @@ for i = 0 to materials.count-1 do (
 	ref = m.selectSingleNode "Reflectivity"
 	
 	if (t != undefined or g != undefined) and matchpattern name pattern:"*glass*" do (
-		format "Name:% Index(%)\n" name i
+		format "%: %\n" m.Name name
 		if t != undefined do format "\tTexture: %\n" t.innertext
 		if g != undefined do format "\tGlossTexture: %\n" g.innertext
 		if ga != undefined do format "\tGlossTextureAdd %\n" ga.innertext
@@ -63,4 +77,15 @@ for i = 0 to materials.count-1 do (
 		if uvo != undefined do format "\tUVOffset %\n" [uvo.item["X"].innertext as float, uvo.item["Y"].innertext as float]
 		format "\n"
 	)
+	
+	m
 )
+
+myMat = get_TransMatByName "GlassInside"
+
+myMat = get_TransMatByName "GlassOutside"
+
+MyVrageMatLib 
+TestMat = VrageMaterial xml_mat:myMat
+
+$Sphere001.material = TestMat.get_material()

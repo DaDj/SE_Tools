@@ -42,17 +42,17 @@ struct VrageMaterial (
 	
 	xml_mat,
 	
-	fn get_path m tex_dir:undefined =(
+	fn get_path m =(
 		
-		if tex_dir == undefined do (
-			tex_dir = MyVRageMatLib.get_tex_dir()
+		if MyVrageMatLib.tex_dir == undefined do (
+			MyVrageMatLib.tex_dir = MyVRageMatLib.get_tex_dir()
 		)
 
 		if not MyVRageCfg.UseGameTextures then (
-			outpath = tex_dir + (substituteString m ".dds" VRageTexTypes[MyVRageCfg.TextureType])
+			outpath = MyVrageMatLib.tex_dir + (substituteString m ".dds" VRageTexTypes[MyVRageCfg.TextureType])
 		)
 		else (
-			outpath = tex_dir + m
+			outpath = MyVrageMatLib.tex_dir + m
 		)
 		print outpath
 		print (doesFileExist outpath)
@@ -60,7 +60,7 @@ struct VrageMaterial (
 		outpath
 	),
 	
-	fn get_material =(
+	fn get_std_material =(
 		material = StandardMaterial Name:xml_mat.attributes.itemOf["Name"].value showInViewport:true
 		
 		cm_map = xml_mat.selectSingleNode "Parameter[@Name='ColorMetalTexture']"
@@ -78,7 +78,7 @@ struct VrageMaterial (
 		
 		if op_map != undefined and doesFileexist (get_path op_map.innerText) do (
 			opacityBitmap = openBitmap (get_path op_map.innerText)
-			material.opacityMap = Bitmaptexture filename:(get_path op_map.innerText) alphasource:2
+			material.opacityMap = Bitmaptexture filename:(get_path op_map.innerText) alphasource:2 monoOutput:1
 		)
 		
 		try (
@@ -89,6 +89,45 @@ struct VrageMaterial (
 		material.timeGen = MyVrageMatLib.timeGen
 		
 		material
+	),
+
+	fn get_tr_material =(
+		
+		mat_name = (xml_mat.selectSingleNode "Id/SubtypeId").innertext
+		material = StandardMaterial Name:mat_name showInViewport:true
+		
+		tex = xml_mat.selectSingleNode "Texture"
+		glossTex = xml_mat.selectSingleNode "GlossTexture"
+		glossTexAdd = xml_mat.selectSingleNode "GlossTextureAdd"
+
+		col = xml_mat.selectSingleNode "Color"
+		ccolAdd = xml_mat.selectSingleNode "ColorAdd"
+		uvSize = xml_mat.selectSingleNode "UVSize"
+		uvOffset = xml_mat.selectSingleNode "UVOffset"
+		reflectivity = xml_mat.selectSingleNode "Reflectivity"
+
+		if tex != undefined do (
+			tex_path = get_path tex.innertext
+			material.diffuseMap = bitmapTexture filename:tex_path
+			material.opacityMap = Bitmaptexture filename:tex_path alphasource:2 monoOutput:1
+			
+		)
+		
+		material
+	),
+	
+	fn get_material =(
+		
+		transp = (toLower xml_mat.Name) == "transparentmaterial"
+
+		--(MyVrageCfg.UsePbrMats and transp):get_tr_pbr_material()
+		--(MyVrageCfg.UsePbrMats): get_pbr_material()
+		
+		out = case Of (
+			transp: get_tr_material()
+			default: get_std_material()
+		)
+		out
 	)
 	
 )
@@ -101,6 +140,8 @@ struct VRageMaterialLibrary (
 	timeGen = 0,
 	mat_list = #(),
 	mat_names = #(),
+	
+	tex_dir = undefined,
 	
 	fn get_tex_dir =(
 		if MyVRageCfg.UseGameTextures then (
@@ -119,17 +160,16 @@ struct VRageMaterialLibrary (
 			tex_dir = MyVRageCfg.PathTextures + "\\"
 		)
 		
-		tex_dir
 	),
 	
 	--Fetch Material by material name
-	fn get_mat_by_name name tex_dir:undefined =(
+	fn get_mat_by_name name =(
 		
 		xpath = substituteString "//Material[@Name='%']" "%" (name as string)
 		xml_mat = xmlDoc.selectSingleNode xpath
 		
 		if xml_mat != undefined then (
-			mat = (VrageMaterial xml_mat:xml_mat).get_material tex_dir:tex_dir
+			mat = (VrageMaterial xml_mat:xml_mat).get_material()
 		)
 		else (
 			mat = undefined
@@ -182,7 +222,7 @@ struct VRageMaterialLibrary (
 	
 )
 
-fn VRage_getMatByName name tex_dir:undefined=(
+fn VRage_getMatByName name=(
 	
 	--Get Array of Materials in Scene
 	sceneMats = for m in (getClassInstances Standardmaterial) where isProperty m #is_se_material and m.timeGen >= MyVRageMatLib.timeGen collect m
@@ -200,7 +240,7 @@ fn VRage_getMatByName name tex_dir:undefined=(
 			MyVRageMatLib = VRageMaterialLibrary()
 			MyVRageMatLib.main()
 		)
-		material = MyVRageMatLib.get_mat_by_name name tex_dir:tex_dir
+		material = MyVRageMatLib.get_mat_by_name name
 	)
 	
 	material
@@ -210,7 +250,7 @@ fn VRage_getMatByName name tex_dir:undefined=(
 fn VRage_cleanMats obj_list =(
 	
 	obj_list = obj_list as array
-	this_tex_dir = MyVRageMatLib.get_tex_dir()
+	MyVRageMatLib.get_tex_dir()
 	for o in obj_list do(
 		
 		Vrage_condenseMatIds o
@@ -222,7 +262,7 @@ fn VRage_cleanMats obj_list =(
 				
 				if (custAttributes.get old_material VrageMaterial_CA) == undefined do (
 					
-					new_material = VRage_getMatByName old_material.name tex_dir:this_tex_dir
+					new_material = VRage_getMatByName old_material.name
 					
 					if new_material != undefined then (
 						
