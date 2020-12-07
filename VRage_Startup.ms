@@ -23,8 +23,9 @@ global MyVrageScene = MyVRageBlockdef()
 
 fn Vrage_LoadToolbox =(
 
-	fileIn "Vrage_Common.ms"
-	fileIn "Vrage_Settings.ms"
+	fileIn (MyVRageRoot  + "\\Vrage_Common.ms")
+	fileIn (MyVRageRoot + "\\Vrage_Settings.ms")
+	fileIn (MyVRageRoot + "\\Vrage_Logging.ms")
 	--fileIn "Vrage_MainUI"
 
 	files = #()
