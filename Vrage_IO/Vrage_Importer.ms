@@ -176,7 +176,7 @@ struct VrageFBXImporter (
 			--SetImportSettings()
 			
 			LastImport = importFBX filename
-			--Vrage_cleanLayers LastImport
+			Vrage_cleanLayers()
 
 			Vrage_cleanMats LastImport
 		)

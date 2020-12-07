@@ -43,50 +43,48 @@ struct VrageMaterial (
 	xml_mat,
 	
 	fn get_path m =(
-		
-		if MyVrageMatLib.tex_dir == undefined do (
-			MyVrageMatLib.tex_dir = MyVRageMatLib.get_tex_dir()
-		)
+		if m != undefined then (
+			if MyVrageMatLib.tex_dir == undefined do (
+				MyVrageMatLib.tex_dir = MyVRageMatLib.get_tex_dir()
+			)
 
-		if not MyVRageCfg.UseGameTextures then (
-			outpath = MyVrageMatLib.tex_dir + (substituteString m ".dds" VRageTexTypes[MyVRageCfg.TextureType])
+			if not MyVRageCfg.UseGameTextures then (
+				outpath = MyVrageMatLib.tex_dir + (substituteString m ".dds" VRageTexTypes[MyVRageCfg.TextureType])
+			)
+			else (
+				outpath = MyVrageMatLib.tex_dir + m
+			)
+			
+			outpath
 		)
-		else (
-			outpath = MyVrageMatLib.tex_dir + m
+		else (			
+			placeholder_texture
 		)
-		print outpath
-		print (doesFileExist outpath)
+	),
+	
+	fn get_bm m = (
+		bm = openBitmap (get_path m)
+		bm.gamma = 1.0
 		
-		outpath
+		bm
+		--get_path m
 	),
 	
 	fn get_std_material =(
 		material = StandardMaterial Name:xml_mat.attributes.itemOf["Name"].value showInViewport:true
-		
 		cm_map = xml_mat.selectSingleNode "Parameter[@Name='ColorMetalTexture']"
 		op_map = xml_mat.selectSingleNode "Parameter[@Name='AlphamaskTexture']"
-		
-		if cm_map != undefined and doesFileexist (get_path cm_map.innerText) then (
-			dm_filename = get_path cm_map.innerText
+				
+		if cm_map != undefined and doesFileexist (get_path cm_map.innertext) then (
+			material.diffuseMap = bitmaptexture bitmap:(get_bm cm_map.innertext) alphasource:2
 		)
 		else (
-			dm_filename = placeholder_texture
+			material.diffuseMap = bitmaptexture filename:placeholder_texture alphasource:2
 		)
-		
-		diffuseBitmap = openBitmap dm_filename
-		material.diffuseMap = bitmaptexture bitmap:diffuseBitmap alphasource:2
-		
-		if op_map != undefined and doesFileexist (get_path op_map.innerText) do (
-			opacityBitmap = openBitmap (get_path op_map.innerText)
-			material.opacityMap = Bitmaptexture filename:(get_path op_map.innerText) alphasource:2 monoOutput:1
+			
+		if op_map != undefined and doesFileexist (get_path op_map.innertext) do (
+			material.opacityMap = Bitmaptexture bitmap:(get_bm op_map.innertext) alphasource:2 monoOutput:1 RGBOutput:1
 		)
-		
-		try (
-			custAttributes.add material VrageMaterial_CA
-		)
-		catch ()
-		
-		material.timeGen = MyVrageMatLib.timeGen
 		
 		material
 	),
@@ -106,23 +104,26 @@ struct VrageMaterial (
 		uvOffset = xml_mat.selectSingleNode "UVOffset"
 		reflectivity = xml_mat.selectSingleNode "Reflectivity"
 
-		if tex != undefined do (
-			tex_path = get_path tex.innertext
-			material.diffuseMap = bitmapTexture filename:tex_path alphasource:2
-			material.opacityMap = Bitmaptexture filename:tex_path alphasource:2 monoOutput:1
+		if tex != undefined then (
+			tex_bm = get_bm tex.innertext
+			material.diffuseMap = bitmapTexture bitmap:tex_bm alphasource:2
+			material.opacityMap = Bitmaptexture bitmap:tex_bm alphasource:2 monoOutput:1 RGBOutput:1
+		)
+		else (
+			material.diffuseMap = bitmapTexture filename:placeholder_texture alphasource:2
 		)
 		
 		if col != undefined then (
 			dCol = Vrage_XMLtoColor col
 			
-			print dCol
-			
 			material.opacityMapAmount = 100 * col.item["W"].innertext as float
 			material.Diffuse = dCol
 			if colAdd != undefined do (
-				material.opacity = 100 * colAdd.item["W"].innertext as float
+				colAdd_alpha = colAdd.item["W"].innertext as float
+				if colAdd_alpha == 0 do colAdd_alpha = 1
+					
+				material.opacity = 100 * colAdd_alpha
 				material.Diffuse = dCol + Vrage_XMLtoColor colAdd
-				print material.Diffuse
 			)
 		)
 		else (
@@ -130,9 +131,9 @@ struct VrageMaterial (
 		)
 		
 		if glossTex != undefined do (
-			gtex_path = get_path glossTex.innertext
-			material.bumpMap = Normal_Bump normal_map:(bitmapTexture filename:gtex_path alphasource:2) flipgreen:true
-			material.glossinessMap = bitmapTexture filename:gtex_path alphasource:2 monoOutput:1
+			gtex_bm = get_bm glossTex.innertext
+			material.bumpMap = Normal_Bump normal_map:(bitmapTexture bitmap:gtex_bm alphasource:2) flipgreen:true
+			material.glossinessMap = bitmapTexture bitmap:gtex_bm alphasource:2 monoOutput:1
 			material.glossinessMapAmount = 100 * glossTexAdd.innertext as float
 		)
 		
@@ -140,7 +141,21 @@ struct VrageMaterial (
 			material.specularLevel = 100 * glossTexAdd.innertext as float
 			material.glossiness = 100
 		)
-
+		
+		refTex = "Textures\BackgroundCube\Final\BackgroundCube.TIF"
+		
+		if doesFileExist (get_path refTex) do (
+			
+			ref = falloff type:2
+			
+			ref.map1 = Bitmaptexture bitmap:(get_bm refTex)
+			ref.map1.coords.mappingtype = 1 --set the mapping type to environment
+			ref.map1.coordinates.mapping = 1 --set the mapping to Screen
+			ref.map1.coordinates.V_Tiling = 1.5
+			ref.map1.coordinates.W_Angle = 90
+			material.reflectionMap = ref
+		)
+		
 		material
 	),
 	
@@ -148,13 +163,23 @@ struct VrageMaterial (
 		
 		transp = (toLower xml_mat.Name) == "transparentmaterial"
 
-		--(MyVrageCfg.UsePbrMats and transp):get_tr_pbr_material()
-		--(MyVrageCfg.UsePbrMats): get_pbr_material()
+		/*
+		(MyVrageCfg.UsePbrMats and transp):get_tr_pbr_material()
+		(MyVrageCfg.UsePbrMats): get_pbr_material()
+		*/
 		
 		out = case Of (
 			transp: get_tr_material()
 			default: get_std_material()
 		)
+		
+		try (
+			custAttributes.add out VrageMaterial_CA
+		)
+		catch ()
+		
+		out.timeGen = MyVrageMatLib.timeGen
+		
 		out
 	)
 	
@@ -193,8 +218,13 @@ struct VRageMaterialLibrary (
 	--Fetch Material by material name
 	fn get_mat_by_name name =(
 		
-		xpath = substituteString "//Material[@Name='%']" "%" (name as string)
+		xpath = "//TransparentMaterial[Id/SubtypeId[contains(text(),'" + name + "')]]"
 		xml_mat = xmlDoc.selectSingleNode xpath
+		
+		If xml_mat == undefined do (
+			xpath = substituteString "//Material[@Name='%']" "%" (name as string)
+			xml_mat = xmlDoc.selectSingleNode xpath
+		)
 		
 		if xml_mat != undefined then (
 			mat = (VrageMaterial xml_mat:xml_mat).get_material()
@@ -209,9 +239,15 @@ struct VRageMaterialLibrary (
 	fn get_mat_list =(
 		
 		xml_mats = xmlDoc.selectNodes "//Material"
+		xml_TransMats = xmlDoc.selectNodes "//TransparentMaterial/Id/SubtypeId"
 		
-		mat_names = for i=0 to xml_mats.count-1 collect xml_mats.itemOf[i].attributes.itemOf["Name"].value
+		reg_mat_names = for i=0 to xml_mats.count-1 collect xml_mats.itemOf[i].attributes.itemOf["Name"].value
+		transp_mat_names = for i =0 to xml_TransMats.count-1 collect xml_TransMats.itemOf[i].innertext
+			
+		for t in transp_mat_names where findItem reg_mat_names t == 0 do append reg_mat_names t
 		
+		
+		mat_names = deepcopy reg_mat_names
 		sort mat_names
 		mat_list = mat_names
 	),
@@ -222,6 +258,13 @@ struct VRageMaterialLibrary (
 			dir = (trimright MyVRageCfg.PathModSDK "\\") + "\\OriginalContent\\Materials\\"
 			if doesDirectoryExist dir then (
 				files = getFiles (dir + "*.xml")
+				
+				transp_mats = MyVrageCfg.PathGame + @"\Content\Data\TransparentMaterials.sbc"
+				
+				if doesFileExist transp_mats do (
+					append files transp_mats
+				)
+				
 				xmlDoc = dotNetObject "system.xml.xmlDocument"
 				
 				xmlDoc.load files[1]
