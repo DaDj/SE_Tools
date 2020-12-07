@@ -113,7 +113,7 @@ struct VrageFont (
 		else ()
 	),
 	
-	fn getMesh char pos:[0,0,0] =(
+	fn getMesh char pos:[0,0,0] size:1=(
 		
 		case caseType of (
 			"Upper": char = toUpper char
@@ -138,10 +138,10 @@ struct VrageFont (
 			
 			trans = transMatrix pos
 
-			v1 = ([min.x - padding, min.y - padding, 0] + offset - min) * 1./avgHeight * trans
-			v2 = ([min.x - padding, mx.y + padding, 0] + offset - min) * 1./avgHeight * trans
-			v3 = ([mx.x + padding, mx.y + padding, 0] + offset - min) * 1./avgHeight * trans
-			v4 = ([mx.x + padding, min.y - padding, 0] + offset - min) * 1./avgHeight * trans
+			v1 = ([min.x - padding, min.y - padding, 0] + offset - min) * 1./avgHeight * size * trans
+			v2 = ([min.x - padding, mx.y + padding, 0] + offset - min) * 1./avgHeight * size * trans
+			v3 = ([mx.x + padding, mx.y + padding, 0] + offset - min) * 1./avgHeight * size * trans
+			v4 = ([mx.x + padding, min.y - padding, 0] + offset - min) * 1./avgHeight * size * trans
 			
 			uv1 = [min.x - padding, min.y - padding, 0] * uv_div
 			uv2 = [min.x - padding, mx.y + padding, 0] * uv_div
@@ -364,6 +364,7 @@ classID:#(0x7db4d221, 0x27f7b37b)
 		textStr type:#string default:"TextDecal" ui:et_text
 		font_size type:#float default:25.0 ui:sp_fontSize
 		justification type:#integer default:1 ui:rb_justification
+		small_caps type:#Boolean default:False ui:cx_small_caps
 	)
 	parameters advanced rollout:r_advanced (
 		kerning type:#float default:25 ui:sp_kerning
@@ -375,6 +376,7 @@ classID:#(0x7db4d221, 0x27f7b37b)
 		group "Font:" (
 			dropdownList ddl_Font "" items:(for f in MyVrageFontLib.fonts collect f.name)
 			spinner sp_fontSize "Size: " type:#worldunits range:[0.0, 100., 15.0] align:#left fieldwidth:(ddl_Font.width-38)
+			checkbox cx_small_caps "Small Caps"
 		)
 
 		group "Justification:" (
@@ -446,7 +448,8 @@ classID:#(0x7db4d221, 0x27f7b37b)
 	on buildMesh do (
 		
 		font = if font_id <= MyVrageFontLib.fonts.count then MyVrageFontLib.fonts[font_id] else undefined
-		
+		small_caps_size = 0.7
+
 		if font != undefined then (
 			font.load_xml()
 			
@@ -464,15 +467,17 @@ classID:#(0x7db4d221, 0x27f7b37b)
 				
 				txt = splitText[l]
 				
-				row_mesh = font.getMesh txt[1] pos:[0, -(1. + leading/100.) * (l - 1), count]
-				row_width = (font.getWidth txt[1])/(font.avgHeight as float) + (kerning/100. * font.space/(font.avgHeight as float))
+				txt_size = (if small_Caps and txt[1] == (toLower txt[1]) then small_caps_size else 1)
+
+				row_mesh = font.getMesh txt[1] pos:[0, -(1. + leading/100.) * (l - 1), count] size:txt_size
+				row_width = (font.getWidth txt[1])/(font.avgHeight as float) * txt_size + (kerning/100. * font.space/(font.avgHeight as float))
 				
 				count += 1
 					
 				for i = 2 to txt.count do (
-
-					row_mesh += (font.getMesh txt[i] pos:[row_width, -(1. + leading/100.) * (l - 1), count])
-					row_width += (font.getWidth txt[i])/(font.avgHeight as float) + (kerning/100. * font.space/(font.avgHeight as float))
+					txt_size = (if small_Caps and txt[i] == (toLower txt[i]) then small_caps_size else 1)
+					row_mesh += (font.getMesh txt[i] pos:[row_width, -(1. + leading/100.) * (l - 1), count] size:txt_size)
+					row_width += (font.getWidth txt[i])/(font.avgHeight as float) * txt_size + (kerning/100. * font.space/(font.avgHeight as float))
 					count += 1
 				)
 				

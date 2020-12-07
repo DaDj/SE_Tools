@@ -73,11 +73,11 @@ struct VrageMaterial (
 			dm_filename = placeholder_texture
 		)
 		
-		diffuseBitmap = openBitmap dm_filename gamma:1.0
+		diffuseBitmap = openBitmap dm_filename
 		material.diffuseMap = bitmaptexture bitmap:diffuseBitmap alphasource:2
 		
 		if op_map != undefined and doesFileexist (get_path op_map.innerText) do (
-			opacityBitmap = diffuseBitmap = openBitmap (get_path op_map.innerText) gamma:1.0
+			opacityBitmap = openBitmap (get_path op_map.innerText)
 			material.opacityMap = Bitmaptexture filename:(get_path op_map.innerText) alphasource:2
 		)
 		
@@ -85,6 +85,8 @@ struct VrageMaterial (
 			custAttributes.add material VrageMaterial_CA
 		)
 		catch ()
+		
+		material.timeGen = MyVrageMatLib.timeGen
 		
 		material
 	)
@@ -96,7 +98,7 @@ struct VRageMaterialLibrary (
 	files,
 		
 	xmlDoc,
-	
+	timeGen = 0,
 	mat_list = #(),
 	mat_names = #(),
 	
@@ -163,6 +165,8 @@ struct VRageMaterialLibrary (
 					xmlDoc.documentElement.appendchild theNode
 				)
 				
+				timeGen = timeStamp()
+				
 				get_mat_list()
 			)
 			else (
@@ -181,7 +185,7 @@ struct VRageMaterialLibrary (
 fn VRage_getMatByName name tex_dir:undefined=(
 	
 	--Get Array of Materials in Scene
-	sceneMats = for m in (getClassInstances Standardmaterial) where custAttributes.get m VrageMaterial_CA != undefined collect m
+	sceneMats = for m in (getClassInstances Standardmaterial) where isProperty m #is_se_material and m.timeGen >= MyVRageMatLib.timeGen collect m
 	
 	--collect list of Names from SceneMats
 	sceneMatNames = for m in sceneMats collect m.name
