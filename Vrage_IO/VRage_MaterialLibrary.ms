@@ -101,18 +101,46 @@ struct VrageMaterial (
 		glossTexAdd = xml_mat.selectSingleNode "GlossTextureAdd"
 
 		col = xml_mat.selectSingleNode "Color"
-		ccolAdd = xml_mat.selectSingleNode "ColorAdd"
+		colAdd = xml_mat.selectSingleNode "ColorAdd"
 		uvSize = xml_mat.selectSingleNode "UVSize"
 		uvOffset = xml_mat.selectSingleNode "UVOffset"
 		reflectivity = xml_mat.selectSingleNode "Reflectivity"
 
 		if tex != undefined do (
 			tex_path = get_path tex.innertext
-			material.diffuseMap = bitmapTexture filename:tex_path
+			material.diffuseMap = bitmapTexture filename:tex_path alphasource:2
 			material.opacityMap = Bitmaptexture filename:tex_path alphasource:2 monoOutput:1
-			
 		)
 		
+		if col != undefined then (
+			dCol = Vrage_XMLtoColor col
+			
+			print dCol
+			
+			material.opacityMapAmount = 100 * col.item["W"].innertext as float
+			material.Diffuse = dCol
+			if colAdd != undefined do (
+				material.opacity = 100 * colAdd.item["W"].innertext as float
+				material.Diffuse = dCol + Vrage_XMLtoColor colAdd
+				print material.Diffuse
+			)
+		)
+		else (
+			material.Diffuse = white
+		)
+		
+		if glossTex != undefined do (
+			gtex_path = get_path glossTex.innertext
+			material.bumpMap = Normal_Bump normal_map:(bitmapTexture filename:gtex_path alphasource:2) flipgreen:true
+			material.glossinessMap = bitmapTexture filename:gtex_path alphasource:2 monoOutput:1
+			material.glossinessMapAmount = 100 * glossTexAdd.innertext as float
+		)
+		
+		if glossTexAdd != undefined do (
+			material.specularLevel = 100 * glossTexAdd.innertext as float
+			material.glossiness = 100
+		)
+
 		material
 	),
 	

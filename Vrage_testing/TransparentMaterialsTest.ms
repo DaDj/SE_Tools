@@ -37,17 +37,17 @@ xmlDoc = dotNetObject "system.xml.xmlDocument"
 
 xmlDoc.load Transparent_materials
 
-
+/*
 ColX = xmlDoc.selectNodes "//TransparentMaterial/Color/X"
 ColY = xmlDoc.selectNodes "//TransparentMaterial/Color/Y"
 ColZ = xmlDoc.selectNodes "//TransparentMaterial/Color/Z"
 
 for c = 0 to Cols.count-1 do (
-	format "%\n" [ColX[c].innertext as float, ColY[c].innertext as float, ColZ[c].innertext as float]
+	format "%\n" [ColX.itemOf[c].innertext as float, ColY.itemOf[c].innertext as float, ColZ.itemOf[c].innertext as float]
 )
+*/
 
 
-/*
 fn get_TransMatByName n =(
 	
 	xpath = "//TransparentMaterial[Id/SubtypeId[contains(text(),'" + n + "')]]"
@@ -81,11 +81,9 @@ fn get_TransMatByName n =(
 	m
 )
 
-myMat = get_TransMatByName "GlassInside"
+OutMat = VrageMaterial xml_mat:(get_TransMatByName "GlassOutside")
+InMat = VrageMaterial xml_mat:(get_TransMatByName "GlassInside")
 
-myMat = get_TransMatByName "GlassOutside"
+$Sphere001.material = OutMat.get_material()
 
-MyVrageMatLib 
-TestMat = VrageMaterial xml_mat:myMat
-
-$Sphere001.material = TestMat.get_material()
+$Sphere001.material = InMat.get_material()

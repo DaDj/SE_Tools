@@ -94,3 +94,12 @@ fn Vrage_SetLayerbyName Name =(
         return LayerManager.getLayerFromName(Name)
     ) 
 )
+
+fn Vrage_XMLtoVec xml =(
+	[xml.item["X"].innertext as float, xml.item["Y"].innertext as float, xml.item["Z"].innertext as float]
+)
+
+fn Vrage_XMLtoColor xml =(
+	([xml.item["X"].innertext as float, xml.item["Y"].innertext as float, xml.item["Z"].innertext as float]) as color
+)
+
