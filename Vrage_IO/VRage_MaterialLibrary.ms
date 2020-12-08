@@ -358,7 +358,7 @@ fn VRage_cleanMats obj_list =(
 				)
 				else (
 					error_stream = "" as StringStream
-					format "No Material named \"%\" for object \"%\" in XML files" material.name o
+					format "No Material named \"%\" for object \"%\" in XML files" o.material.name o
 				)
 			)
 		)
