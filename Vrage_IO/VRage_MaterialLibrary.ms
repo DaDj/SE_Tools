@@ -83,7 +83,7 @@ struct VrageMaterial (
 		)
 			
 		if op_map != undefined and doesFileexist (get_path op_map.innertext) do (
-			material.opacityMap = Bitmaptexture bitmap:(get_bm op_map.innertext) alphasource:2 monoOutput:1 RGBOutput:1
+			material.opacityMap = Bitmaptexture bitmap:(get_bm op_map.innertext) alphasource:2 monoOutput:0 RGBOutput:0
 		)
 		
 		material

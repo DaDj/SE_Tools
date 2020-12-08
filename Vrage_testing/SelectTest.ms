@@ -1,7 +1,7 @@
 MyLayer = LayerManager.getLayer 1
 
 clearListener()
-MyLayer.name
+format "%:\n" MyLayer.name
 
 for c = 1 to MyLayer.getNumChildren() do (
 
@@ -10,7 +10,7 @@ for c = 1 to MyLayer.getNumChildren() do (
 	child_names = for k in childNodes where classOf k != Layer_Manager and classOf k != scene collect k.name
 	
 	if child_names.count > 0 do (
-		format "%:\n" child.name
-		format "\t%\n" child_names
+		format "\t%:\n" child.name
+		format "\t\t%\n" child_names
 	)
 )
