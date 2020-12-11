@@ -92,11 +92,11 @@ struct VrageFBXImporter (
 		imported = for o in objects where findItem old_objects o == 0 collect o
 		
 		if parent_layer == undefined then (
-			parent_layer = layermanager.newLayerFromName fname
+			parent_layer = layermanager.newLayerFromName name
 			parent_layer.setParent root_layer
-			lod0_layer = layermanager.newLayerFromName ("LOD0 (" + fname + ")")
+			lod0_layer = layermanager.newLayerFromName (name + " #LOD0")
 			lod0_layer.setParent parent_layer
-			dummy_layer = layermanager.newLayerFromName ("Dummies (" + fname + ")")
+			dummy_layer = layermanager.newLayerFromName (name + " #Dummies")
 			dummy_layer.setParent parent_layer
 	
 			for o in imported do (
@@ -109,7 +109,7 @@ struct VrageFBXImporter (
 			subparts = for o in imported where (superclassOf o == helper) and (isProperty o "file") collect o
 			
 			if subparts.count > 0 do (
-				sub_layer = layermanager.newLayerFromName ("Subparts (" + fname + ")")
+				sub_layer = layermanager.newLayerFromName (name + " #Subparts")
 				sub_layer.setParent parent_layer
 				
 				for sub in subparts do (
@@ -131,7 +131,7 @@ struct VrageFBXImporter (
 			construction_files = getFiles (getFilenamePath file + getFilenameFile file + "Construction*.FBX") + getFiles (getFilenamePath file + getFilenameFile file + "_Construction*.FBX")
 			
 			if construction_files.count > 0 do (
-				constr_layer = layermanager.newLayerFromName ("Construction (" + fname + ")")
+				constr_layer = layermanager.newLayerFromName (name + " #Construction")
 				constr_layer.setParent parent_layer
 				constr_layer.ishidden  = True
 				
@@ -150,10 +150,12 @@ struct VrageFBXImporter (
 			)
 		)
 		else (
-			lod_name = getFilenameFile file
-			lod_name = subString lod_name (1 + FindString lod_name "_LOD") -1
-				
-			lod_layer = layermanager.newLayerFromName (lod_name + " (" + fname + ")")
+			lod_file_name = getFilenameFile file
+			lod_name_index = FindString lod_file_name "_LOD"
+			lod_name = subString lod_file_name (lod_name_index + 1) -1
+			lod_owner = subString lod_file_name 1 (lod_name_index - 1)
+
+			lod_layer = layermanager.newLayerFromName (lod_owner + " #" + lod_name)
 			lod_layer.setParent parent_layer
 			lod_layer.ishidden  = True
 			
