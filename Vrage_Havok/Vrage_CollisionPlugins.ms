@@ -16,7 +16,12 @@ RigidBodyCA = attributes "RigidBody"
     (
         spinner sp_mass "mass"
         spinner sp_friction "friction"
-        spinner sp_restitution "restitution"
+		spinner sp_restitution "restitution"
+		
+		-- dropdownlist ddl_shapeType "shapeType" items:#("Box", "Sphere", "Cylinder", "Capsule","Hull") enabled: false
+		
+		-- on params open do ddl_shapeType.selection = findItem ddl_shapeType.items shapeType
+		-- on ddl_shapeType selected sel do shapeType = ddl_shapeType.selected
     )
 )
 
@@ -215,3 +220,18 @@ fn CreateRigidBodyObject type  FittoObj =
 )
 
 
+
+try (unRegisterRedrawViewsCallback showObjectNames) catch()
+fn showObjectNames=
+(
+gw.setTransform(Matrix3 1)
+for o in objects where not o.isHidden do
+(
+
+	if isProperty o #hkTypeRigidBody  then ( 		gw.text o.pos ("Physics -RB") color:yellow)
+)
+gw.enlargeUpdateRect #whole
+gw.updateScreen()
+)
+registerRedrawViewsCallback showObjectNames
+showObjectNames()
