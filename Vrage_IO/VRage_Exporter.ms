@@ -47,7 +47,7 @@ struct VRageExporter (
 
 	fn ExportModel Path =
 	(
-		Path = Path + ".fbx"
+		--Path = Path + ".fbx"
 		ExportFBX Path
 	),
 
@@ -105,14 +105,20 @@ struct VRageExporter (
 		Layer.select true;
 		-- here we also want to check if all selected objects are indeed rigid bodies
 		for obj in selection do (
-			objCAsNames = for ca in (custAttributes.getDefs obj) collect ca.name
-			if findItem objCAsNames "RigidBody" > 0 then ( 
-				continue
-			)
+
+			if isProperty obj #hkTypeRigidBody  then ( 	continue)
 			else (
 				MyVRageLog.Error ("Object is not a Havok Collider " + obj.name) 
 				return -1
-			)
+			) 
+			-- objcasnames = for ca in (custattributes.getdefs obj) collect ca.name
+			-- if finditem objcasnames "rigidbody" > 0 then ( 
+			-- 	continue
+			-- )
+			-- else (
+			-- 	myvragelog.error ("object is not a havok collider " + obj.name) 
+			-- 	return -1
+			-- )
 		) 
 
 		--1. Export an FBX with the Collision Data
@@ -143,8 +149,10 @@ struct VRageExporter (
 		
 		Destpath = Filepath + "\\" + Filename 
 		--2. Export the Main Model  Lod0 and dummies
-		--Fi me
+		DestPathModel = TmpFileDir2 + @"\" + Filename +  ".fbx"
+		ExportModel DestPathModel 
 
+		
 		--3. Export Collision
 		TmpFilePath = TmpFileDir + @"\Tmp_HKT.fbx"
 		DestPathCol = TmpFileDir2 + @"\" + Filename +  ".hkt"

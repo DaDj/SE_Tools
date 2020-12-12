@@ -23,7 +23,7 @@ RigidBodyCA = attributes "RigidBody"
 plugin geometry VrageHavokBox 
 name:"Box"
 classID:#(0x3fbdad54, 0x1bdbbb95)	
-category:"Vrage Physics"
+category:"Vrage: Physics Rigidbodies"
 extends:Box
 (
 	local initialPos = [0,0,0]
@@ -80,7 +80,7 @@ extends:Box
 plugin geometry VrageHavokSphere 
 name:"Sphere"
 classID:#(0x69a5a6ba, 0x6c24fa67)
-category:"Vrage Physics"
+category:"Vrage: Physics Rigidbodies"
 extends:Sphere
 (
 	local initialPos = [0,0,0]
@@ -132,7 +132,7 @@ extends:Sphere
 plugin geometry VrageHavokCylinder
 name:"Cylinder"
 classID:#(0x6c912bfa, 0x3bafd0ab)
-category:"Vrage Physics"
+category:"Vrage: Physics Rigidbodies"
 extends:Cylinder
 (
 	local initialPos = [0,0,0]
@@ -182,6 +182,36 @@ extends:Cylinder
 	)
 )
 
+fn CreateRigidBodyObject type  FittoObj = 
+(
+	if type == "Box" then 
+	(
+		 startObjectCreation VrageHavokBox 
+	)
+	else if type == "Sphere" then 
+	(
+		 startObjectCreation VrageHavokSphere 
+	)
+	else if type == "Cylinder" then 
+	(
+		startObjectCreation VrageHavokCylinder
+	)
+	else if type == "Hull" then 
+	(
+		MyObj = Box length:1 width:1 height: 1
+		---MyObj = plane	length:1 width:1
+		MyObj.name = "RigidMesh" 
+		custAttributes.add MyObj RigidBodyCA
+		MyObj.shapeType = "Hull"
+		MyObj.wirecolor = collisionWirecolor
+		MyObj.castShadows = off
+		MyObj.backfacecull = off
+		MyObj.receiveshadows = off
+		at time 0 (MyObj.visibility = 0 )
+		(addNewKey MyObj.visibility.controller 30).value = 0.3
+		convertToMesh MyObj
+		)
 
+)
 
 
