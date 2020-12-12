@@ -84,6 +84,19 @@ fn get_TransMatByName n =(
 OutMat = VrageMaterial xml_mat:(get_TransMatByName "GlassOutside")
 InMat = VrageMaterial xml_mat:(get_TransMatByName "GlassInside")
 
-$Sphere001.material = OutMat.get_material()
+$Teapot001.material = OutMat.get_material()
 
-$Sphere001.material = InMat.get_material()
+/*
+$Box002.material = InMat.get_material()
+
+ref = falloff type:2
+ref.map1 = Bitmaptexture fileName:"E:\Users\Robin\Documents\SE Modding\Textures\BackgroundCube\Final\BackgroundCube.TIF"
+ref.map1.coords.mappingtype = 1 --set the mapping type to environment
+ref.map1.coordinates.mapping = 1 --set the mapping to Screen
+ref.map1.coordinates.V_Tiling = 1.5
+ref.map1.coordinates.W_Angle = 90
+
+$Box002.material.reflectionMap = ref
+
+show ref.map1.coordinates
+--$Teapot002.material = Standardmaterial reflectionMap:ref showInViewport:true
