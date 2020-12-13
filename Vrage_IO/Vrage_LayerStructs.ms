@@ -106,3 +106,5 @@ MyVrageLayerTree = VrageLayerTree()
 MyVrageLayerTree.getRoots()
 
 MyVrageLayerTree.print()
+
+print "Test"
