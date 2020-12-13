@@ -16,6 +16,9 @@ if MyVRageCfg == undefined do (
 struct VrageFBXImporter (
 
 	filename = undefined,
+	import_subparts = True,
+	import_construction = True,
+	import_LODs = True,
 
 	fn showCurrentSettings =(
 
@@ -105,41 +108,47 @@ struct VrageFBXImporter (
 					helper: dummy_layer.addNode o
 				)
 			)
-				
-			subparts = for o in imported where (superclassOf o == helper) and (isProperty o "file") collect o
 			
-			if subparts.count > 0 do (
-				sub_layer = layermanager.newLayerFromName (name + " #Subparts")
-				sub_layer.setParent parent_layer
+			if import_subparts do (
+				subparts = for o in imported where (superclassOf o == helper) and (isProperty o "file") collect o
 				
-				for sub in subparts do (
-					sub_file = getFilenamePath file + sub.file as string + ".fbx"
-					if doesFileExist sub_file do (
-						sub_imports = importFBX sub_file root_layer:sub_layer parent_node:sub			
-						join imported sub_imports
+				if subparts.count > 0 do (
+					sub_layer = layermanager.newLayerFromName (name + " #Subparts")
+					sub_layer.setParent parent_layer
+					
+					for sub in subparts do (
+						sub_file = getFilenamePath file + sub.file as string + ".fbx"
+						if doesFileExist sub_file do (
+							sub_imports = importFBX sub_file root_layer:sub_layer parent_node:sub			
+							join imported sub_imports
+						)
 					)
 				)
 			)
 			
-			lod_files = getFiles (getFilenamePath file + name + "_LOD*.FBX")
-			
-			for lod_file in lod_files do (
-				lod_imports = importFBX lod_file parent_layer:parent_layer parent_node:parent_node
-				join imported lod_imports
-			)
-			
-			construction_files = getFiles (getFilenamePath file + getFilenameFile file + "Construction*.FBX") + getFiles (getFilenamePath file + getFilenameFile file + "_Construction*.FBX")
-			
-			if construction_files.count > 0 do (
-				constr_layer = layermanager.newLayerFromName (name + " #Construction")
-				constr_layer.setParent parent_layer
-				constr_layer.ishidden  = True
+			if import_LODs do (
+				lod_files = getFiles (getFilenamePath file + name + "_LOD*.FBX")
 				
-				for constr in construction_files where not matchpattern constr pattern:"*_LOD*" do (
-					constr_imports = importFBX constr root_layer:constr_layer parent_node:parent_node
-					join imported constr_imports
+				for lod_file in lod_files do (
+					lod_imports = importFBX lod_file parent_layer:parent_layer parent_node:parent_node
+					join imported lod_imports
 				)
+			)
+
+			if import_construction do (
+				construction_files = getFiles (getFilenamePath file + getFilenameFile file + "Construction*.FBX") + getFiles (getFilenamePath file + getFilenameFile file + "_Construction*.FBX")
 				
+				if construction_files.count > 0 do (
+					constr_layer = layermanager.newLayerFromName (name + " #Construction")
+					constr_layer.setParent parent_layer
+					constr_layer.ishidden  = True
+					
+					for constr in construction_files where not matchpattern constr pattern:"*_LOD*" do (
+						constr_imports = importFBX constr root_layer:constr_layer parent_node:parent_node
+						join imported constr_imports
+					)
+					
+				)
 			)
 				
 			if parent_node != undefined do (
