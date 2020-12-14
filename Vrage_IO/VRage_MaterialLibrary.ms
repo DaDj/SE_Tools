@@ -412,3 +412,4 @@ fn VRage_write_material_xml obj_list =(
 MyVRageMatLib = VRageMaterialLibrary()
 MyVRageMatLib.main()
 --format "VRage Material Library initialised\n"
+--test
