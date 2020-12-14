@@ -16,9 +16,57 @@ fn Vrage_getFacesByMatId mesh =(
     mesh_faces_by_mat_id
 )
 
-fn Vrage_condenseMatIds obj nondestructive:false =(
+fn Vrage_getNormalData theMod =(
+	
+	
+	
+	struct VrageNormalData (
+		
+		faces,
+		normals
+		
+	)
+		
+	faces = 	for f = 1 to theMod.GetNumFaces() collect (
+		for c = 1 to theMod.GetFaceDegree f collect theMod.GetNormalID f c
+	)
+	normals = #() 
+	
+	
+	for n = 1 to theMod.GetNumNormals() do (
+		append normals (theMod.getNormal n)
+	)
+	
+	VrageNormalData faces:faces normals:normals
+	
+)
+
+fn Vrage_setNormalData theMod data =(
+
+	for f = 1 to theMod.GetNumFaces() do (
+		deg = theMod.GetFaceDegree f 
+		
+		for c = 1 to deg do (
+			norm = data.faces[f][c]
+            id = theMod.GetNormalID f c
+            theMod.setNormal id data.normals[norm]
+            theMod.setNormalExplicit id
+		)
+	)
+	
+)
+
+fn Vrage_condenseMatIds obj non_destructive:true =(
 
     if classOf obj.material == Multimaterial do (
+		meshMod = Turn_to_Mesh name:"Triangulate Mesh" useInvisibleEdges:off
+		
+		if non_destructive and validModifier obj meshMod do (
+			max modify mode
+			select obj
+			addModifier obj meshMod
+		)
+		
         face_ids = Vrage_getFacesByMatId(obj.mesh)
         
         materials = #() 
@@ -32,20 +80,54 @@ fn Vrage_condenseMatIds obj nondestructive:false =(
             append materials mat
             append new_ids face_ids[i]
         )
-        
-        if classOf obj == editable_mesh then (
-            for g = 1 to new_ids.count do (
-                for f in new_ids[g] do (
-                    setFaceMatID obj f g
-                )
-            )
+		
+		if non_destructive then (
+			normalMod = Edit_Normals name:"get normals"
+			face_normals = undefined
+
+			if validModifier obj normalMod do (
+				addModifier obj normalMod 
+				face_normals = Vrage_getNormalData normalMod
+				deleteModifier obj 1
+			)
+			
+			MaterialMod = Edit_Poly name:"Vrage Cleaned Material IDs"
+
+			if validModifier obj MaterialMod do (
+				addModifier obj MaterialMod 
+				
+				subobjectlevel = 4
+				
+				for g = 1 to new_ids.count do (
+					MaterialMod.setSelection #Face #{}
+					MaterialMod.select #Face (new_ids[g] as BitArray)
+					MaterialMod.SetOperation #SetMaterial
+					MaterialMod.materialIDToSet = g
+					MaterialMod.Commit()
+				)
+			)
+
+			newNormalMod = Edit_Normals name:"Vrage Fix Normals"
+
+			if face_normals != undefined do (
+				addModifier obj newNormalMod 
+				Vrage_setNormalData newNormalMod face_normals
+			)
+		)
+		else (
+			
+			convertTo obj Editable_mesh
+			
+			for g = 1 to new_ids.count do (
+				for f in new_ids[g] do (
+					setFaceMatID obj f g
+				)
+			)
         )
-        
+		
         new_material = Multimaterial numsubs:materials.count materialList:materials names:(for m in materials collect m.name)
         
         obj.material = new_material
-        
-        update obj
     )
 )
 

@@ -188,7 +188,11 @@ struct VrageFBXImporter (
 			
 			LastImport = importFBX filename
 			Vrage_cleanLayers()
-
+			
+			if Vrage_cleanMats == undefined do (
+				fileIn (MyVRageRoot + "\\Vrage_IO\\VRage_MaterialLibrary.ms")
+			)
+			
 			Vrage_cleanMats LastImport
 		)
 		else (

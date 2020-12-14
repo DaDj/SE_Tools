@@ -12,14 +12,8 @@ if MyVRageCfg == undefined do (
         MessageBox "Vrage Toolbox can not be initialised!"
     )
 )
-	
-placeholder_texture = @"E:\Program Files (x86)\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\textures\\fake.png"
 
 global MyVRageMatLib
-
-if MyVRageCfg == undefined do (
-	fileIn 
-)
 
 fn VRage_report_Error msg =(
 
@@ -55,11 +49,17 @@ struct VrageMaterial (
 				outpath = MyVrageMatLib.tex_dir + m
 			)
 			
-			outpath
+			if not doesFileExist outpath then (
+				MyVRageLog.Warn ("Texturefile \"" + outpath + "\" could not be found, using placeholder instead!")
+				outpath = pathConfig.removePathLeaf (getSourceFileName()) + "\\NoTex.tif"
+			)
 		)
-		else (			
-			placeholder_texture
+		else (
+			MyVRageLog.Error ("Material \"" + xml_mat.attributes.itemOf["Name"].value + "\" has an undefined texturemap, using placeholder instead!")	
+			outpath = pathConfig.removePathLeaf (getSourceFileName()) + "\\NoTex.tif"
 		)
+
+		outpath
 	),
 	
 	fn get_bm m = (
@@ -67,7 +67,6 @@ struct VrageMaterial (
 		bm.gamma = 1.0
 		
 		bm
-		--get_path m
 	),
 	
 	fn get_std_material =(
@@ -79,7 +78,7 @@ struct VrageMaterial (
 			material.diffuseMap = bitmaptexture bitmap:(get_bm cm_map.innertext) alphasource:2
 		)
 		else (
-			material.diffuseMap = bitmaptexture filename:placeholder_texture alphasource:2
+			material.diffuseMap = bitmaptexture filename:Vrage_NoTex alphasource:2
 		)
 			
 		if op_map != undefined and doesFileexist (get_path op_map.innertext) do (
@@ -110,7 +109,7 @@ struct VrageMaterial (
 			material.opacityMap = Bitmaptexture bitmap:tex_bm alphasource:2 monoOutput:1 RGBOutput:1
 		)
 		else (
-			material.diffuseMap = bitmapTexture filename:placeholder_texture alphasource:2
+			material.diffuseMap = bitmapTexture filename:Vrage_NoTex alphasource:2
 		)
 		
 		if col != undefined then (
@@ -322,48 +321,53 @@ fn VRage_cleanMats obj_list =(
 	
 	obj_list = obj_list as array
 	MyVRageMatLib.get_tex_dir()
-	for o in obj_list do(
-		
-		Vrage_condenseMatIds o
-		
-		if classOf o.material == Multimaterial then (
-			
-			for m = 1 to o.material.materialList.count do (
-				old_material = o.material.materialList[m]
+	
+	undo "Vrage Clean Materials" on (
+		with redraw off (
+			for o in obj_list do(
 				
-				if (custAttributes.get old_material VrageMaterial_CA) == undefined do (
+				Vrage_condenseMatIds o
+				
+				if classOf o.material == Multimaterial then (
 					
-					new_material = VRage_getMatByName old_material.name
-					
-					if new_material != undefined then (
+					for m = 1 to o.material.materialList.count do (
+						old_material = o.material.materialList[m]
 						
-						o.material.materialList[m] = new_material
-						
+						if (custAttributes.get old_material VrageMaterial_CA) == undefined do (
+							
+							new_material = VRage_getMatByName old_material.name
+							
+							if new_material != undefined then (
+								
+								o.material.materialList[m] = new_material
+								
+							)
+							else (
+								if not MatchPattern old_material.name pattern:"*_Blocks Slot #*" do (
+									error_stream = "" as StringStream
+									format "No Material named \"%\" for object \"%\" in XML files" old_material.name o to:error_stream
+									VRage_report_Error error_stream
+								)
+							)
+						)
 					)
-					else (
-						if not MatchPattern old_material.name pattern:"*_Blocks Slot #*" do (
+				)
+				else (
+					if o.material != undefined do (
+						new_material = VRage_getMatByName o.material.name
+						if new_material != undefined then (
+							o.material = new_material
+						)
+						else (
 							error_stream = "" as StringStream
-							format "No Material named \"%\" for object \"%\" in XML files" old_material.name o to:error_stream
-							VRage_report_Error error_stream
+							format "No Material named \"%\" for object \"%\" in XML files" o.material.name o
 						)
 					)
 				)
 			)
-		)
-		else (
-			if o.material != undefined do (
-				new_material = VRage_getMatByName o.material.name
-				if new_material != undefined then (
-					o.material = new_material
-				)
-				else (
-					error_stream = "" as StringStream
-					format "No Material named \"%\" for object \"%\" in XML files" o.material.name o
-				)
-			)
+			select obj_list
 		)
 	)
-	
 	print "Done!"
 )
 

@@ -26,6 +26,7 @@ fn Vrage_LoadToolbox =(
 	fileIn (MyVRageRoot  + "\\Vrage_Common.ms")
 	fileIn (MyVRageRoot + "\\Vrage_Settings.ms")
 	fileIn (MyVRageRoot + "\\Vrage_Logging.ms")
+	fileIn (MyVRageRoot + "\\Vrage_IO\\Vrage_MaterialLibrary.ms")
 	--fileIn "Vrage_MainUI"
 
 	files = #()
