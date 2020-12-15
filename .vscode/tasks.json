@@ -6,10 +6,10 @@
        "label": "MXSPyCOM execute Script",
        "type": "shell",
        // Add MXSPyCOM.exe to PATH or use file root, i.e: "C:/MXSPyCOM/MXSPyCOM.exe"
-       "command":"C:\\Users\\patgr\\AppData\\Local\\Autodesk\\3dsMax\\2019 - 64bit\\ENU\\scripts\\VRageToolbox\\MXSPyCOM.exe",
+       "command":"C:\\Users\\patgr\\AppData\\Local\\Autodesk\\3dsMax\\2021 - 64bit\\ENU\\scripts\\VRageToolbox\\MXSPyCOM.exe",
        "args": [
            "-f",
-          "C:\\Users\\patgr\\AppData\\Local\\Autodesk\\3dsMax\\2019 - 64bit\\ENU\\scripts\\VRageToolbox\\${relativeFile}"
+          "C:\\Users\\patgr\\AppData\\Local\\Autodesk\\3dsMax\\2021 - 64bit\\ENU\\scripts\\VRageToolbox\\${relativeFile}"
        ],
        
        "group": "test",

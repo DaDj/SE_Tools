@@ -6,8 +6,9 @@ struct VRageConfig
 	VRageConfigFile = VRageConfigDir + @"\MyVRageCfg.ini",
 
 	/*configureable User Paths*/
-	PathFBXImporter = " ",
+	PathToolsFolder = "",
 	PathHavokContentTools = " ",
+	PathFBXImporter = " ",
 	PathMwmBuilder = " ",
 	PathTextures = " ",
 	PathModSDK = " ",
@@ -31,12 +32,21 @@ struct VRageConfig
 		catch (
 			messageBox title:"Permission Error!"
 		)
-
+		
+		if (PathToolsFolder) != "" then (
+				if getDirectories(PathToolsFolder) != undefined then (	
+					PathFBXImporter = if (tmp = getFiles (PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
+					MyVRageCfg.PathMwmBuilder = if ((tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" else ""
+					PathTextures =  if (tmp = getDirectories (PathToolsFolder + "\\Textures")).count != 0 then PathToolsFolder else ""
+				)
+			)
+		setINISetting VRageConfigFile "Directories" "Toolsfolder" PathToolsFolder
 		setINISetting VRageConfigFile "Directories" "FBXImporter" PathFBXImporter
-		setINISetting VRageConfigFile "Directories" "HavokContentTools" PathHavokContentTools
 		setINISetting VRageConfigFile "Directories" "MwMBuilder" PathMwmBuilder
 		setINISetting VRageConfigFile "Directories" "TexturePath" PathTextures
+			
 		setINISetting VRageConfigFile "Directories" "ModSDK" PathModSDK
+		setINISetting VRageConfigFile "Directories" "HavokContentTools" PathHavokContentTools
 		setINISetting VRageConfigFile "Textures" "TextureType" (TextureType as string)
 		setINISetting VRageConfigFile "Directories" "pathgame" PathGame
 		setINISetting VRageConfigFile "Textures" "UseGameTextures" (if UseGameTextures then "1" else "0")
@@ -54,16 +64,24 @@ struct VRageConfig
 	fn load =(
 
 		if (doesFileExist VRageConfigFile) then (
-			PathFBXImporter = if (tmp =getINISetting VRageConfigFile "Directories" "FBXImporter") != undefined then tmp else "" 
+			
+			PathToolsFolder =  if (tmp =getINISetting VRageConfigFile "Directories" "Toolsfolder") != undefined then tmp else ""   
+			if (PathToolsFolder) != "" then (
+				if getDirectories(PathToolsFolder) != undefined then (	
+					PathFBXImporter = if (tmp = getFiles (PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
+				MyVRageCfg.PathMwmBuilder = if ((tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" else ""
+					PathTextures =  if (tmp = getDirectories (PathToolsFolder + "\\Textures")).count != 0 then PathToolsFolder else ""
+				)
+			)
+
 			PathHavokContentTools = if (tmp = getINISetting VRageConfigFile "Directories" "HavokContentTools") != undefined then tmp else "" 
-			PathMwmBuilder = if (tmp = getINISetting VRageConfigFile "Directories" "MwMBuilder") != undefined then tmp else "" 
-			PathTextures = if (tmp = getINISetting VRageConfigFile "Directories" "TexturePath") != undefined then tmp else "" 
+			--PathHavokContentTools =   if (tmp = getFiles (MyVRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe")) != undefined then MyVRageCfg.PathHavokContentTools  else ""
+
 			PathModSDK = if (tmp = getINISetting VRageConfigFile "Directories" "ModSDK") != undefined then tmp else "" 
 			UseGameTextures = (getINISetting VRageConfigFile "Textures" "UseGameTextures") == "1"
 			UsePbrMats = (getINISetting VRageConfigFile "Textures" "UsePbrMats") == "1"
 
 			TextureType = try (getINISetting VRageConfigFile "Textures" "TextureType" as integer) catch 1
-
 			PathGame =  if (tmp = getINISetting VRageConfigFile "Directories" "pathgame") != undefined then tmp else "" 
 
 			Exp_StartGameAfter =  (getINISetting VRageConfigFile "Export" "Exp_StartGameAfter") == "1"
@@ -73,6 +91,7 @@ struct VRageConfig
 			Exp_ModName = if (tmp = getINISetting VRageConfigFile "Export" "Exp_ModName")  != undefined then tmp else ""
 		)
 		else (
+			PathToolsFolder = ""
 			PathFBXImporter = " "
 			PathHavokContentTools = " "
 			PathMwmBuilder = " "
@@ -144,17 +163,19 @@ fn OpenSettings = (
 
 	rollout VrageUtils_CfgTools "Tools" width:210 height:400
 	(
-		label lbl_PathFbx  "FBXImporter:"align:#left across:2
-		button btn_PathFBXImp MyVRageCfg.PathFBXImporter width:400 height:25 align:#right \
-			tooltip:" path to the executable of FbxImporter" 
-			on btn_PathFBXImp pressed do (
-				FilePath = getOpenFileName  types:"Executable(*.exe)|*.exe|All|*.*|"
+
+		label lbl_PathTools  "Tools Folder:"align:#left across:2
+		button btn_PathTools  MyVRageCfg.PathToolsFolder width:400 height:25 align:#right \
+			tooltip:"Path to the Vragetoolbox Folder which has the external tools and Textures" 
+			on btn_PathTools pressed do (
+				FilePath = getSavePath caption:"Test path..."
 				if(FilePath != undefined ) do (
-					btn_PathFBXImp.text = MyVRageCfg.PathFBXImporter  = FilePath 
+					btn_PathTools.text = MyVRageCfg.PathToolsFolder = FilePath
 					MyVRageCfg.save()
 				)
 			)
-			on btn_PathFBXImp rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.PathFBXImporter) "") catch()
+			on btn_PathTools rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.PathToolsFolder) "") catch()
+
 				
 		label lbl_PathHavok  "HavokContentTools:"align:#left across:2
 		button btn_PathHavok MyVRageCfg.PathHavokContentTools width:400 height:25 align:#right \
@@ -167,57 +188,56 @@ fn OpenSettings = (
 				)
 			)
 			on btn_PathHavok rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.PathHavokContentTools) "") catch()
-
-		label lbl_PathMwmBuilder "MWMBuilder:"align:#left across:2
-		button btn_PathMwmBuilder  MyVRageCfg.PathMwmBuilder width:400 height:25 align:#right
-			tooltip:" path to the MwmBuilder exceutable"
-
-			on btn_PathMwmBuilder pressed do (
-				FilePath  = getOpenFileName  types:"Executable(*.exe)|*.exe|All|*.*|"
-				if(FilePath != undefined ) do (
-					btn_PathMwmBuilder.text = MyVRageCfg.PathMwmBuilder = FilePath
-					MyVRageCfg.save()
-				)
-			)
-			on btn_PathMwmBuilder rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.PathMwmBuilder) "") catch()
-				
+		local dotcolor = dotnetclass "System.Drawing.Color"
+			label lbl_ToolStatus  "Status:"align:#left across:5 tooltip:"Status if the displayed tools have benn found in the defined paths.(green = yes/red=no) "
+			hyperlink Chbx_Textures "Textures"  Enabled:false  color: (color 240 0 0)   align:#right
+			hyperlink Chbx_FBXImporter "FBXImporter"  Enabled:false  color: (color 240 0 0)   align:#right
+			hyperlink Chbx_MwMBuilder "MWMBuilder"  Enabled:false color: (color 240 0 0)   align:#right
+			hyperlink Chbx_Havoktools "Havoktools "  Enabled:false color: (color 240 0 0)   align:#right
+			
+			
+		timer clock "testClock" interval:2000 --tick  every 2 sec
+	  on clock tick do
+	  (
+			if (MyVRageCfg.PathToolsFolder) != "" then (
+				if getDirectories(MyVRageCfg.PathToolsFolder) != undefined then (	
+					MyVRageCfg.PathFBXImporter = if (tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
+					MyVRageCfg.PathMwmBuilder = if ((tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" else ""
+					MyVRageCfg.PathTextures  =  if (tmp = getDirectories (MyVRageCfg.PathToolsFolder + "\\Textures")).count != 0 then MyVRageCfg.PathToolsFolder else ""	
+					MyVRageCfg.PathHavokContentTools =   if (tmp = getFiles (MyVRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe")).count != 0 then MyVRageCfg.PathHavokContentTools  else "none"
+						)
+		  )
+		if MyVRageCfg.PathFBXImporter != "" then (Chbx_FBXImporter.color = (color 0 200 0)   ) else (Chbx_FBXImporter.color = (color 240 0 0) )
+		if MyVRageCfg.PathMwmBuilder != "" then (Chbx_MwMBuilder.color = (color 0 200 0)   ) else (Chbx_MwMBuilder.color = (color 240 0 0) )
+		if MyVRageCfg.PathTextures != "" then (Chbx_Textures.color = (color 0 200 0)   ) else (Chbx_Textures.color = (color 240 0 0) )
+		if MyVRageCfg.PathHavokContentTools != "none" then (Chbx_Havoktools.color = (color 0 200 0)   ) else (Chbx_Havoktools.color = (color 240 0 0) )
+		  
 	)
+)
 	
 	rollout VrageUtils_CfgTextures "Textures" width:210 height:400	
 	(
-		label lbl_PathTextures  "Texture Directory:"align:#left across:2
-		button btn_PathTextures MyVRageCfg.PathTextures width:400 height:25 align:#right enabled:(not MyVRageCfg.UseGameTextures)
-			tooltip:"Path to your converted \\Textures\\* Folder"
 
-			on btn_PathTextures pressed do (
-				FilePath   = getSavePath caption:"Test path..."
-					if(FilePath != undefined ) do ( 
-					btn_PathTextures.text = MyVRageCfg.PathTextures = FilePath
-					MyVRageCfg.save()
-				)
-			)
-			on btn_PathTextures rightclick do try (shellLaunch MyVRageCfg.PathTextures "") catch()
-
-		label lbl_textureType "Texture Format:" align:#right offset:[120,0] across:3 
-		dropdownlist ddl_TexType "" items:VrageTexTypes enabled:(not MyVRageCfg.UseGameTextures) selection:MyVRageCfg.TextureType width:60 align:#right
+		label lbl_textureType "Texture Format:"   across:4
+		dropdownlist ddl_TexType "" items:VrageTexTypes enabled:(not MyVRageCfg.UseGameTextures) selection:MyVRageCfg.TextureType width:60
 			on ddl_TexType selected sel do (
 				MyVRageCfg.TextureType = ddl_TexType.selection
 				MyVRageCfg.save()
 			)
 			
-		checkbutton cbn_UseGameTextures "Use Game Textures" align:#right width:150 height:25 checked:MyVRageCfg.UseGameTextures
+		checkbutton cbn_UseGameTextures "Use Game Textures"  width:120 height:25 checked:MyVRageCfg.UseGameTextures
 			tooltip:"Check if you want to use DDS Textures straight from the Game files" 
 			on cbn_UseGameTextures changed state do (
 				if not (doesDirectoryExist MyVRageCfg.PathGame) then (
 					state = False
 				)
 				
-				for c in #(ddl_TexType, btn_PathTextures) do c.enabled = not state
+				for c in #(ddl_TexType) do c.enabled = not state
 				MyVRageCfg.UseGameTextures = state
 				MyVRageCfg.save()
 			)
 			
-		button btn_ConvertTxt "Texture Convert Tool" width:150 height:25 toolTip:"Run the Bulk Texture Converter to convert the Game textures to the chosen format." align:#right  offset:[0,15]  
+		button btn_ConvertTxt "Texture Convert Tool" width:120 height:25 toolTip:"Run the Bulk Texture Converter to convert the Game textures to the chosen format." 
 			on btn_ConvertTxt pressed do (
 				--TODO: Shell Launch BulkTextureConverter.exe "switches go here (In Theory)"
 				--TODO: Alternately use DosCommand/HiddenDosCommand
