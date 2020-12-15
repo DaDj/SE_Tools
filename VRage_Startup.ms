@@ -24,10 +24,15 @@ global MyVrageScene = MyVRageBlockdef()
 fn Vrage_LoadToolbox =(
 
 	fileIn (MyVRageRoot  + "\\Vrage_Common.ms")
+	format "loaded script '%'\n"  "\\Vrage_Common.ms"
 	fileIn (MyVRageRoot + "\\Vrage_Settings.ms")
+	format "loaded script '%'\n"  "\\Vrage_Settings.ms"
 	fileIn (MyVRageRoot + "\\Vrage_Logging.ms")
+	format "loaded script '%'\n"   "\\Vrage_Logging.ms"
 	fileIn (MyVRageRoot + "\\Vrage_IO\\Vrage_MaterialLibrary.ms")
+	format "loaded script '%'\n"  "\\Vrage_IO\\Vrage_MaterialLibrary.ms"
 	--fileIn "Vrage_MainUI"
+
 
 	files = #()
 	dirs = getDirectories ((trimright MyVRageRoot "\\") +"\\*")

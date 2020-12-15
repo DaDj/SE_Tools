@@ -36,7 +36,7 @@ struct VRageConfig
 		if (PathToolsFolder) != "" then (
 				if getDirectories(PathToolsFolder) != undefined then (	
 					PathFBXImporter = if (tmp = getFiles (PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
-					MyVRageCfg.PathMwmBuilder = if ((tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" else ""
+					PathMwmBuilder = if (tmp = getFiles (PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
 					PathTextures =  if (tmp = getDirectories (PathToolsFolder + "\\Textures")).count != 0 then PathToolsFolder else ""
 				)
 			)
@@ -69,13 +69,14 @@ struct VRageConfig
 			if (PathToolsFolder) != "" then (
 				if getDirectories(PathToolsFolder) != undefined then (	
 					PathFBXImporter = if (tmp = getFiles (PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
-				MyVRageCfg.PathMwmBuilder = if ((tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" else ""
+				PathMwmBuilder = if (tmp = getFiles (PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
+					PathMwmBuilder = if (tmp = getFiles (PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
 					PathTextures =  if (tmp = getDirectories (PathToolsFolder + "\\Textures")).count != 0 then PathToolsFolder else ""
 				)
 			)
 
 			PathHavokContentTools = if (tmp = getINISetting VRageConfigFile "Directories" "HavokContentTools") != undefined then tmp else "" 
-			--PathHavokContentTools =   if (tmp = getFiles (MyVRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe")) != undefined then MyVRageCfg.PathHavokContentTools  else ""
+			--PathHavokContentTools =   if (tmp = getFiles (PathHavokContentTools + "\\hctStandAloneFilterManager.exe")) != undefined then PathHavokContentTools  else ""
 
 			PathModSDK = if (tmp = getINISetting VRageConfigFile "Directories" "ModSDK") != undefined then tmp else "" 
 			UseGameTextures = (getINISetting VRageConfigFile "Textures" "UseGameTextures") == "1"
@@ -187,33 +188,31 @@ fn OpenSettings = (
 					MyVRageCfg.save()
 				)
 			)
-			on btn_PathHavok rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.PathHavokContentTools) "") catch()
-		local dotcolor = dotnetclass "System.Drawing.Color"
-			label lbl_ToolStatus  "Status:"align:#left across:5 tooltip:"Status if the displayed tools have benn found in the defined paths.(green = yes/red=no) "
-			hyperlink Chbx_Textures "Textures"  Enabled:false  color: (color 240 0 0)   align:#right
-			hyperlink Chbx_FBXImporter "FBXImporter"  Enabled:false  color: (color 240 0 0)   align:#right
-			hyperlink Chbx_MwMBuilder "MWMBuilder"  Enabled:false color: (color 240 0 0)   align:#right
-			hyperlink Chbx_Havoktools "Havoktools "  Enabled:false color: (color 240 0 0)   align:#right
-			
-			
-		timer clock "testClock" interval:2000 --tick  every 2 sec
-	  on clock tick do
-	  (
+		on btn_PathHavok rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.PathHavokContentTools) "") catch()
+		
+		label lbl_ToolStatus  "Status:"align:#left across:5 tooltip:"Status if the displayed tools have benn found in the defined paths.(green = yes/red=no) "
+		hyperlink Chbx_Textures "Textures"  Enabled:false  color: (color 240 0 0)   align:#right
+		hyperlink Chbx_FBXImporter "FBXImporter"  Enabled:false  color: (color 240 0 0)   align:#right
+		hyperlink Chbx_MwMBuilder "MWMBuilder"  Enabled:false color: (color 240 0 0)   align:#right
+		hyperlink Chbx_Havoktools "Havoktools "  Enabled:false color: (color 240 0 0)   align:#right
+				
+		timer clock "testClock" interval:1000 --tick  every 2 sec
+	  	on clock tick do
+	  	(
 			if (MyVRageCfg.PathToolsFolder) != "" then (
 				if getDirectories(MyVRageCfg.PathToolsFolder) != undefined then (	
 					MyVRageCfg.PathFBXImporter = if (tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
-					MyVRageCfg.PathMwmBuilder = if ((tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" else ""
+					MyVRageCfg.PathMwmBuilder = if (tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
 					MyVRageCfg.PathTextures  =  if (tmp = getDirectories (MyVRageCfg.PathToolsFolder + "\\Textures")).count != 0 then MyVRageCfg.PathToolsFolder else ""	
 					MyVRageCfg.PathHavokContentTools =   if (tmp = getFiles (MyVRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe")).count != 0 then MyVRageCfg.PathHavokContentTools  else "none"
-						)
-		  )
-		if MyVRageCfg.PathFBXImporter != "" then (Chbx_FBXImporter.color = (color 0 200 0)   ) else (Chbx_FBXImporter.color = (color 240 0 0) )
-		if MyVRageCfg.PathMwmBuilder != "" then (Chbx_MwMBuilder.color = (color 0 200 0)   ) else (Chbx_MwMBuilder.color = (color 240 0 0) )
-		if MyVRageCfg.PathTextures != "" then (Chbx_Textures.color = (color 0 200 0)   ) else (Chbx_Textures.color = (color 240 0 0) )
-		if MyVRageCfg.PathHavokContentTools != "none" then (Chbx_Havoktools.color = (color 0 200 0)   ) else (Chbx_Havoktools.color = (color 240 0 0) )
-		  
+				)
+		  	)
+			if MyVRageCfg.PathFBXImporter != "" then (Chbx_FBXImporter.color = (color 0 200 0)   ) else (Chbx_FBXImporter.color = (color 240 0 0) )
+			if MyVRageCfg.PathMwmBuilder != "" then (Chbx_MwMBuilder.color = (color 0 200 0)   ) else (Chbx_MwMBuilder.color = (color 240 0 0) )
+			if MyVRageCfg.PathTextures != "" then (Chbx_Textures.color = (color 0 200 0)   ) else (Chbx_Textures.color = (color 240 0 0) )
+			if MyVRageCfg.PathHavokContentTools != "none" then (Chbx_Havoktools.color = (color 0 200 0)   ) else (Chbx_Havoktools.color = (color 240 0 0) )  
+		)
 	)
-)
 	
 	rollout VrageUtils_CfgTextures "Textures" width:210 height:400	
 	(

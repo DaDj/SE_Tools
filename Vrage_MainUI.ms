@@ -156,9 +156,11 @@ rollout VrageUtils_Settings"VRage Utilities Settings" width:210 height:504
 
 rollout VRageUtils_Export"VRage I/O"
 (
-	button 'Btn_export' "Export" width:185 height:25 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
-	on Prep_scene pressed do MySE.run "Scene_Setup.ms"		
+	button 'Btn_Import' "Import" width:120 height:25 toolTip:"Imports an Fbx from the ModSDK" align:#center across:2
+	--on Prep_scene pressed do MySE.run "Scene_Setup.ms"	
 
+	button 'Btn_export' "Export" width:120 height:25 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
+	--on Prep_scene pressed do MySE.run "Scene_Setup.ms"	
 )
 
 
