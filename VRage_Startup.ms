@@ -3,11 +3,13 @@ global MyVRageRoot
 MyVRageRoot = pathConfig.removePathLeaf (getSourceFileName());
 
 -- Struct of Global Scence Settings
-struct MyVRageBlockdef
+struct MyVRageSceneDef
 (
 	i_LODS = 1, --number of Lods i-1 
-	i_Buildstages = 1,
-	i_BuildstagesLODS = 1,
+	i_Construction = 1,
+	i_ConstructionLODS = 1,
+	Scenetype = 1,  --1 = Block, --2 == Character , 3 = Animation
+	ModelName = "MySEModel",
 	LodDistance1  = 10,
 	LodDistance2 = 20,
 	LodDistance3 = 40,
@@ -19,7 +21,7 @@ struct MyVRageBlockdef
 )
 
 --deklaration of the global
-global MyVrageScene = MyVRageBlockdef()
+global MyVrageScene = MyVRageSceneDef()
 
 fn Vrage_LoadToolbox =(
 

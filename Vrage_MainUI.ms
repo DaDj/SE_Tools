@@ -1,87 +1,127 @@
 
+
+
+
+rollout VRage_Utils_sceneA  "Scene/Models" width:210 height:104
+(
+
+)
+
 -- Scene Settings
-rollout VrageUtils_Scene "Set up Scene/Models" width:210 height:104
+rollout VrageUtils_Scene "Scene/Models" width:210 height:104
 (		
 -- 	button 'Prep_scene' "Pepare scene" width:185 height:25 toolTip:"Generates the basic Setup for working with SE)" align:#center across:1
 -- 	on Prep_scene pressed do MySE.run "Scene_Setup.ms"		
 
-	
-	group "Block Dimensions" 
-	(
-				
-		dropdownlist scale_dd "Blocksize" items:#("Large","Small") 
-		spinner  bound_leng "Length" fieldwidth:45 range:[1,100,1] type:#integer across: 3
-		spinner bound_width "Width" fieldwidth:45 range:[1,100,1] type:#integer
-		spinner  bound_height "Height" fieldwidth:45 range:[1,100,1] type:#integer
-	)
+group "Scene"
+(
+	label lblmdlname "Model name:" across: 2 align: #left
+	edittext EditBlockName "" fieldWidth:180 labelOnTop:false text: "MyBlock" tooltip:"Name of the Model, also gonna be the subtypeID for blocks" align:#left bold: true offset:[-50,0] 
 
-	
-	group "Models"	
-	(
+	label lblModeltypoe "Scene Type:" across: 2 align: #left
+	dropdownlist dropdnMdlType "" items:#("Block","Character")   tooltip:"FF" across:1 labelOnTop: false offset:[-48,0] Width:183 enabled: false
+
+)
+
+
+group "Settings"
+(
+	label lbllodCount "Lods" across:3 offset:[0,10] align:#left 
+	slider slidlodcount "" orient:#horizontal ticks:5 range:[0,5,1] type:#integer align:#right width:90
+	spinner SpinLodCount "" fieldwidth:40 range:[1,6,1] type:#integer  across:3 align:#center offset:[0,10]
+
 		
-		spinner SpinLodCount "Number of LODS" fieldwidth:80 range:[0,6,1] type:#integer  align:#right 
-		spinner SpinBSCount "Number of BuildStages" fieldwidth:80 range:[0,3,1] type:#integer  align:#right 
-		spinner SpinBSLodCount "Number of LODs per BuildStage" fieldwidth:80 range:[0,6,1] type:#integer  align:#right 
-		
-	
-        on SpinLodCount changed val do 
-        (
-            MyVrageScene.i_LODS = val
+	label lblBSCount "Constructions" across:3 offset:[0,10] align:#left
+	slider slidBScount "" orient:#horizontal ticks:3 range:[0,4,0] type:#integer align:#right width:90
+	spinner SpinBSCount "" fieldwidth:40 range:[0,4,1] type:#integer  align:#center  offset:[0,10]
+
+	label lblBSLodCount "Construction Lods" across:3 offset:[0,10] align:#left
+	slider slidBSLodcount "" orient:#horizontal ticks:5 range:[0,5,0] type:#integer align:#right width:90
+	spinner SpinBSLodCount "" fieldwidth:40 range:[0,5,1] type:#integer align:#center  offset:[0,10]
+)
+
+     on SpinLodCount changed val do  (
+		MyVrageScene.i_LODS = val
+		slidlodcount.value = val
             --MyVrageScene.run "Scene_Setup.ms"	
-		)		
-
+	)		
+	on slidlodcount changed val do  (
+		MyVrageScene.i_LODS = val
+		SpinLodCount.value = val
+            --MyVrageScene.run "Scene_Setup.ms"	
+	)		
 	
-        on SpinBSCount changed val do 
-        (
-            MyVrageScene.i_Buildstages = val
+    on SpinBSCount changed val do (
+		 MyVrageScene.i_Construction = val
+		 slidBScount.value = val
            -- MyVrageScene.run "Scene_Setup.ms"	
-		)		
+	)	
 	
-        on SpinBSLodCount changed val do 
-        (
-            MyVrageScene.i_BuildstagesLODS = val
+	on slidBScount changed val do (
+		MyVrageScene.i_Construction = val
+		SpinBSCount.value = val
+		  -- MyVrageScene.run "Scene_Setup.ms"	
+   )		
+	
+    on SpinBSLodCount changed val do (
+		MyVrageScene.i_ConstructionLODS = val
+		slidBSLodcount.value = val
             --MyVrageScene.run "Scene_Setup.ms"	
-		)			
+	)			
 		
+    on slidBSLodcount changed val do (
+		MyVrageScene.i_ConstructionLODS = val
+		SpinBSLodCount.value = val
+            --MyVrageScene.run "Scene_Setup.ms"	
+	)	
+	
+	on dropdnMdlType selected val do (
+		if val == 1 then (
+			SpinBSCount.visible = true
+			slidBScount.visible = true
+			lblBSCount.visible =true
+			lblBSLodCount.visible = true
+			SpinBSLodCount.visible = true
+			slidBSLodcount.visible = true
+		)
+		else (
+			SpinBSCount.visible = false
+			slidBScount.visible = false
+			lblBSCount.visible =false
+			lblBSLodCount.visible = false
+			SpinBSLodCount.visible = false
+			slidBSLodcount.visible = false
+
+		)
 	)
-	
-	edittext EditBlockName "Block Name:" fieldWidth:200 labelOnTop:false text: "MyBlock" 
-	
-	button 'Prep_scene2' "Add Block" width:120 height:25 toolTip:"Generates the basic Setup for working with SE)" align:#center across:2
+
+
+	button 'Prep_scene2' "Update Scene" width:120 height:25 toolTip:"Generates the basic Setup for working with SE)" align:#center across:1
 	on Prep_scene pressed do MySE.run "Scene_Setup.ms"		
 	
-	button 'Prep_scene3' "Add Subpart" width:120 height:25 toolTip:"Generates the basic Setup for working with SE)" align:#center across:2
-	on Prep_scene3 pressed do 
-		(
-			-- Missing: Find all MainModels fucntion
-			rollout Dialog_Addsubpart "Parent" --define a rollout and create a dialog 
-			(
-				dropdownlist scale_MainModel  "Add Subpart to Model:" items:#("Model1","Model2") 
-				
-				button 'btn_AddSub' "Add Subpart" width:120 height:25 toolTip:"Generates the basic Setup for working with SE)" align:#center
-				on btn_AddSub pressed do 
-					(
-					destroyDialog Dialog_Addsubpart
-					)
-				
 	
-			)
-		createDialog Dialog_Addsubpart  style:#(#style_titlebar, #style_border, #style_sysmenu, #style_minimizebox)
-			
-		)
-		
-	subrollout ExtendedSettings height:190 scrollbar:off
-	on VrageUtils_Scene open  do VrageUtils_Scene.height -=60;
+	subrollout ExtendedSettings height:200 scrollbar:off
+	on VrageUtils_Scene open  do 
+	(
+		VrageUtils_Scene.height -= 90;
+		SpinLodCount.Value = slidlodcount.Value =  MyVrageScene.i_LODS
+		SpinBSCount.Value = slidBScount.Value =  MyVrageScene.i_Construction
+		SpinBSLodCount.Value = slidBSLodcount.Value =  MyVrageScene.i_ConstructionLODS
+		EditBlockName.text  = MyVrageScene.ModelName
+
+	)
 )
+
+
 
 rollout VRageUtils_extBlocksets "Extended Settings" height:240
 (
-	spinner SpinLod1Dist "Lod1 Distance" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
-	spinner SpinLod2Dist "Lod2 Distance" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
-	spinner SpinLod3Dist "Lod3 Distance" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
-	spinner SpinLod4Dist "Lod4 Distance" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
-	spinner SpinLod5Dist "Lod5 Distance" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
-	spinner SpinLod6Dist "Lod6 Distance" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
+	spinner SpinLod1Dist "Lod1 Distance 0" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
+	spinner SpinLod2Dist "Lod2 Distance 1" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
+	spinner SpinLod3Dist "Lod3 Distance 2" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
+	spinner SpinLod4Dist "Lod4 Distance 3" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
+	spinner SpinLod5Dist "Lod5 Distance 4" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
+	spinner SpinLod6Dist "Lod6 Distance 5" fieldwidth:45 range:[1,200,1] type:#integer  align:#center 
 
 	
 	on VRageUtils_extBlocksets open do(
@@ -96,14 +136,24 @@ rollout VRageUtils_extBlocksets "Extended Settings" height:240
 	on VRageUtils_extBlocksets rolledUp state do
 	if state then
 	(
-		VrageUtils_Scene.ExtendedSettings.height += 170;
-		VrageUtils_Scene.height  +=170;
+		VrageUtils_Scene.ExtendedSettings.height += 180;
+		VrageUtils_Scene.height  +=180;
 	)		
 		else
 	(
-		VrageUtils_Scene.ExtendedSettings.height -= 170;
-		VrageUtils_Scene.height -=170;
+		VrageUtils_Scene.ExtendedSettings.height -= 180;
+		VrageUtils_Scene.height -=180;
 	)
+)
+
+rollout VRageUtils_Dimensions "Dimensions" height:240
+(		
+		--dropdownlist scale_dd "Blocksize" items:#("Large","Small")   tooltip:"FF" across:1 labelOnTop: false
+		label lblsize "Grid Size:" across:2 align:#left  height:30
+		radiobuttons rad_buttons "" labels:#("Large  ","Small  ")  columns:2 labelOnTop: false offset:[-80,0] 
+		spinner  bound_leng "X" fieldwidth:45 range:[1,100,1] type:#integer across: 3 align:#center
+		spinner bound_width "Y" fieldwidth:45 range:[1,100,1] type:#integer align:#center
+		spinner  bound_height "Z" fieldwidth:45 range:[1,100,1] type:#integer align:#center
 )
 
 rollout VrageUtils_Mountpoints "Mountpoints" width:210 height:504
@@ -169,6 +219,7 @@ VrageFloater1 = newRolloutFloater  "VRage Utilies"320 800 300 300
 --clearListener()
 
 addRollout VrageUtils_Scene VrageFloater1
+addRollout VRageUtils_Dimensions VrageFloater1
 addRollout VrageUtils_Collision VrageFloater1
 addRollout VrageUtils_Mountpoints VrageFloater1
 addRollout VRageUtils_Export VrageFloater1
