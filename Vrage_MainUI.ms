@@ -27,16 +27,16 @@ group "Scene"
 group "Settings"
 (
 	label lbllodCount "Lods" across:3 offset:[0,10] align:#left 
-	slider slidlodcount "" orient:#horizontal ticks:5 range:[0,5,1] type:#integer align:#right width:90
+	slider slidlodcount "" orient:#horizontal ticks:5 range:[0,5,1] type:#integer align:#right width:80
 	spinner SpinLodCount "" fieldwidth:40 range:[1,6,1] type:#integer  across:3 align:#center offset:[0,10]
 
 		
 	label lblBSCount "Constructions" across:3 offset:[0,10] align:#left
-	slider slidBScount "" orient:#horizontal ticks:3 range:[0,4,0] type:#integer align:#right width:90
+	slider slidBScount "" orient:#horizontal ticks:3 range:[0,4,0] type:#integer align:#right width:80
 	spinner SpinBSCount "" fieldwidth:40 range:[0,4,1] type:#integer  align:#center  offset:[0,10]
 
 	label lblBSLodCount "Construction Lods" across:3 offset:[0,10] align:#left
-	slider slidBSLodcount "" orient:#horizontal ticks:5 range:[0,5,0] type:#integer align:#right width:90
+	slider slidBSLodcount "" orient:#horizontal ticks:5 range:[0,5,0] type:#integer align:#right width:80
 	spinner SpinBSLodCount "" fieldwidth:40 range:[0,5,1] type:#integer align:#center  offset:[0,10]
 )
 
@@ -167,14 +167,23 @@ rollout VrageUtils_Collision "Collisions" width:330 height:504
 -- 	button btn_StartCollision "Start Collision Mode" width:185 height:25 toolTip:" " align:#center
 -- 	on btn_Settings pressed do OpenSettings()
 	
-		group "Create RigidBodies"	
+group "Create RigidBodies"	
 	(
-	button btn_RigidBox "Box" width:50 height:40 toolTip:"Box" align:#center across:5
-	button btn_RigidSphere "Sphere" width:50 height:40 toolTip:"Sphere" align:#center
-	button btn_RigidCylinder "Cylinder" width:50 height:40 toolTip:"Cylinder" align:#center
-	button btn_RigidMesh "Hull" width:50 height:40 toolTip:"Hull" align:#center
-	button btn_RigidCapsule "Capsule" width:50 height:40 toolTip:"Capsule" align:#center enabled:false
+	button btn_RigidBox "Box" width:30 height:30 toolTip:"Box" align:#center across:5 
+	button btn_RigidSphere "Sphere" width:30 height:30 toolTip:"Sphere" align:#center
+	button btn_RigidCylinder "Cylinder" width:30 height:30 toolTip:"Cylinder" align:#center
+	button btn_RigidMesh "Hull" width:30 height:30 toolTip:"Hull" align:#center
+	button btn_RigidCapsule "Capsule" width:30 height:30 toolTip:"Capsule" align:#center enabled:false
 	
+ on VrageUtils_Collision open do 
+ (
+	btn_RigidBox.images = #("Standard_24i.bmp", undefined,11, 1, 1,1, 1, true, true)
+	btn_RigidSphere.images = #("Standard_24i.bmp", undefined,11, 2, 2,2, 2, false, true)
+	btn_RigidCylinder.images = #("Standard_24i.bmp", undefined,11, 3, 3,3, 3, false, true)
+	btn_RigidMesh.images = #("Extended_24i.bmp", undefined,12, 5, 5,5, 5, false, true)
+	btn_RigidCapsule.images = #("Extended_24i.bmp", undefined,12, 9, 9,9, 9, false, true)
+ )
+
 	checkbox chbox_FitSelec "Fit to Selection" align:#center tooltip:"Fits the generated Rididbody to the selected Object. Generates an Convex Hull if mesh is choosen,"
 		
 	on btn_RigidBox pressed do  CreateRigidBodyObject   "Box" chbox_FitSelec.checked 
@@ -215,7 +224,7 @@ rollout VRageUtils_Export"VRage I/O"
 
 
 try (closeRolloutFloater VrageFloater1) catch () 
-VrageFloater1 = newRolloutFloater  "VRage Utilies"320 800 300 300 
+VrageFloater1 = newRolloutFloater  "VRage Utilies"300 800 300 300 
 --clearListener()
 
 addRollout VrageUtils_Scene VrageFloater1
