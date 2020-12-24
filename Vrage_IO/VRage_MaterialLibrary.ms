@@ -331,7 +331,7 @@ fn VRage_cleanMats obj_list =(
 					for m = 1 to o.material.materialList.count do (
 						old_material = o.material.materialList[m]
 						
-						if (custAttributes.get old_material VrageMaterial_CA) == undefined do (
+						if (custAttributes.get old_material VrageMaterial_CA) == undefined and old_material != undefined do (
 							
 							new_material = VRage_getMatByName old_material.name
 							
