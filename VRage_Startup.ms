@@ -3,23 +3,25 @@ global MyVRageRoot
 MyVRageRoot = pathConfig.removePathLeaf (getSourceFileName());
 
 -- Struct of Global Scence Settings
-struct MyVRageBlockdef
+struct MyVRageSceneDef
 (
 	i_LODS = 1, --number of Lods i-1 
-	i_Buildstages = 1,
-	i_BuildstagesLODS = 1,
+	i_Construction = 1,
+	i_ConstructionLODS = 1,
+	i_Subparts = 0,
+	Scenetype = 1,  --1 = Block, --2 == Character , 3 = Animation
+	ModelName = "MySEModel",
+	OldModelname = "MySEModel",
 	LodDistance1  = 10,
 	LodDistance2 = 20,
 	LodDistance3 = 40,
 	LodDistance4 = 80,
 	LodDistance5 = 100,
-	LodDistance6 = 200,
-
-	fn run filename =(	filein filename) 
+	LodDistance6 = 200
 )
 
 --deklaration of the global
-global MyVrageScene = MyVRageBlockdef()
+global MyVrageScene = MyVRageSceneDef()
 
 fn Vrage_LoadToolbox =(
 
@@ -29,6 +31,8 @@ fn Vrage_LoadToolbox =(
 	format "loaded script '%'\n"  "\\Vrage_Settings.ms"
 	fileIn (MyVRageRoot + "\\Vrage_Logging.ms")
 	format "loaded script '%'\n"   "\\Vrage_Logging.ms"
+	fileIn (MyVRageRoot + "\\Vrage_LayerHandle.ms")
+	format "loaded script '%'\n"   "\\Vrage_LayerHandle.ms"
 	fileIn (MyVRageRoot + "\\Vrage_IO\\Vrage_MaterialLibrary.ms")
 	format "loaded script '%'\n"  "\\Vrage_IO\\Vrage_MaterialLibrary.ms"
 	--fileIn "Vrage_MainUI"

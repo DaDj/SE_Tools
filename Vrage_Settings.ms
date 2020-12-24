@@ -277,7 +277,7 @@ fn OpenSettings = (
 	)
 	
 	try (closeRolloutFloater MyVRageCfgFloater) catch ()
-	MyVRageCfgFloater = newRolloutFloater  "VRage Utilities Config" 600 500 20 130 
+	MyVRageCfgFloater = newRolloutFloater  "VRage Utilities Config" 600 400 20 130 
 	addRollout VrageUtils_CfgScene MyVRageCfgFloater
 	addRollout VrageUtils_CfgTools MyVRageCfgFloater
 	addRollout VrageUtils_CfgTextures MyVRageCfgFloater
