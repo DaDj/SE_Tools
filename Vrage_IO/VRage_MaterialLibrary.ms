@@ -325,9 +325,7 @@ fn VRage_cleanMats obj_list =(
 	undo "Vrage Clean Materials" on (
 		with redraw off (
 			for o in obj_list do(
-				
-				Vrage_condenseMatIds o
-				
+								
 				if classOf o.material == Multimaterial then (
 					
 					for m = 1 to o.material.materialList.count do (
@@ -365,6 +363,9 @@ fn VRage_cleanMats obj_list =(
 					)
 				)
 			)
+
+			Vrage_condenseMatIds o
+
 			select obj_list
 		)
 	)
