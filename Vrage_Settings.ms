@@ -41,9 +41,9 @@ struct VRageConfig
 				)
 			)
 		setINISetting VRageConfigFile "Directories" "Toolsfolder" PathToolsFolder
-		setINISetting VRageConfigFile "Directories" "FBXImporter" PathFBXImporter
-		setINISetting VRageConfigFile "Directories" "MwMBuilder" PathMwmBuilder
-		setINISetting VRageConfigFile "Directories" "TexturePath" PathTextures
+		--setINISetting VRageConfigFile "Directories" "FBXImporter" PathFBXImporter
+		--setINISetting VRageConfigFile "Directories" "MwMBuilder" PathMwmBuilder
+		--setINISetting VRageConfigFile "Directories" "TexturePath" PathTextures
 			
 		setINISetting VRageConfigFile "Directories" "ModSDK" PathModSDK
 		setINISetting VRageConfigFile "Directories" "HavokContentTools" PathHavokContentTools
@@ -70,7 +70,6 @@ struct VRageConfig
 				if getDirectories(PathToolsFolder) != undefined then (	
 					PathFBXImporter = if (tmp = getFiles (PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
 				PathMwmBuilder = if (tmp = getFiles (PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
-					PathMwmBuilder = if (tmp = getFiles (PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
 					PathTextures =  if (tmp = getDirectories (PathToolsFolder + "\\Textures")).count != 0 then PathToolsFolder else ""
 				)
 			)
@@ -199,14 +198,13 @@ fn OpenSettings = (
 		timer clock "testClock" interval:1000 --tick  every 2 sec
 	  	on clock tick do
 	  	(
-			if (MyVRageCfg.PathToolsFolder) != "" then (
 				if getDirectories(MyVRageCfg.PathToolsFolder) != undefined then (	
 					MyVRageCfg.PathFBXImporter = if (tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
 					MyVRageCfg.PathMwmBuilder = if (tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
 					MyVRageCfg.PathTextures  =  if (tmp = getDirectories (MyVRageCfg.PathToolsFolder + "\\Textures")).count != 0 then MyVRageCfg.PathToolsFolder else ""	
-					MyVRageCfg.PathHavokContentTools =   if (tmp = getFiles (MyVRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe")).count != 0 then MyVRageCfg.PathHavokContentTools  else "none"
 				)
-		  	)
+		
+			MyVRageCfg.PathHavokContentTools =   if (tmp = getFiles (MyVRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe")).count != 0 then MyVRageCfg.PathHavokContentTools  else "none"
 			if MyVRageCfg.PathFBXImporter != "" then (Chbx_FBXImporter.color = (color 0 200 0)   ) else (Chbx_FBXImporter.color = (color 240 0 0) )
 			if MyVRageCfg.PathMwmBuilder != "" then (Chbx_MwMBuilder.color = (color 0 200 0)   ) else (Chbx_MwMBuilder.color = (color 240 0 0) )
 			if MyVRageCfg.PathTextures != "" then (Chbx_Textures.color = (color 0 200 0)   ) else (Chbx_Textures.color = (color 240 0 0) )

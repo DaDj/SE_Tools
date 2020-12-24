@@ -55,7 +55,7 @@ struct Vrage_LayerHandler
         CreateOrRenameLayer (MyVrageScene.ModelName + " #Construction")  (MyVrageScene.OldModelname + " #Construction") parent_layer:Mainlayer
         ConstructionLayer = LayerManager.getLayerFromName((MyVrageScene.ModelName + " #Construction") )
 
-		--Create Construction 0-5  (5 is max possible,  also deletes if there are too many)
+        --Create Construction 0-5  (5 is max possible,  also deletes if there are too many)
         for i = 1 to 5 do 
         (
             local ConstructionString = MyVrageScene.ModelName  + " #Construction" + i as string
