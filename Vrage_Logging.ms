@@ -75,6 +75,8 @@ fn VRageLog_Show =
 struct VrageLogSys
 (
 
+	silent = False,
+
 	fn Info Data =
 	(
 		logsystem.logEntry Data debug:0 info:1 warning:0 error:0
@@ -83,14 +85,14 @@ struct VrageLogSys
 	fn Warn Data =
 	(
 		logsystem.logEntry Data debug:0 info:0 warning:0 error:1
-		messagebox  Data title:"Warning"
+		if not silent do messagebox  Data title:"Warning"
 		--VRageLog_Show()
 	),
 
 	fn Error Data =
 	(
 		logsystem.logEntry Data debug:0 info:0 warning:0 error:1
-		messagebox  Data  title:"Error"
+		if not silent do messagebox  Data  title:"Error"
 		--VRageLog_Show()
 	)
 )

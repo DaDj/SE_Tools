@@ -53,13 +53,24 @@ struct VrageMaterial (
 			)
 			
 			if not doesFileExist outpath then (
-				MyVRageLog.Warn ("Texturefile \"" + outpath + "\" could not be found, using placeholder instead!")
+				errorMsg = "Texturefile \"" + outpath + "\" could not be found, using placeholder instead!"
 				outpath = MyVrageNoTex
+				
+				if findItem MyVrageMatLib.warnings errorMsg == 0 do (
+					MyVRageLog.Warn errorMsg
+					append MyVrageMatLib.warnings errorMsg
+				)
+				
 			)
 		)
 		else (
-			MyVRageLog.Error ("Material \"" + xml_mat.attributes.itemOf["Name"].value + "\" has an undefined texturemap, using placeholder instead!")	
+			errorMsg = "Material \"" + xml_mat.attributes.itemOf["Name"].value + "\" has an undefined texturemap, using placeholder instead!"
 			outpath = MyVrageNoTex
+			
+			if findItem MyVrageMatLib.errors errorMsg == 0 do (
+				MyVRageLog.Error errorMsg
+				append MyVrageMatLib.errors errorMsg
+			)
 		)
 
 		outpath
@@ -200,7 +211,8 @@ struct VRageMaterialLibrary (
 	timeGen = 0,
 	mat_list = #(),
 	mat_names = #(),
-	
+	errors = #(),
+	warnings = #(),
 	tex_dir = undefined,
 	
 	fn get_tex_dir =(
@@ -257,6 +269,9 @@ struct VRageMaterialLibrary (
 		mat_names = deepcopy reg_mat_names
 		sort mat_names
 		mat_list = mat_names
+		
+		errors = #()
+		warnings = #()
 	),
 		
 	fn main =(
@@ -363,7 +378,12 @@ fn VRage_cleanMats obj_list =(
 									if not MatchPattern old_material.name pattern:"*_Blocks Slot #*" do (
 										error_stream = "" as StringStream
 										format "No Material named \"%\" for object \"%\" in XML files" old_material.name o to:error_stream
-										VrageLogSys.Error (error_stream as string)
+										errorMsg = error_stream as string
+										
+										if findItem MyVrageMatLib.errors errorMsg == 0 do (
+											MyVRageLog.Error errorMsg
+											append MyVrageMatLib.errors errorMsg
+										)
 									)
 								)
 							)
@@ -378,7 +398,12 @@ fn VRage_cleanMats obj_list =(
 							else (
 								error_stream = "" as StringStream
 								format "No Material named \"%\" for object \"%\" in XML files" o.material.name o to:error_stream
-								VrageLogSys.Error (error_stream as string)
+								errorMsg = error_stream as string
+								
+								if findItem MyVrageMatLib.errors errorMsg == 0 do (
+									MyVRageLog.Error errorMsg
+									append MyVrageMatLib.errors errorMsg
+								)
 							)
 						)
 					)
