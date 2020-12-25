@@ -163,7 +163,7 @@ rollout VRageUtils_Subparts "Subparts" height:140
 	button btnRenameSubpart "Rename" width:60 height:20 toolTip:"Generates the basic Setup for working with SE)" align:#left offset:[0,0]
 	listbox listSubparts "" items:#(" edf", "df") height:5 offset:[0,-75] width:180 align:#right 		
 )
-1
+
 rollout VrageUtils_Mountpoints "Mountpoints" width:210 height:504
 (
 	button btn_StartMountpoints "Start Mountpoints Mode" width:185 height:25 toolTip:" " align:#center

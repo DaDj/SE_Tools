@@ -515,7 +515,7 @@ classID:#(0x7db4d221, 0x27f7b37b)
 				MyVRageMatLib.main()
 			)
 			
-			try selfnode.material = MyVRageMatLib.get_mat_by_name font.material_name catch()
+			try selfnode.material = VRage_getMatByName font.material_name catch()
 		)
 		else (
 			setMesh mesh width:10 length:10 widthsegs:1 lengthsegs:1

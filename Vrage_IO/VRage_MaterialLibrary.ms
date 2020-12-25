@@ -15,6 +15,9 @@ if MyVRageCfg == undefined do (
 
 global MyVRageMatLib
 
+global MyVrageNoTex
+MyVrageNoTex = pathConfig.removePathLeaf (getSourceFileName()) + "\\NoTex.tif"
+
 fn VRage_report_Error msg =(
 
 	print (msg as string)
@@ -51,12 +54,12 @@ struct VrageMaterial (
 			
 			if not doesFileExist outpath then (
 				MyVRageLog.Warn ("Texturefile \"" + outpath + "\" could not be found, using placeholder instead!")
-				outpath = pathConfig.removePathLeaf (getSourceFileName()) + "\\NoTex.tif"
+				outpath = MyVrageNoTex
 			)
 		)
 		else (
 			MyVRageLog.Error ("Material \"" + xml_mat.attributes.itemOf["Name"].value + "\" has an undefined texturemap, using placeholder instead!")	
-			outpath = pathConfig.removePathLeaf (getSourceFileName()) + "\\NoTex.tif"
+			outpath = MyVrageNoTex
 		)
 
 		outpath
@@ -78,7 +81,7 @@ struct VrageMaterial (
 			material.diffuseMap = bitmaptexture bitmap:(get_bm cm_map.innertext) alphasource:2
 		)
 		else (
-			material.diffuseMap = bitmaptexture filename:Vrage_NoTex alphasource:2
+			material.diffuseMap = bitmaptexture filename:MyVrageNoTex alphasource:2
 		)
 			
 		if op_map != undefined and doesFileexist (get_path op_map.innertext) do (
@@ -109,7 +112,7 @@ struct VrageMaterial (
 			material.opacityMap = Bitmaptexture bitmap:tex_bm alphasource:2 monoOutput:1 RGBOutput:1
 		)
 		else (
-			material.diffuseMap = bitmapTexture filename:Vrage_NoTex alphasource:2
+			material.diffuseMap = bitmapTexture filename:MyVrageNoTex alphasource:2
 		)
 		
 		if col != undefined then (
@@ -133,7 +136,12 @@ struct VrageMaterial (
 			gtex_bm = get_bm glossTex.innertext
 			material.bumpMap = Normal_Bump normal_map:(bitmapTexture bitmap:gtex_bm alphasource:2) flipgreen:true
 			material.glossinessMap = bitmapTexture bitmap:gtex_bm alphasource:2 monoOutput:1
-			material.glossinessMapAmount = 100 * glossTexAdd.innertext as float
+			if glossTexAdd != undefined then (
+				material.glossinessMapAmount = 100 * glossTexAdd.innertext as float
+			)
+			else (
+				material.glossinessMapAmount = 100
+			)
 		)
 		
 		if glossTexAdd != undefined do (
@@ -226,7 +234,7 @@ struct VRageMaterialLibrary (
 		)
 		
 		if xml_mat != undefined then (
-			mat = (VrageMaterial xml_mat:xml_mat).get_material()
+			mat = (VrageMaterial xml_mat:xml_mat)
 		)
 		else (
 			mat = undefined
@@ -310,7 +318,10 @@ fn VRage_getMatByName name=(
 			MyVRageMatLib = VRageMaterialLibrary()
 			MyVRageMatLib.main()
 		)
-		material = MyVRageMatLib.get_mat_by_name name
+		
+		mat = MyVRageMatLib.get_mat_by_name name
+		
+		material = if mat != undefined then mat.get_material() else undefined
 	)
 	
 	material
@@ -319,57 +330,68 @@ fn VRage_getMatByName name=(
 
 fn VRage_cleanMats obj_list =(
 	
-	obj_list = obj_list as array
-	MyVRageMatLib.get_tex_dir()
-	
-	undo "Vrage Clean Materials" on (
-		with redraw off (
-			for o in obj_list do(
-								
-				if classOf o.material == Multimaterial then (
+	if doesFileExist MyVrageCfg.PathToolsFolder then (
+		obj_list = obj_list as array
+		
+		if not (doesFileExist (MyVrageCfg.PathToolsFolder + "\\Textures")) and not MyVrageCfg.UseGameTextures do (
+			return VrageLogSys.Error "Texture folder does not exist!"
+		)
+		
+		MyVRageMatLib.get_tex_dir()
+		
+		undo "Vrage Clean Materials" on (
+			with redraw off (
+				for o in obj_list do(
 					
-					for m = 1 to o.material.materialList.count do (
-						old_material = o.material.materialList[m]
+					if o != undefined do Vrage_condenseMatIds o
+
+					if classOf o.material == Multimaterial then (
 						
-						if (custAttributes.get old_material VrageMaterial_CA) == undefined and old_material != undefined do (
+						for m = 1 to o.material.materialList.count do (
+							old_material = o.material.materialList[m]
 							
-							new_material = VRage_getMatByName old_material.name
-							
-							if new_material != undefined then (
+							if old_material != undefined and (custAttributes.get old_material VrageMaterial_CA) == undefined do (
 								
-								o.material.materialList[m] = new_material
+								new_material = VRage_getMatByName old_material.name
 								
-							)
-							else (
-								if not MatchPattern old_material.name pattern:"*_Blocks Slot #*" do (
-									error_stream = "" as StringStream
-									format "No Material named \"%\" for object \"%\" in XML files" old_material.name o to:error_stream
-									VRage_report_Error error_stream
+								if new_material != undefined then (
+									
+									o.material.materialList[m] = new_material
+									
+								)
+								else (
+									if not MatchPattern old_material.name pattern:"*_Blocks Slot #*" do (
+										error_stream = "" as StringStream
+										format "No Material named \"%\" for object \"%\" in XML files" old_material.name o to:error_stream
+										VrageLogSys.Error (error_stream as string)
+									)
 								)
 							)
 						)
 					)
-				)
-				else (
-					if o.material != undefined do (
-						new_material = VRage_getMatByName o.material.name
-						if new_material != undefined then (
-							o.material = new_material
-						)
-						else (
-							error_stream = "" as StringStream
-							format "No Material named \"%\" for object \"%\" in XML files" o.material.name o
+					else (
+						if o.material != undefined do (
+							new_material = VRage_getMatByName o.material.name
+							if new_material != undefined then (
+								o.material = new_material
+							)
+							else (
+								error_stream = "" as StringStream
+								format "No Material named \"%\" for object \"%\" in XML files" o.material.name o to:error_stream
+								VrageLogSys.Error (error_stream as string)
+							)
 						)
 					)
 				)
+				
+				select obj_list
 			)
-
-			Vrage_condenseMatIds o
-
-			select obj_list
 		)
+		
 	)
-	print "Done!"
+	else (
+		VRage_report_Error "Tools Folder does not exist/is not set!\nOpen settings and correct your configuration!"
+	)
 )
 
 fn VRage_write_material_xml obj_list =(
