@@ -289,6 +289,12 @@ struct VRageMaterialLibrary (
 				
 				xmlDoc = dotNetObject "system.xml.xmlDocument"
 				
+				all_mats = (trimright MyVRageCfg.PathModSDK "\\") + "\\OriginalContent\\AllMaterials.xml"
+				
+				if doesFileExist all_mats do (
+					insertItem all_mats files 1
+				)
+					
 				xmlDoc.load files[1]
 				
 				for f = 2 to files.count do (
@@ -356,7 +362,7 @@ fn VRage_cleanMats obj_list =(
 		
 		undo "Vrage Clean Materials" on (
 			with redraw off (
-				for o in obj_list do(
+				for o in obj_list where not isDeleted o do(
 					
 					if o != undefined do Vrage_condenseMatIds o
 
@@ -380,9 +386,9 @@ fn VRage_cleanMats obj_list =(
 										format "No Material named \"%\" for object \"%\" in XML files" old_material.name o to:error_stream
 										errorMsg = error_stream as string
 										
-										if findItem MyVrageMatLib.errors errorMsg == 0 do (
+										if findItem MyVrageMatLib.errors old_material.name == 0 do (
 											MyVRageLog.Error errorMsg
-											append MyVrageMatLib.errors errorMsg
+											append MyVrageMatLib.errors old_material.name
 										)
 									)
 								)
@@ -400,9 +406,9 @@ fn VRage_cleanMats obj_list =(
 								format "No Material named \"%\" for object \"%\" in XML files" o.material.name o to:error_stream
 								errorMsg = error_stream as string
 								
-								if findItem MyVrageMatLib.errors errorMsg == 0 do (
+								if findItem MyVrageMatLib.errors o.material.name == 0 do (
 									MyVRageLog.Error errorMsg
-									append MyVrageMatLib.errors errorMsg
+									append MyVrageMatLib.errors o.material.name
 								)
 							)
 						)
@@ -448,8 +454,6 @@ fn VRage_write_material_xml obj_list =(
 		newRef.SetAttribute "Name" n
 		root.appendChild newRef
 	)
-
-
 
 	xmlDoc.save ((getDir #temp)+"\\test.xml")
 

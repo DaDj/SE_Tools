@@ -59,13 +59,6 @@ fn Vrage_setNormalData theMod data =(
 fn Vrage_condenseMatIds obj non_destructive:true =(
 
     if classOf obj.material == Multimaterial do (
-		meshMod = Turn_to_Mesh name:"Triangulate Mesh" useInvisibleEdges:off
-		
-		if non_destructive and validModifier obj meshMod do (
-			max modify mode
-			select obj
-			addModifier obj meshMod
-		)
 		
         face_ids = Vrage_getFacesByMatId(obj.mesh)
         
@@ -81,7 +74,15 @@ fn Vrage_condenseMatIds obj non_destructive:true =(
             append new_ids face_ids[i]
         )
 		
-		if non_destructive then (
+		if non_destructive and obj.modifiers.count > 0 then (
+			max modify mode
+			meshMod = Turn_to_Mesh name:"Triangulate Mesh" useInvisibleEdges:off
+		
+			if validModifier obj meshMod do (
+				select obj
+				addModifier obj meshMod
+			)
+
 			normalMod = Edit_Normals name:"get normals"
 			face_normals = undefined
 
@@ -113,6 +114,8 @@ fn Vrage_condenseMatIds obj non_destructive:true =(
 				addModifier obj newNormalMod 
 				Vrage_setNormalData newNormalMod face_normals
 			)
+
+			max create mode
 		)
 		else (
 			

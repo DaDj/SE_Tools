@@ -84,7 +84,7 @@ struct VrageFBXImporter (
 	),
 	
 	fn importFBX file root_layer:(LayerManager.getLayer 0) parent_layer:undefined parent_node:undefined = (
-
+		
 		fname = filenameFromPath file --getFilenameFile
 		name = getFilenameFile file
 			
@@ -107,6 +107,8 @@ struct VrageFBXImporter (
 					GeometryClass: lod0_layer.addNode o
 					helper: dummy_layer.addNode o
 				)
+				
+				o.name += "#" + lod0_layer.name
 			)
 			
 			if import_subparts do (
@@ -119,7 +121,7 @@ struct VrageFBXImporter (
 					for sub in subparts do (
 						sub_file = getFilenamePath file + sub.file as string + ".fbx"
 						if doesFileExist sub_file do (
-							sub_imports = importFBX sub_file root_layer:sub_layer parent_node:sub			
+							sub_imports = importFBX sub_file root_layer:sub_layer parent_node:sub
 							join imported sub_imports
 						)
 					)
@@ -131,6 +133,7 @@ struct VrageFBXImporter (
 				
 				for lod_file in lod_files do (
 					lod_imports = importFBX lod_file parent_layer:parent_layer parent_node:parent_node
+					
 					join imported lod_imports
 				)
 			)
@@ -173,7 +176,10 @@ struct VrageFBXImporter (
 				case (superclassOf o) of (
 					GeometryClass: lod_layer.addNode o
 					helper: delete o
-				)			
+				)
+				
+				if not isdeleted o do o.name += "#" + lod_layer.name
+				
 			)
 		)
 		
@@ -183,17 +189,27 @@ struct VrageFBXImporter (
 	fn import =(
 
 		if doesFileExist filename then (
-
+			max create mode
 			--SetImportSettings()
-			
-			LastImport = importFBX filename
-			Vrage_cleanLayers()
-			
-			if Vrage_cleanMats == undefined do (
-				fileIn (MyVRageRoot + "\\Vrage_IO\\VRage_MaterialLibrary.ms")
+			with redraw off (
+				LastImport = importFBX filename
+				
+				LastImport = for o in lastimport where not isdeleted o collect o
+				
+				Vrage_cleanLayers()
+				
+				if Vrage_cleanMats == undefined do (
+					fileIn (MyVRageRoot + "\\Vrage_IO\\VRage_MaterialLibrary.ms")
+				)
+				
+				for o in LastImport do (
+					o.name = trimright (filterstring o.name "#")[1]
+				)
+				
+				Vrage_cleanMats LastImport
 			)
 			
-			Vrage_cleanMats LastImport
+			forceCompleteRedraw()
 		)
 		else (
 			msg = "File \"" + filename + "\" does not exist and can not be imported"
