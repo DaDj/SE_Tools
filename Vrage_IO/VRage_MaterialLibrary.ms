@@ -264,9 +264,8 @@ struct VRageMaterialLibrary (
 		transp_mat_names = for i =0 to xml_TransMats.count-1 collect xml_TransMats.itemOf[i].innertext
 			
 		for t in transp_mat_names where findItem reg_mat_names t == 0 do append reg_mat_names t
-		
-		
-		mat_names = deepcopy reg_mat_names
+
+		mat_names = deepcopy (makeUniqueArray reg_mat_names)
 		sort mat_names
 		mat_list = mat_names
 		
