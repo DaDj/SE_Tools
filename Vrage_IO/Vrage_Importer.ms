@@ -85,21 +85,21 @@ struct VrageFBXImporter (
 	
 	fn importFBX file root_layer:(LayerManager.getLayer 0) parent_layer:undefined parent_node:undefined = (
 		
-		fname = filenameFromPath file --getFilenameFile
-		name = getFilenameFile file
+		local fname = filenameFromPath file --getFilenameFile
+		local name = getFilenameFile file
 			
-		old_objects = objects as array
+		local old_objects = objects as array
 		
 		importfile file #noPrompt using:FBXIMP
 			
-		imported = for o in objects where findItem old_objects o == 0 collect o
+		local imported = for o in objects where findItem old_objects o == 0 collect o
 		
 		if parent_layer == undefined then (
-			parent_layer = layermanager.newLayerFromName name
+			local parent_layer = layermanager.newLayerFromName name
 			parent_layer.setParent root_layer
-			lod0_layer = layermanager.newLayerFromName (name + " #LOD0")
+			local lod0_layer = layermanager.newLayerFromName (name + " #LOD0")
 			lod0_layer.setParent parent_layer
-			dummy_layer = layermanager.newLayerFromName (name + " #Dummies")
+			local dummy_layer = layermanager.newLayerFromName (name + " #Dummies")
 			dummy_layer.setParent parent_layer
 	
 			for o in imported do (
@@ -111,17 +111,17 @@ struct VrageFBXImporter (
 				o.name += "#" + lod0_layer.name
 			)
 			
-			if import_subparts do (
-				subparts = for o in imported where (superclassOf o == helper) and (isProperty o "file") collect o
+			if import_subparts and not matchpattern name pattern:"*construction*" do (
+				local subparts = for o in imported where (superclassOf o == helper) and (isProperty o "file") collect o
 				
 				if subparts.count > 0 do (
-					sub_layer = layermanager.newLayerFromName (name + " #Subparts")
+					local sub_layer = layermanager.newLayerFromName (name + " #Subparts")
 					sub_layer.setParent parent_layer
 					
 					for sub in subparts do (
-						sub_file = getFilenamePath file + sub.file as string + ".fbx"
+						local sub_file = getFilenamePath file + sub.file as string + ".fbx"
 						if doesFileExist sub_file do (
-							sub_imports = importFBX sub_file root_layer:sub_layer parent_node:sub
+							local sub_imports = importFBX sub_file root_layer:sub_layer parent_node:sub
 							join imported sub_imports
 						)
 					)
@@ -129,24 +129,31 @@ struct VrageFBXImporter (
 			)
 			
 			if import_LODs do (
-				lod_files = getFiles (getFilenamePath file + name + "_LOD*.FBX")
+				local lod_files = getFiles (getFilenamePath file + name + "_LOD*.FBX")
 				
 				for lod_file in lod_files do (
-					lod_imports = importFBX lod_file parent_layer:parent_layer parent_node:parent_node
+					local lod_imports = importFBX lod_file parent_layer:parent_layer parent_node:parent_node
 					
 					join imported lod_imports
 				)
 			)
 
 			if import_construction do (
-				construction_files = getFiles (getFilenamePath file + getFilenameFile file + "Construction*.FBX") + getFiles (getFilenamePath file + getFilenameFile file + "_Construction*.FBX")
+				local construction_files = getFiles (getFilenamePath file + getFilenameFile file + "Construction*.FBX") + getFiles (getFilenamePath file + getFilenameFile file + "_Construction*.FBX")
 				
+				construction_files = makeUniqueArray construction_files
+					
 				if construction_files.count > 0 do (
-					constr_layer = layermanager.newLayerFromName (name + " #Construction")
+					local constr_layer = layermanager.newLayerFromName (name + " #Construction")
 					constr_layer.setParent parent_layer
 					constr_layer.ishidden  = True
 					
 					for constr in construction_files where not matchpattern constr pattern:"*_LOD*" do (
+						
+						if constr == @"E:\Program Files (x86)\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\Models\Cubes\large\PistonSubpart3Construction_1.fbx" do (
+							break()
+						)
+						
 						constr_imports = importFBX constr root_layer:constr_layer parent_node:parent_node
 						join imported constr_imports
 					)
@@ -182,7 +189,7 @@ struct VrageFBXImporter (
 				
 			)
 		)
-		
+			
 		imported
 	),
 
