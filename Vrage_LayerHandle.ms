@@ -14,6 +14,7 @@ struct Vrage_LayerHandler
         (
             layer = LayerManager.getLayerFromName(MyOldName)
             layer.setname  MyName
+            layer.setParent parent_layer
         )
      -- (LayerManager.getLayerFromName(Name)).current = true;
     ),
@@ -55,6 +56,12 @@ struct Vrage_LayerHandler
         CreateOrRenameLayer (MyVrageScene.ModelName + " #Construction")  (MyVrageScene.OldModelname + " #Construction") parent_layer:Mainlayer
         ConstructionLayer = LayerManager.getLayerFromName((MyVrageScene.ModelName + " #Construction") )
 
+
+        -- MyName = (MyVrageScene.ModelName + " #Construction")  
+        -- Layer = LayerManager.getLayerFromName(MyName)
+        -- Layer.getNumChildren()
+        -- Layer3 = Layer.getchild 1
+        -- Layer3.name
         --Create Construction 0-5  (5 is max possible,  also deletes if there are too many)
         for i = 1 to 5 do 
         (
@@ -62,10 +69,14 @@ struct Vrage_LayerHandler
             local ConstructionStringOld = MyVrageScene.OldModelname + " #Construction" +  i as string
 
             if ( i <= MyVrageScene.i_Construction) then (
-                CreateLodsLayer  ConstructionString ConstructionStringOld MyVrageScene.i_ConstructionLODS parent:ConstructionLayer
+                CreateOrRenameLayer ConstructionString  ConstructionStringOld  parent_layer:ConstructionLayer
+                tmplayer  = LayerManager.getLayerFromName(ConstructionString)
+                CreateLodsLayer  ConstructionString ConstructionStringOld MyVrageScene.i_ConstructionLODS parent:tmplayer
             )
             else if(i > MyVrageScene.i_Construction) then (
                 CreateLodsLayer  ConstructionString ConstructionStringOld -1 parent:ConstructionLayer
+                if (LayerManager.getLayerFromName(ConstructionString) != undefined) then (LayerManager.deleteLayerByName ConstructionString)
+                if (LayerManager.getLayerFromName(ConstructionStringOld) != undefined) then (LayerManager.deleteLayerByName ConstructionStringOld)
             )
         )
 
