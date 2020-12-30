@@ -78,9 +78,11 @@ struct VrageMaterial (
 	
 	fn get_bm m = (
 		bm = openBitmap (get_path m)
+		
 		if bm == undefined do (
 			bm = openBitmap MyVrageNoTex
 		)
+		
 		bm.gamma = 1.0
 		
 		bm
