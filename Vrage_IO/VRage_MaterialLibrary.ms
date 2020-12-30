@@ -78,6 +78,9 @@ struct VrageMaterial (
 	
 	fn get_bm m = (
 		bm = openBitmap (get_path m)
+		if bm == undefined do (
+			bm = openBitmap MyVrageNoTex
+		)
 		bm.gamma = 1.0
 		
 		bm
@@ -422,6 +425,41 @@ fn VRage_cleanMats obj_list =(
 	else (
 		VRage_report_Error "Tools Folder does not exist/is not set!\nOpen settings and correct your configuration!"
 	)
+)
+
+
+
+fn VRage_JoinMaterials obj_mat new_mat =(
+	
+	if obj_mat != undefined then ( 	
+		case classOf obj_mat of (
+			(multimaterial): ( 
+				temp_mat = obj_mat
+				Matnames = for m in temp_mat.materiallist collect m.name
+				MatIndex = findItem Matnames (new_mat.name as string)	
+				temp_mat.names = Matnames
+				if MatIndex == 0 then (
+					temp_mat.numsubs += 1
+					temp_mat.materiallist[temp_mat.numsubs] = new_mat
+					temp_mat.names[temp_mat.numsubs] = new_mat.name
+					id = temp_mat.numsubs
+				)
+				else (
+					id = MatIndex
+				)
+			)
+			default: (
+				temp_mat = multimaterial numsubs:2 materiallist:#(obj_mat, new_mat) names:#(obj_mat.name, new_mat.name)
+				id = 2
+			)
+		)
+	)
+	else (
+		temp_mat = multimaterial numsubs:1 materiallist:#(new_mat) names:#(new_mat.name)
+		id = 1
+	)
+	
+	#(temp_mat, id)
 )
 
 fn VRage_write_material_xml obj_list =(
