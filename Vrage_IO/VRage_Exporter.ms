@@ -26,6 +26,7 @@ struct VRageExporter (
 		--Embed Media--------------------------------------------------------------------
 		FBXExporterSetParam "EmbedTextures" false
 		--Units----------------------------------------------------------------------------
+		FBXExporterSetParam "ConvertUnit" "m"
 		--Axis Conversion-----------------------------------------------------------------
 		FBXExporterSetParam "AxisConversionMethod" "Animation"
 		FBXExporterSetParam "UpAxis" "Y" 
@@ -37,24 +38,25 @@ struct VRageExporter (
 		FBXExporterSetParam "FileVersion" "FBX201300"
 	),
 
-	fn ExportFBX DestPath =
+	fn ExportFBX MyObjects DestPath =
 	(
 		pluginManager.loadClass FbxExporter
 		FBXSettings()
 
+		select MyObjects
 		exportFile (DestPath) #noprompt selectedOnly:on using:FBXEXPORTER  
 	),
 
-	fn ExportModel Path =
+	fn ExportModel MyObjects Path =
 	(
 		--Path = Path + ".fbx"
-		ExportFBX Path
+		ExportFBX MyObjects Path
 	),
 
 	fn Generate_HKT SrcPath DestPath = ( 
 		-- 1. generate an readable HKT from exprted .fbx	
 		MyVRageLog.Info "Starting Fbximport.exe " 
-		TmpHktPath =" \"" + GetDir #plugcfg +  "\\VRageUtilities\\Temp\\Tmp.hkt" + "\""
+		TmpHktPath =" \"" + MyVRageCfg.PathToolsFolder +  "\\Temp\\Tmp.hkt" + "\""
 		SrcPath = " \"" + SrcPath + " \"" 
 		Logdata = Dos_Command.run MyVRageCfg.PathFBXImporter arg_array:#(SrcPath,TmpHktPath)
 		
@@ -95,35 +97,28 @@ struct VRageExporter (
 		return 1
 	),
 	
-	fn ExportCollision TmpFilePath DestPath = (		
+	fn ExportCollision MyObjects TmpFilePath DestPath = (		
 
-		Layer = Vrage_SetLayerbyName("Collision")
-		if Layer == undefined then (
-		 MyVRageLog.Error ("Collision Layer not found ") 
-			return -1
-		)
-		Layer.select true;
 		-- here we also want to check if all selected objects are indeed rigid bodies
-		for obj in selection do (
+		for obj in MyObjects do (
 
 			if isProperty obj #hkTypeRigidBody  then ( 	continue)
 			else (
-				MyVRageLog.Error ("Object is not a Havok Collider " + obj.name) 
-				return -1
+				MyVRageLog.Warn ("Object is not a Havok Collider " + obj.name) 
+			--	return -1
 			) 
 			-- objcasnames = for ca in (custattributes.getdefs obj) collect ca.name
-			-- if finditem objcasnames "rigidbody" > 0 then ( 
-			-- 	continue
-			-- )
-			-- else (
-			-- 	myvragelog.error ("object is not a havok collider " + obj.name) 
-			-- 	return -1
-			-- )
 		) 
 
-		--1. Export an FBX with the Collision Data
-		ExportFBX TmpFilePath
+		-- set pivto of objs to world origin , needed for havok
+		MyObjects.pivot = [0,0,0]
 
+	
+		--1. Export an FBX with the Collision Data
+		ExportFBX MyObjects TmpFilePath
+
+		-- set pivot ob objs to their own center, kinda reverting the step from before.
+		for obj in MyObjects do obj.pivot = obj.center
 
 		--2. Generate Havok .hkt file from the Fbx
 		Error =  Generate_HKT TmpFilePath DestPath 
@@ -132,36 +127,79 @@ struct VRageExporter (
 	),
 	
 
-	fn Generate_MWM = (
-		---\MwmBuilder.exe  /o:".\out" /l:".\out\log.log" /x:"E:\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\Materials" /showWarnings /e /f
-		---\MwmBuilder.exe  /o:".\out" /l:".\out\log.log" /x:"(MyVRageCfg.ModSDK + \\OriginalContent\\Materials)" /showWarnings /e /f
+	fn Generate_MWM SrcPath Destpath = (
+
+		--MwmBuilder  /o:".\out" /l:".\out\log.log" /x:"E:\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\Materials" /showWarnings /e /f 
+
+		MyVRageLog.Info "Starting MwmBuilder.exe " 
+		--TmpHktPath =" \"" + GetDir #plugcfg +  "\\VRageUtilities\\Temp\\Tmp.hkt" + "\""
+
+		Scrpath =  SrcPath  
+		Materialspath =  MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials" 
+		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#(" \""  +  "/s:" + Scrpath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e"  ) -- , "/s:" + Scrpath + '' ,
+		
+		Tool_Success = 1
+		for i = 1 to Logdata.count do 
+		(
+			MyVRageLog.Info Logdata[i]
+			if matchPattern Logdata[i]  pattern: "Finished :*" do Tool_Success = 1
+			if matchPattern Logdata[i]  pattern: "Error :*" do Tool_Success = 0
+		)			
+	
+		if  Tool_Success == 0 do
+		(
+			LogMessage = "MwmBuilder Failed to Export:  " + TmpHktPath
+			MyVRageLog.Error LogMessage
+			return -1
+		)
 		
 	),
 
 	fn Export = (
-		--1. Get the Layers correctly ( Main Model , Lod1-n , Construction1-n, Collsion Layer, Mountpoints, Dummies  )
-
-
-		TmpFileDir = MyVRageCfg.VRageConfigDir + @"\Temp" --Tempfolder for hkt creation
-		TmpFileDir2 = MyVRageCfg.VRageConfigDir + @"\Temp\Expo\Content\Models"  -- Basically folder for mwmbuilder
+		TmpFileDir = MyVRageCfg.PathToolsFolder + @"\Temp" --Tempfolder for hkt creation
+		TmpFileDir2 = MyVRageCfg.PathToolsFolder + @"\Temp\Expo\Content\Models"  -- Basically folder for mwmbuilder
 		try ( makedir TmpFileDir )	catch (	 MyVRageLog.Error ("Permission Error while trying to create: " + TmpFileDir) )
 		try ( makedir TmpFileDir2 )	catch (	 MyVRageLog.Error ("Permission Error while trying to create: " + TmpFileDir2) )
 		
+
+
+		--1. Get the Layers correctly ( Main Model , Lod1-n , Construction1-n, Collsion Layer, Mountpoints, Dummies  )
+		deselect selection
+
 		Destpath = Filepath + "\\" + Filename 
 		--2. Export the Main Model  Lod0 and dummies
 		DestPathModel = TmpFileDir2 + @"\" + Filename +  ".fbx"
-		ExportModel DestPathModel 
 
-		
+		Layer = Vrage_SetLayerbyName("#TestLayer")
+		if Layer == undefined then (
+		MyVRageLog.Error ("Testlayer not found ") 
+			return -1
+		)
+		Layer.select true;
+		myObjs = selection as array
+		ExportModel myObjs DestPathModel 
+		deselect selection
+
 		--3. Export Collision
 		TmpFilePath = TmpFileDir + @"\Tmp_HKT.fbx"
 		DestPathCol = TmpFileDir2 + @"\" + Filename +  ".hkt"
-		Error = ExportCollision TmpFilePath DestPathCol
+		
+		Layer = Vrage_SetLayerbyName("Collision")
+		if Layer == undefined then (
+		MyVRageLog.Error ("Collision Layer not found ") 
+			return -1
+		)
+		Layer.select true;
+
+
+		CollisionObjs = selection as array
+		print CollisionObjs
+		Error = ExportCollision  CollisionObjs TmpFilePath DestPathCol
 		if Error == 1 then MyVRageLog.Info ("Successfully Exported Collision "  + DestPathCol) else MyVRageLog.Error ("Failed Collsion export "  + DestPathCol)
 
 
 		--4.Build MWM'S
-	
+		Generate_MWM TmpFileDir2 Filepath
 
 	)
 
