@@ -126,7 +126,9 @@ struct VrageLogSys
 		rfTest.addControl #button #myButton "Open Help"	paramStr:"width:100 height:20 align:#right  Enabled:false"	-- add a button
 		--rfTest.addLocal "thisRolloutNumber" init:"RolloutID"
 		--rfTest.addHandler #myButton #pressed filter:on codeStr:"removeRollout  MyVRageMessageFloater.rollouts[thisRolloutNumber]  MyVRageMessageFloater" 
-		lbl = Vrage_wrapText Labltext 350
+	
+		lbl = substituteString Labltext "\"" "'"
+		lbl = Vrage_wrapText lbl 350
 		rfTest.addControl #label #mylabel  lbl paramStr:("height:40  align:#Left ")
 		rfTest.end()
 		addrollout rfTest.def MyVRageMessageFloater 
@@ -171,14 +173,14 @@ struct VrageLogSys
 	fn Warn Data Title: "" Show: true =
 	(
 		logsystem.logEntry Data debug:0 info:0 warning:0 error:1
-	--	if not silent do messagebox  Data title:"Warning"
+		if silent do Show = false
 		if Show == true do AddMessage "Warning" Title  Data false
 	),
 
 	fn Error Data Title: "" Show: true =
 	(
 		logsystem.logEntry Data debug:0 info:0 warning:0 error:1
-	--	if not silent do messagebox  Data  title:"Error"
+		if silent do Show = false
 		if Show == true do 	AddMessage "Error"  Title Data true	
 	)
 )

@@ -188,7 +188,7 @@ struct VRageExporter (
 
 
 		CollisionObjs = selection as array
-		print CollisionObjs
+		--print CollisionObjs
 		Error = ExportCollision  CollisionObjs TmpFilePath DestPathCol
 		if Error == 1 then MyVRageLog.Info ("Successfully Exported Collision "  + DestPathCol) Show: false else MyVRageLog.Error ("Failed Collsion export "  + DestPathCol)
 
