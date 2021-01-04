@@ -105,19 +105,17 @@ struct VRageExporter (
 			if isProperty obj #hkTypeRigidBody  then ( 	continue)
 			else (
 				MyVRageLog.Warn ("Object is not a Havok Collider " + obj.name) 
-			--	return -1
 			) 
-			-- objcasnames = for ca in (custattributes.getdefs obj) collect ca.name
 		) 
 
+		if MyObjects.count > 16 do MyVRageLog.Warn ("More than 16 Collisionshapes in " + LayerManager.current.name ) 
 		-- set pivto of objs to world origin , needed for havok
 		MyObjects.pivot = [0,0,0]
 
-	
 		--1. Export an FBX with the Collision Data
 		ExportFBX MyObjects TmpFilePath
 
-		-- set pivot ob objs to their own center, kinda reverting the step from before.
+		-- set pivot of objs to their own center, kinda reverting the step from before.
 		for obj in MyObjects do obj.pivot = obj.center
 
 		--2. Generate Havok .hkt file from the Fbx
@@ -131,28 +129,25 @@ struct VRageExporter (
 
 		--MwmBuilder  /o:".\out" /l:".\out\log.log" /x:"E:\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\Materials" /showWarnings /e /f 
 
-		MyVRageLog.Info "Starting MwmBuilder.exe " 
-		--TmpHktPath =" \"" + GetDir #plugcfg +  "\\VRageUtilities\\Temp\\Tmp.hkt" + "\""
-
-		Scrpath =  SrcPath  
+		MyVRageLog.Info "Starting MwmBuilder.exe" 
 		Materialspath =  MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials" 
-		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#(" \""  +  "/s:" + Scrpath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e"  ) -- , "/s:" + Scrpath + '' ,
+		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#(" \""  +  "/s:" + SrcPath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e"  )
 		
 		Tool_Success = 1
 		for i = 1 to Logdata.count do 
 		(
 			MyVRageLog.Info Logdata[i]
 			if matchPattern Logdata[i]  pattern: "Finished :*" do Tool_Success = 1
-			if matchPattern Logdata[i]  pattern: "Error :*" do Tool_Success = 0
 		)			
 	
 		if  Tool_Success == 0 do
 		(
-			LogMessage = "MwmBuilder Failed to Export:  " + TmpHktPath
+			LogMessage = "MwmBuilder Failed to Export:  " + Destpath
 			MyVRageLog.Error LogMessage
 			return -1
 		)
-		
+		MyVRageLog.Info ("MwmBuilder succesfully exported to: " + Destpath) Show: false
+		return 1
 	),
 
 	fn Export = (
@@ -161,7 +156,7 @@ struct VRageExporter (
 		try ( makedir TmpFileDir )	catch (	 MyVRageLog.Error ("Permission Error while trying to create: " + TmpFileDir) )
 		try ( makedir TmpFileDir2 )	catch (	 MyVRageLog.Error ("Permission Error while trying to create: " + TmpFileDir2) )
 		
-
+		MyVRageLog.Info ("Starting Export to "  + Filepath) Show: true
 
 		--1. Get the Layers correctly ( Main Model , Lod1-n , Construction1-n, Collsion Layer, Mountpoints, Dummies  )
 		deselect selection
@@ -195,11 +190,12 @@ struct VRageExporter (
 		CollisionObjs = selection as array
 		print CollisionObjs
 		Error = ExportCollision  CollisionObjs TmpFilePath DestPathCol
-		if Error == 1 then MyVRageLog.Info ("Successfully Exported Collision "  + DestPathCol) else MyVRageLog.Error ("Failed Collsion export "  + DestPathCol)
+		if Error == 1 then MyVRageLog.Info ("Successfully Exported Collision "  + DestPathCol) Show: false else MyVRageLog.Error ("Failed Collsion export "  + DestPathCol)
 
 
 		--4.Build MWM'S
-		Generate_MWM TmpFileDir2 Filepath
+		Error = Generate_MWM TmpFileDir2 Filepath
+		if Error == 1 then MyVRageLog.Info ("Successfully build Model "  + Filepath) Show: true else MyVRageLog.Error ("Failed Model Build "  + Filepath)
 
 	)
 

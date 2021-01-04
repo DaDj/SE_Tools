@@ -188,3 +188,25 @@ fn Vrage_XMLtoColor xml =(
 	([xml.item["X"].innertext as float, xml.item["Y"].innertext as float, xml.item["Z"].innertext as float]) as color
 )
 
+
+fn Vrage_wrapText str maxW=
+(
+	local strArr=#()
+	local lastSpace=1
+	for i = 1 to str.count do
+	(
+		if str[i]==" " then lastSpace=i
+		local curLine=substring str 1 (lastSpace)
+		local w=(getTextExtent curLine).x
+		if w>maxW then
+		(
+			append strArr curLine
+			str=substring str (curLine.count+1) str.count
+		)
+	)
+	append strArr str
+	str=""
+	for s in strArr do str+=s+"\n"
+	return str
+)
+

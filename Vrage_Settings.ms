@@ -164,9 +164,9 @@ fn OpenSettings = (
 	rollout VrageUtils_CfgTools "Tools" width:210 height:400
 	(
 
-		label lbl_PathTools  "Tools Folder:"align:#left across:2
+		label lbl_PathTools  "VrageToolbox Utils Folder:"align:#left across:2
 		button btn_PathTools  MyVRageCfg.PathToolsFolder width:400 height:25 align:#right \
-			tooltip:"Path to the Vragetoolbox Folder which has the external tools and Textures" 
+			tooltip:"Path to the Vragetoolbox Folder which has the external tools and Utilities" 
 			on btn_PathTools pressed do (
 				FilePath = getSavePath caption:"Test path..."
 				if(FilePath != undefined ) do (
