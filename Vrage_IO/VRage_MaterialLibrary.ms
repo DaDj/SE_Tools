@@ -16,7 +16,12 @@ if MyVRageCfg == undefined do (
 global MyVRageMatLib
 
 global MyVrageNoTex
+global MyVrageMatBrowser
+
+
 MyVrageNoTex = pathConfig.removePathLeaf (getSourceFileName()) + "\\NoTex.tif"
+try MyVrageMatBrowser.close() catch()
+
 
 fn VRage_report_Error msg =(
 
@@ -325,6 +330,298 @@ struct VRageMaterialLibrary (
 	
 )
 
+struct Vrage_MaterialButton (
+	
+	name = '',
+	bsize = 100,
+	bpadding = 6,
+	bsize_image = bsize - bpadding * 2,
+	bmargin = 3,
+	
+	fn click_event=(
+		
+		undo "Vrage: Assign Material" on (
+			
+			local new_mat = VRage_getMatByName name
+			local target = modpanel.getcurrentobject()
+			
+			local sel = selection as array
+			
+			local mode = undefined 
+			
+			if isProperty target #materialID and classOf target == Chamfer do (
+				local queryDialog = rollout queryDialog "" width:360
+				(
+					
+					local result
+					
+					local txt = "The current Modifier references a material ID, would you like to:\n\n" \
+					+"A : Overwrite the current material ID with the selected material?\n" \
+					+"B : Append the selected material as a new Material ID?\n" \
+					+"C : Abort and change nothing?"
+					
+					label lb_text txt height:75
+					
+					button b_overwrite "Overwrite" height:24 width:80 across:3 align:#left
+					button b_append "Append" height:24 width:80 align:#center
+					button b_abort "Abort" height:24 width:80 align:#right
+					
+					fn init val:undefined =(
+						try destroyDialog queryDialog catch()
+						result = val
+						createDialog queryDialog modal:true
+						setFocus queryDialog
+						result
+					)
+
+					fn switchAndClose val =(
+						result = val
+						destroyDialog queryDialog
+					)
+
+					on b_overwrite pressed do switchAndClose #overwrite
+					on b_append pressed do switchAndClose #append
+					on b_abort pressed do destroyDialog queryDialog
+				)
+
+				queryDialog.init()
+				
+				mode = queryDialog.result
+			)
+			
+			for o in sel do (		
+				
+				case classOf target of (
+					(Edit_Poly): (
+						if subobjectlevel >= 4 and ((facesel = target.GetSelection #Face) as array).count != 0 then (
+							temp_mat = VRage_JoinMaterials o.Material new_mat
+							o.Material = temp_mat[1]
+							target.SetOperation #SetMaterial 
+							target.materialIDToSet = temp_mat[2] - 1
+							target.Commit()
+						)
+						else (
+							o.material = new_mat
+							num = target.getnumfaces()
+							target.setSelection #face #{1..num}
+							target.SetOperation #SetMaterial 
+							target.materialIDToSet = (0)
+							target.Commit()
+							target.setSelection #face #{}
+						)
+					)
+					(Editable_poly):(
+						if subobjectlevel >= 4 and ((facesel = polyop.getFaceSelection target) as array).count != 0 then (
+							o.material = new_mat
+							--o.material.names = for m in o.material.materiallist collect m.name
+						)
+						else (
+							o.material = new_mat
+							facesel = #{1..(polyop.getNumFaces o)}
+							polyop.setFaceMatID o facesel 1
+						)
+					)
+					(Chamfer):(
+						target.SetMaterial = on
+						case mode of (
+							
+							#overwrite: (
+								if classOf o.material == multimaterial then (
+									o.material.materiallist[target.materialID] = new_mat
+									o.material.names[target.materialID] = new_mat.name
+								)
+								else (
+									mat_list = #(o.material)
+									mat_names = #(o.material.name)
+									
+									mat_list[target.materialID] = new_mat
+									mat_names[target.materialID] = new_mat.name
+									
+									mat_names = for n in mat_names collect if n == undefined then "" else n
+									o.material = Multimaterial numsubs:mat_list.count materiallist:mat_list names:mat_names 
+								)
+							)
+							#append: (
+								temp_mat = VRage_JoinMaterials o.Material new_mat
+								o.Material = temp_mat[1]
+								target.materialID = temp_mat[2]
+							)
+							default:()
+						)
+						
+					)
+					default:o.material = new_mat
+				)
+			)
+		)
+		
+		redrawViews()
+	),
+	
+	fn getButton =(
+		
+		imageList = dotNetObject "System.Windows.Forms.ImageList"
+		imageList.ImageSize = dotNetObject "System.Drawing.Size" bsize_image bsize_image
+		imageList.ColorDepth = (dotNetClass "System.Windows.Forms.ColorDepth").Depth32bit
+		
+		thumb_path = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\" + name + ".jpg"
+		
+		imageList.images.add ((dotNetClass "System.Drawing.Image").fromFile thumb_path)
+		
+		bFontStyle = (dotNetClass "System.Drawing.FontStyle").bold
+		bfont = dotNetObject "System.Drawing.Font" "Microsoft Sans Serif" 7 bFontStyle
+
+		mButton = dotNetObject "System.Windows.Forms.Button"
+		mButton.text = name
+		mButton.size = dotNetObject "System.Drawing.Size" bsize bsize
+		
+		mButton.ImageList = imageList
+		mButton.ImageIndex = 0
+
+		mButton.ImageAlign = (dotNetClass "System.Drawing.ContentAlignment").MiddleCenter
+		mButton.TextAlign = (dotNetClass "System.Drawing.ContentAlignment").topLeft
+		mButton.padding = dotNetObject "System.Windows.Forms.Padding" bpadding
+
+		mButton.Font = bfont
+		mButton.Margin = dotNetObject "System.Windows.Forms.Padding" bmargin
+		
+		dotNet.addEventHandler mButton "click" click_event
+		dotnet.setLifetimeControl mButton #dotnet
+		
+		mButton
+	)
+)
+
+struct Vrage_MaterialBrowser (
+	
+	Margin = dotNetObject "System.Windows.Forms.Padding" 5,
+	Padding = dotNetObject "System.Windows.Forms.Padding" 5,
+	DockStyle = dotNetClass "System.Windows.Forms.DockStyle",
+	BorderStyle = dotNetClass "System.Windows.Forms.BorderStyle",
+	Color = dotNetClass "System.Drawing.Color",
+	AutoSizeMode = dotNetClass "System.Windows.Forms.AutoSizeMode",
+	AnchorStyles = dotNetClass "System.Windows.Forms.AnchorStyles",
+	dnKeys = dotnetclass "System.Windows.Forms.Keys",
+	
+	form_size = [815, 480],
+	Mat_Layout = dotNetObject "System.Windows.Forms.FlowLayoutPanel",
+	Mat_Group = dotNetObject "System.Windows.Forms.Groupbox",
+	Filter_Group = dotNetObject "System.Windows.Forms.Groupbox",
+	hForm = dotNetObject "MaxCustomControls.MaxForm",
+	filter_box = dotNetObject "System.Windows.Forms.Textbox",
+	filter_button = dotNetObject "System.Windows.Forms.button",
+	
+	last_txt = "",
+	
+	fn populateMats txt:"" =(
+		
+		Mat_Layout.controls.clear()
+		
+		for n in MyVrageMatLib.mat_names where matchpattern n pattern:("*" + txt + "*") do (			
+			Mat_Layout.controls.add ((Vrage_MaterialButton name:n).getButton())
+		)
+		
+		print Mat_Layout.controls.count
+		
+	),
+	
+	fn filter_box_ku sender eb =(
+		if eb.KeyCode == eb.KeyCode.Enter and sender.text != last_txt do (
+			last_txt = sender.text
+			populateMats txt:sender.text
+		)
+	),
+		
+	fn filter_box_click sender eb =(
+		new_txt = filter_box.text
+		if new_txt != last_txt do (
+			last_txt = new_txt
+			populateMats txt:new_txt
+		)
+	),
+	
+	fn getForm =(
+		Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
+		/*Filter_Group*/
+		Filter_Group.location = dotNetObject "System.Drawing.Point" 5 5
+		Filter_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - 30) ((form_size.y - 30) * 0.12)
+		Filter_Group.Margin = Margin
+		Filter_Group.padding = Padding
+		Filter_Group.text = "Filter:"
+		Filter_Group.Dock = DockStyle.Top
+		Filter_Group.forecolor = Color.white
+		
+		/*Mat_Group*/
+		--Mat_Group.location = dotNetObject "System.Drawing.Point" 5 (10 + ((form_size.y - 30) * 0.15))
+		--Mat_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - 30) ((form_size.y - 30) * 0.85 - 20)
+		Mat_Group.Margin = Margin
+		Mat_Group.padding = Padding
+		Mat_Group.text = "Materials:"
+		Mat_Group.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left --AnchorStyles.Right AnchorStyles.Bottom
+		Mat_Group.Dock = DockStyle.Fill
+		Mat_Group.forecolor = Color.white
+		
+		/*Mat_Layout*/
+		Mat_Layout.location = dotNetObject "System.Drawing.Point" (Mat_Group.location.x + 10) (Mat_Group.location.y + 10)
+		Mat_Layout.size = dotNetObject "System.Drawing.Size" (Mat_Group.size.width - 100) (Mat_Group.size.height - 100)
+		Mat_Layout.AutoScroll = True
+		Mat_Layout.text = "Materials:"
+		Mat_Layout.Dock = DockStyle.Fill
+		Mat_Layout.Margin = Margin
+		Mat_Layout.padding = Padding
+				
+		/*filter box*/
+		filter_box.size = dotNetObject "System.Drawing.Size" (form_size.x - 160) 50
+		filter_box.location = dotNetObject "System.Drawing.Point" 15 20
+		filter_box.Margin = Margin
+		filter_box.padding = Padding
+		filter_box.Anchor = dotNet.combineEnums AnchorStyles.Left AnchorStyles.Top AnchorStyles.right
+		dotNet.addEventHandler filter_box "keyUp" filter_box_ku
+		
+		dotnet.setLifetimeControl filter_box #dotnet
+		
+		/*filter button*/
+		filter_button.size = dotNetObject "System.Drawing.Size" 100 30
+		filter_button.location = dotNetObject "System.Drawing.Point" (form_size.x - filter_button.size.width - 40) 12
+		filter_button.Margin = Margin
+		filter_button.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Right
+		filter_button.Dock = DockStyle.right
+		filter_button.padding = Padding
+		filter_button.text = "Filter"
+		dotNet.addEventHandler filter_button "click" filter_box_click
+		
+		dotnet.setLifetimeControl filter_button #dotnet
+		
+		Filter_Group.controls.add filter_button
+		Filter_Group.controls.add filter_box
+		
+		
+		hForm.text = "Vrage Material Browser"
+		hForm.padding = Padding
+		hForm.margin = Margin
+		
+		Mat_Group.controls.add Mat_Layout
+		
+		hForm.controls.add Mat_Group
+		hForm.controls.add Filter_Group
+		
+		populateMats()
+		
+		--hForm.controls.add Form_Layout
+		--hForm.topmost = true
+		
+		nw = DotNetObject "System.Windows.Forms.NativeWindow"
+		nw.AssignHandle (DotNetObject "System.IntPtr" (Windows.GetMaxHWND()))
+		
+		hForm.size = dotNetObject "System.Drawing.Size" form_size.x form_size.y
+		hForm.show(nw)
+		nw.releaseHandle()
+		--hForm.topmost = true
+		hForm
+	)
+)
+
+
 fn VRage_getMatByName name=(
 	
 	--Get Array of Materials in Scene
@@ -429,8 +726,6 @@ fn VRage_cleanMats obj_list =(
 	)
 )
 
-
-
 fn VRage_JoinMaterials obj_mat new_mat =(
 	
 	if obj_mat != undefined then ( 	
@@ -500,7 +795,76 @@ fn VRage_write_material_xml obj_list =(
 	
 )
 
+fn Vrage_getMaterialThumbnails names= (
+	thumb_dir = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\"
+	
+	start = timestamp()
+	
+	if classOf names == String do (
+		names = #(names)
+	)
+	
+	MatEditor.Close()
+	backup = IDisplayGamma.affectMEdit
+	IDisplayGamma.affectMEdit = False
+	local backupMat = meditMaterials[1]
+	MyVRageLog.silent = True
+	
+	local thumb = undefined
+	local iGlobal = (dotnetClass "Autodesk.Max.GlobalInterface").Instance
+	
+	progressStart "Generating Thumbnails"
+
+	if iGlobal != undefined then (
+		local IntPtr = dotnetClass "System.IntPtr"
+		local pStampSize = (dotnetclass "Autodesk.Max.PostageStampSize").Large
+		
+		prog = 0.0
+		limit = names.count as float
+		
+		for n in names do (
+			meditMaterials[1] = Vrage_getmatbyname n
+			local fname = thumb_dir + n + ".jpg"
+		
+			local matRef = iGlobal.CoreInterface.GetMtlSlot 0
+
+			local pStamp = matRef.CreatePStamp pStampSize true
+			local bytes = pStamp.Image
+			local size = pStamp.Width
+			
+			thumb = bitmap size size gamma:1 filename:fname
+			
+			local step = size * 3
+			for y = 1 to bytes.count by step do (
+				local row = for x = y to (y + step - 1) by 3 collect [bytes[x + 2], bytes[x + 1], bytes[x]]
+				setpixels thumb [0, size -= 1] row
+			)
+			
+			save thumb
+			
+			prog += 1.0
+			progressUpdate (prog / limit * 100.0)
+			
+			pStamp.Dispose()
+			matRef.Dispose()
+		)
+		
+	)
+	
+	progressEnd()
+	
+	meditMaterials[1] = backupMat
+	IDisplayGamma.affectMEdit = backup
+	
+	end = timestamp()
+	MyVRageLog.silent = False
+	--format "Time: % ms" (end - start)
+)
+
+
 MyVRageMatLib = VRageMaterialLibrary()
 MyVRageMatLib.main()
---format "VRage Material Library initialised\n"
---test
+
+/* Example Code to open Browser
+MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()
+*/
