@@ -43,6 +43,7 @@ VrageMaterial_CA = attributes VrageMaterial attribID:#(0x162d47c4, 0x6a278b17)
 struct VrageMaterial (
 	
 	xml_mat,
+	OSLBitmap = getdir #maxroot + "\\OSL\\OSLBitmap.osl",
 	
 	fn get_path m =(
 		if m != undefined then (
@@ -187,16 +188,81 @@ struct VrageMaterial (
 		material
 	),
 	
+	fn get_tr_pbr_material =(
+		mat_name = (xml_mat.selectSingleNode "Id/SubtypeId").innertext
+		material = PBRMetalRough Name:mat_name useGlossiness:1
+
+		nt_osl_map = OSLMap OSLPath:OSLBitmap filename:MyVrageNoTex autogamma: 1
+		nt_osl_map.autogamma = 1
+		nt_interface = MultiOutputChannelTexmapToTexmap sourceMap:nt_osl_map outputChannelIndex:1 
+		material.base_color_map = nt_interface
+		
+		material
+	),
+		
+	
+	fn get_pbr_material =(
+		
+		cm_map = xml_mat.selectSingleNode "Parameter[@Name='ColorMetalTexture']"
+		ng_map = xml_mat.selectSingleNode "Parameter[@Name='NormalGlossTexture']"
+		add_map = xml_mat.selectSingleNode "Parameter[@Name='AddMapsTexture']"
+		op_map = xml_mat.selectSingleNode "Parameter[@Name='AlphamaskTexture']"
+		
+		material = PBRMetalRough Name:(xml_mat.attributes.itemOf["Name"].value) useGlossiness:1 normal_flip_green:True
+
+		if cm_map != undefined and doesFileexist (get_path cm_map.innertext) then (
+			cm_osl_map = OSLMap Name:(getFilenameFile cm_map.innertext) OSLPath:OSLBitmap filename:(get_path cm_map.innertext) autogamma: 1
+			cm_osl_map.autogamma = 1
+			c_interface = MultiOutputChannelTexmapToTexmap sourceMap:cm_osl_map outputChannelIndex:1 
+			m_interface = MultiOutputChannelTexmapToTexmap sourceMap:cm_osl_map outputChannelIndex:5 
+			material.base_color_map = c_interface
+			material.metalness_map = m_interface
+		) else (
+			nt_osl_map = OSLMap Name:"NOTEXTURE" OSLPath:OSLBitmap filename:MyVrageNoTex autogamma: 1
+			nt_osl_map.autogamma = 1
+			nt_interface = MultiOutputChannelTexmapToTexmap sourceMap:nt_osl_map outputChannelIndex:1 
+			material.base_color_map = nt_interface
+		)
+
+		if ng_map != undefined and doesFileexist (get_path ng_map.innertext) then (
+			ng_osl_map = OSLMap Name:(getFilenameFile ng_map.innertext) OSLPath:OSLBitmap filename:(get_path ng_map.innertext)
+			n_interface = MultiOutputChannelTexmapToTexmap sourceMap:ng_osl_map outputChannelIndex:1
+			g_interface = MultiOutputChannelTexmapToTexmap sourceMap:ng_osl_map outputChannelIndex:5
+			material.norm_map = n_interface
+			material.roughness_map = g_interface
+		)
+
+		if add_map != undefined and doesFileexist (get_path add_map.innertext) then (
+			add_osl_map = OSLMap Name:(getFilenameFile add_map.innertext) OSLPath:OSLBitmap filename:(get_path add_map.innertext)
+			ao_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:2
+			em_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:3
+			p_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:4
+			col_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:5
+			material.ao_map = ao_interface
+			material.emit_color_map = em_interface
+		)
+
+		if op_map != undefined and doesFileexist (get_path op_map.innertext) then (
+			mask_osl_map = OSLMap Name:(getFilenameFile op_map.innertext) OSLPath:OSLBitmap filename:(get_path op_map.innertext)
+			mask_interface = MultiOutputChannelTexmapToTexmap sourceMap:mask_osl_map outputChannelIndex:1
+			material.opacity_map = mask_interface
+		)
+
+		material.base_color_map.sourcemap.autogamma = 1
+		material
+	),
+
 	fn get_material =(
 		
 		transp = (toLower xml_mat.Name) == "transparentmaterial"
 
 		/*
-		(MyVrageCfg.UsePbrMats and transp):get_tr_pbr_material()
-		(MyVrageCfg.UsePbrMats): get_pbr_material()
+
 		*/
 		
 		out = case Of (
+			(MyVrageCfg.UsePbrMats and transp):get_tr_pbr_material()
+			(MyVrageCfg.UsePbrMats): get_pbr_material()
 			transp: get_tr_material()
 			default: get_std_material()
 		)
@@ -541,7 +607,7 @@ struct Vrage_MaterialBrowser (
 	),
 	
 	fn getForm =(
-		Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
+		--Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
 		/*Filter_Group*/
 		Filter_Group.location = dotNetObject "System.Drawing.Point" 5 5
 		Filter_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - 30) ((form_size.y - 30) * 0.12)
@@ -797,6 +863,7 @@ fn VRage_write_material_xml obj_list =(
 
 fn Vrage_getMaterialThumbnails names= (
 	thumb_dir = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\"
+	try (makeDir thumb_dir) catch()
 	
 	start = timestamp()
 	
@@ -824,6 +891,7 @@ fn Vrage_getMaterialThumbnails names= (
 		
 		for n in names do (
 			meditMaterials[1] = Vrage_getmatbyname n
+			
 			local fname = thumb_dir + n + ".jpg"
 		
 			local matRef = iGlobal.CoreInterface.GetMtlSlot 0
@@ -840,7 +908,10 @@ fn Vrage_getMaterialThumbnails names= (
 				setpixels thumb [0, size -= 1] row
 			)
 			
-			save thumb
+			try (
+				save thumb
+			)
+			catch(format "Thumbnail could not be saved! %\n" thumb.filename)
 			
 			prog += 1.0
 			progressUpdate (prog / limit * 100.0)

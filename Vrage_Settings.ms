@@ -15,7 +15,7 @@ struct VRageConfig
 	UseGameTextures = False,
 	TextureType = 1,
 	PathGame = " ",
-	UsePbrMats = False, --Needs GUI
+	UsePbrMats = True, --Needs GUI
 
 	/*Export Settings */
 	Exp_StartGameAfter = False, --start game after export for testing for example
