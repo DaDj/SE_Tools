@@ -6,11 +6,11 @@
 		
 		fn size_func = (
 			if Block_size == "Large" do ( 
-				size_mult = 2.5     
-				size_mult_half = 1.25 )
+				size_mult = units.decodeValue "250cm"    
+				size_mult_half = units.decodeValue "125cm"     )
 			if Block_size =="Small" do (
-				size_mult = 0.5      
-				size_mult_half = 0.25 )
+				size_mult = units.decodeValue "50cm"          
+				size_mult_half = units.decodeValue "25cm"     )
 		)
 
 
@@ -53,14 +53,14 @@ global  round_1digit = theState
 			obj2 = getnodebyname "Boundbox_Small"
 			if obj != undefined then( delete obj)
 			else if obj2 != undefined do ( delete obj2)
-			leng = bound_leng.value * (size_mult-0.01) 
-			height = bound_height.value  * (size_mult-0.01) 
-			width = bound_width.value *(size_mult-0.01) 
+			leng = bound_leng.value * (size_mult) 
+			height = bound_height.value  * (size_mult) 
+			width = bound_width.value *(size_mult) 
 			Boundingbox = box length:leng width:width  height:height
 			boundingbox.pos = [0 ,0,-height/2 ]
 			Boundingbox.visibility = bezier_float()
 			Boundingbox.name = "Boundbox" + "_" +  Block_size
-			Boundingbox.visibility.controller.value = 0.3
+			Boundingbox.visibility.controller.value = 0.1
 		freeze	Boundingbox
 			--setgrouphead 	Boundingbox true
 			)		

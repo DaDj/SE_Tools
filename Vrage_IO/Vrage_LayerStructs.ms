@@ -1,6 +1,8 @@
 global MyVrageLayerDict
 global MyVrageLayerTree
 
+
+
 struct VrageLayerDict (
 	
 	names = #(),

@@ -1,5 +1,4 @@
 
-
 struct Vrage_LayerHandler
 (
     fn CreateOrRenameLayer MyName MyOldName parent_layer:undefined = (
@@ -37,46 +36,54 @@ struct Vrage_LayerHandler
 
     ),
 
-    fn CreatefromSetting = (
+    fn CreatefromSetting  Title OldTitle iLods:0 iConstr:0  iConstrLods:0   parent_layer:undefined = (
         -- Create Main Layer
-        CreateOrRenameLayer MyVrageScene.ModelName  MyVrageScene.OldModelname  parent_layer:(LayerManager.getLayer 0) 
+        CreateOrRenameLayer Title  OldTitle  parent_layer:parent_layer
 		
-		Mainlayer = LayerManager.getLayerFromName(MyVrageScene.ModelName )
+		Mainlayer = LayerManager.getLayerFromName(Title)
 
         -- Collision Stuff  (Main Model ofc) 
-        CreateOrRenameLayer (MyVrageScene.ModelName + " #Collision")  (MyVrageScene.OldModelname + " #Collision") parent_layer:Mainlayer
+        CreateOrRenameLayer (Title + " #Collision")  (OldTitle + " #Collision") parent_layer:Mainlayer
         
         -- Dummies Layer
-        CreateOrRenameLayer (MyVrageScene.ModelName + " #Dummies")  (MyVrageScene.OldModelname + " #Dummies") parent_layer:Mainlayer
+        CreateOrRenameLayer (Title + " #Dummies")  (OldTitle + " #Dummies") parent_layer:Mainlayer
         
         --Create Lods 0-5  (5 is max possible,  also deletes if there are too many)
-        CreateLodsLayer  MyVrageScene.ModelName  MyVrageScene.OldModelname MyVrageScene.i_LODS parent:Mainlayer
+        CreateLodsLayer  Title  OldTitle iLods parent:Mainlayer
 
 
-        CreateOrRenameLayer (MyVrageScene.ModelName + " #Construction")  (MyVrageScene.OldModelname + " #Construction") parent_layer:Mainlayer
-        ConstructionLayer = LayerManager.getLayerFromName((MyVrageScene.ModelName + " #Construction") )
+        CreateOrRenameLayer (Title + " #Construction")  (OldTitle + " #Construction") parent_layer:Mainlayer
+        ConstructionLayer = LayerManager.getLayerFromName((Title + " #Construction") )
 
 
         --Create Construction 0-5  (5 is max possible,  also deletes if there are too many)
         for i = 1 to 5 do 
         (
-            local ConstructionString = MyVrageScene.ModelName  + " #Construction" + i as string
-            local ConstructionStringOld = MyVrageScene.OldModelname + " #Construction" +  i as string
+            local ConstructionString = Title  + " #Construction" + i as string
+            local ConstructionStringOld = OldTitle + " #Construction" +  i as string
 
-            if ( i <= MyVrageScene.i_Construction) then (
+            if ( i <= iConstr) then (
                 CreateOrRenameLayer ConstructionString  ConstructionStringOld  parent_layer:ConstructionLayer
                 tmplayer  = LayerManager.getLayerFromName(ConstructionString)
-                CreateLodsLayer  ConstructionString ConstructionStringOld MyVrageScene.i_ConstructionLODS parent:tmplayer
+                CreateLodsLayer  ConstructionString ConstructionStringOld iConstrLods parent:tmplayer
             )
-            else if(i > MyVrageScene.i_Construction) then (
+            else if(i > iConstr) then (
                 CreateLodsLayer  ConstructionString ConstructionStringOld -1 parent:ConstructionLayer
                 if (LayerManager.getLayerFromName(ConstructionString) != undefined) then (LayerManager.deleteLayerByName ConstructionString)
                 if (LayerManager.getLayerFromName(ConstructionStringOld) != undefined) then (LayerManager.deleteLayerByName ConstructionStringOld)
             )
         )
 
+  CreateOrRenameLayer  (Title + " #Subparts")  (Title + " #Subparts") parent_layer:Mainlayer
+
     )
 
 )
 
+
 MyVrageLayers = Vrage_LayerHandler()
+MyVrageLayers.CreatefromSetting  MyVrageScene.ModelName  MyVrageScene.OldModelname iLods:1 iConstr:1  iConstrLods:0 	parent_layer:(LayerManager.getLayer 0) 
+
+MyVrageSubpart = Vrage_LayerHandler()
+
+MyVrageSubpart.CreatefromSetting  "What" "Lol" iLods:0 iConstr:2  iConstrLods:0 	parent_layer:(LayerManager.getLayerFromName( MyVrageScene.ModelName + " #Subparts") )
