@@ -16,6 +16,7 @@ struct VRageConfig
 	TextureType = 1,
 	PathGame = " ",
 	UsePbrMats = False, --Needs GUI
+	DefaultThumbnail = VrageConfigDir + "\\MaterialThumbnails\\" + "NoThumbnail.jpg",
 
 	/*Export Settings */
 	Exp_StartGameAfter = False, --start game after export for testing for example
@@ -23,7 +24,7 @@ struct VRageConfig
 	Exp_GenerateBlockDef = false, -- Flag is blockdef .sbc sall be generated
 	Exp_DestPath = "", -- Path if ExptoModfolder == false
 	Exp_ModName = "", -- current Modname for folder generation (may maxscene as default?)
-
+	
 
 	fn save =(
 		try (

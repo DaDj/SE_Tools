@@ -36,8 +36,12 @@ fn Vrage_LoadToolbox =(
 	fileIn (MyVRageRoot + "\\Vrage_IO\\Vrage_MaterialLibrary.ms")
 	format "loaded script '%'\n"  "\\Vrage_IO\\Vrage_MaterialLibrary.ms"
 	--fileIn "Vrage_MainUI"
-
-
+	
+	noThumbSrc = MyVRageRoot + "\\Vrage_IO\\" + "NoThumbnail.jpg"
+	noThumbTrg = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\" + "NoThumbnail.jpg"
+		
+	copyFile noThumbSrc noThumbTrg
+	
 	files = #()
 	dirs = getDirectories ((trimright MyVRageRoot "\\") +"\\*")
 

@@ -532,7 +532,12 @@ struct Vrage_MaterialButton (
 		
 		thumb_path = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\" + name + ".jpg"
 		
-		imageList.images.add ((dotNetClass "System.Drawing.Image").fromFile thumb_path)
+		if doesFileExist thumb_path then (
+			imageList.images.add ((dotNetClass "System.Drawing.Image").fromFile thumb_path)
+		)
+		else (
+			imageList.images.add ((dotNetClass "System.Drawing.Image").fromFile MyVrageCfg.DefaultThumbnail)
+		)
 		
 		bFontStyle = (dotNetClass "System.Drawing.FontStyle").bold
 		bfont = dotNetObject "System.Drawing.Font" "Microsoft Sans Serif" 7 bFontStyle
@@ -900,20 +905,23 @@ fn Vrage_getMaterialThumbnails names= (
 			local bytes = pStamp.Image
 			local size = pStamp.Width
 			
-			thumb = bitmap size size gamma:1 filename:fname
-			
-			local step = size * 3
-			for y = 1 to bytes.count by step do (
-				local row = for x = y to (y + step - 1) by 3 collect [bytes[x + 2], bytes[x + 1], bytes[x]]
-				setpixels thumb [0, size -= 1] row
-			)
-			
-			format "%\n" thumb.filename
-			
 			try (
-				save thumb
+				thumb = bitmap size size gamma:1 filename:fname
+				
+				local step = size * 3
+				for y = 1 to bytes.count by step do (
+					local row = for x = y to (y + step - 1) by 3 collect [bytes[x + 2], bytes[x + 1], bytes[x]]
+					setpixels thumb [0, size -= 1] row
+				)
+				
+				format "%\n" thumb.filename
+				
+				try (
+					save thumb
+				)
+				catch(format "Thumbnail could not be saved! %\n" thumb.filename)
 			)
-			catch(format "Thumbnail could not be saved! %\n" thumb.filename)
+			catch()
 			
 			prog += 1.0
 			progressUpdate (prog / limit * 100.0)
@@ -941,5 +949,3 @@ MyVRageMatLib.main()
 /* Example Code to open Browser
 MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()
 */
-
-Vrage_getMaterialThumbnails #(MyVrageMatLib.mat_names[1])
