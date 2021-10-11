@@ -187,35 +187,144 @@ extends:Cylinder
 	)
 )
 
+
+
+
 fn CreateRigidBodyObject type  FittoObj = 
 (
-	if type == "Box" then 
-	(
-		 startObjectCreation VrageHavokBox 
+
+	if FittoObj == false then (
+		if type == "Box" then 
+		(
+			startObjectCreation VrageHavokBox 
+		)
+		else if type == "Sphere" then 
+		(
+			startObjectCreation VrageHavokSphere 
+		)
+		else if type == "Cylinder" then 
+		(
+			startObjectCreation VrageHavokCylinder
+		)
+		else if type == "Hull" then 
+		(
+			MyObj = Box length:1 width:1 height: 1
+			---MyObj = plane	length:1 width:1
+			MyObj.name = "RigidMesh" 
+			custAttributes.add MyObj RigidBodyCA
+			MyObj.shapeType = "Hull"
+			MyObj.wirecolor = collisionWirecolor
+			MyObj.castShadows = off
+			MyObj.backfacecull = off
+			MyObj.receiveshadows = off
+			at time 0 (MyObj.visibility = 0 )
+			(addNewKey MyObj.visibility.controller 30).value = 0.3
+			convertToMesh MyObj
+		)
 	)
-	else if type == "Sphere" then 
-	(
-		 startObjectCreation VrageHavokSphere 
-	)
-	else if type == "Cylinder" then 
-	(
-		startObjectCreation VrageHavokCylinder
-	)
-	else if type == "Hull" then 
-	(
-		MyObj = Box length:1 width:1 height: 1
-		---MyObj = plane	length:1 width:1
-		MyObj.name = "RigidMesh" 
-		custAttributes.add MyObj RigidBodyCA
-		MyObj.shapeType = "Hull"
+	else (
+			if  selection.count == 0 do return 0
+			y =  ((selection.max.y)-(selection.min.y))
+			x =  ((selection.max.x)-(selection.min.x))
+			z = ((selection.max.z)-(selection.min.z))
+		if type == "Box" then 
+		(
+			MyObj = Box length:1 width:1 height: 1
+			custAttributes.add MyObj RigidBodyCA
+			---MyObj.shapeType = "Box"
+			MyObj.length = y
+			MyObj.width =  x
+			MyObj.height = z
+			MyObj.pivot = MyObj.center
+			MyObj.position = selection.center
+		)
+		else if type == "Sphere" then 
+		(
+			MyObj = Sphere radius:1
+			custAttributes.add MyObj RigidBodyCA
+			MyObj.shapeType = "Sphere"
+			MyObj.radius = amax #(x,y,z) /2
+			MyObj.pivot = MyObj.center
+			MyObj.position = selection.center
+		)
+		else if type == "Cylinder" then 
+		(
+			MyObj = Cylinder height:1 radius:1
+			custAttributes.add MyObj RigidBodyCA
+			MyObj.shapeType = "Cylinder"
+
+			if queryBox "Do you want to use the longest distance as height instead of radius?" beep:false then
+			(
+				MyObj.height =  z
+				MyObj.radius = amax #(x,y) /2
+
+				if x > z and x > y do (
+					MyObj.rotation = eulerAngles 0 90 0
+					MyObj.height =  x
+					MyObj.radius = amax #(z,y) /2
+					print "1"
+				) 
+				if y > x and y > z do (
+					MyObj.rotation = eulerAngles 90 0 0
+					MyObj.height =  y
+					MyObj.radius = amax #(z,x) /2			
+				) 		
+				MyObj.pivot = MyObj.center
+				MyObj.position = selection.center
+			)
+			else (
+					if z > x and z > y then (
+						if y > x then (
+							MyObj.height =   x
+							MyObj.rotation = eulerAngles 0 90 0
+						)
+						else (
+							MyObj.height =   y
+							MyObj.rotation = eulerAngles 90 0 0
+						)
+						MyObj.radius = z /2
+					) 
+					else if x > z and x > y then (
+						if y > z then (
+							MyObj.height =   z
+							MyObj.rotation = eulerAngles 0 0 0
+						)
+						else (
+							MyObj.height =   y
+							MyObj.rotation = eulerAngles 90 0 0
+						)
+						MyObj.radius = x /2
+					) 
+
+				else if y > x and y > z do (
+						if x > z then (
+							MyObj.height =   z
+							MyObj.rotation = eulerAngles 0 0 0
+						)
+						else (
+							MyObj.height =   x
+							MyObj.rotation = eulerAngles 0 90 0
+						)
+						MyObj.radius =  y /2		
+					) 	
+					MyObj.pivot = MyObj.center
+					MyObj.position = selection.center
+			)
+		
+	
+
+			
+		)
+		else if type == "Hull" then (
+			return -1
+		)
 		MyObj.wirecolor = collisionWirecolor
 		MyObj.castShadows = off
 		MyObj.backfacecull = off
 		MyObj.receiveshadows = off
 		at time 0 (MyObj.visibility = 0 )
 		(addNewKey MyObj.visibility.controller 30).value = 0.3
-		convertToMesh MyObj
-		)
+	)
 
 )
 
