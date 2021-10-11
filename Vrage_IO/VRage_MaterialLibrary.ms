@@ -607,7 +607,7 @@ struct Vrage_MaterialBrowser (
 	),
 	
 	fn getForm =(
-		--Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
+		Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
 		/*Filter_Group*/
 		Filter_Group.location = dotNetObject "System.Drawing.Point" 5 5
 		Filter_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - 30) ((form_size.y - 30) * 0.12)
@@ -908,6 +908,8 @@ fn Vrage_getMaterialThumbnails names= (
 				setpixels thumb [0, size -= 1] row
 			)
 			
+			format "%\n" thumb.filename
+			
 			try (
 				save thumb
 			)
@@ -939,3 +941,5 @@ MyVRageMatLib.main()
 /* Example Code to open Browser
 MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()
 */
+
+Vrage_getMaterialThumbnails #(MyVrageMatLib.mat_names[1])
