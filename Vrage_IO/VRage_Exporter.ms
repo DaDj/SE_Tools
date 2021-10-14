@@ -131,7 +131,7 @@ struct VRageExporter (
 
 		MyVRageLog.Info "Starting MwmBuilder.exe" 
 		Materialspath =  MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials" 
-		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#(" \""  +  "/s:" + SrcPath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e"  )
+		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#(" \""  +  "/s:" + SrcPath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e" )
 		
 		Tool_Success = 1
 		for i = 1 to Logdata.count do 
