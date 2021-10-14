@@ -403,7 +403,8 @@ struct Vrage_MaterialButton (
 	bpadding = 6,
 	bsize_image = bsize - bpadding * 2,
 	bmargin = 3,
-	
+	imageList = undefined,
+
 	fn click_event=(
 		
 		undo "Vrage: Assign Material" on (
@@ -531,13 +532,19 @@ struct Vrage_MaterialButton (
 		imageList.ColorDepth = (dotNetClass "System.Windows.Forms.ColorDepth").Depth32bit
 		
 		thumb_path = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\" + name + ".jpg"
-		
-		if doesFileExist thumb_path then (
-			imageList.images.add ((dotNetClass "System.Drawing.Image").fromFile thumb_path)
+		img_path = MyVrageCfg.DefaultThumbnail
+
+		if doesFileExist thumb_path do (
+			img_path = thumb_path
 		)
-		else (
-			imageList.images.add ((dotNetClass "System.Drawing.Image").fromFile MyVrageCfg.DefaultThumbnail)
-		)
+
+		local img = (dotnetclass "System.Drawing.Image").fromfile img_path 
+		local retBmp = dotnetObject "System.Drawing.Bitmap" img.Width img.height
+		local g = (dotnetclass "system.drawing.graphics").fromImage retBmp
+		g.drawimage img 0 0 	
+		img.Dispose();
+
+		imageList.images.add retBmp
 		
 		bFontStyle = (dotNetClass "System.Drawing.FontStyle").bold
 		bfont = dotNetObject "System.Drawing.Font" "Microsoft Sans Serif" 7 bFontStyle
@@ -610,9 +617,25 @@ struct Vrage_MaterialBrowser (
 			populateMats txt:new_txt
 		)
 	),
+
+	fn closeForm =(
+		--Mat_Layout.dispose()
+		--hForm.dispose()
+		/*
+		for i=1 to Mat_Layout.controls.count do (
+			Mat_Layout.controls.item[i-1].ImageList.dispose()
+		)
+		*/
+		(dotnetclass "system.gc").collect()
+		gc()
+	),
 	
-	fn getForm =(
-		Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
+	fn getForm genThumbs:false=(
+		
+		if genThumbs do (
+			Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
+		)
+		
 		/*Filter_Group*/
 		Filter_Group.location = dotNetObject "System.Drawing.Point" 5 5
 		Filter_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - 30) ((form_size.y - 30) * 0.12)
@@ -683,7 +706,9 @@ struct Vrage_MaterialBrowser (
 		
 		nw = DotNetObject "System.Windows.Forms.NativeWindow"
 		nw.AssignHandle (DotNetObject "System.IntPtr" (Windows.GetMaxHWND()))
-		
+
+		dotNet.addEventHandler hForm "Closed" closeForm
+
 		hForm.size = dotNetObject "System.Drawing.Size" form_size.x form_size.y
 		hForm.show(nw)
 		nw.releaseHandle()
@@ -882,6 +907,12 @@ fn Vrage_getMaterialThumbnails names= (
 	local backupMat = meditMaterials[1]
 	MyVRageLog.silent = True
 	
+	cur_rdr = renderers.current
+	
+	new_rdr = Default_Scanline_Renderer()
+	
+	renderers.current = new_rdr
+	
 	local thumb = undefined
 	local iGlobal = (dotnetClass "Autodesk.Max.GlobalInterface").Instance
 	
@@ -918,6 +949,10 @@ fn Vrage_getMaterialThumbnails names= (
 				
 				try (
 					save thumb
+					try(
+						close thumb
+					)
+					catch()
 				)
 				catch(format "Thumbnail could not be saved! %\n" thumb.filename)
 			)
@@ -934,6 +969,8 @@ fn Vrage_getMaterialThumbnails names= (
 	
 	progressEnd()
 	
+	renderers.current = cur_rdr
+	
 	meditMaterials[1] = backupMat
 	IDisplayGamma.affectMEdit = backup
 	
@@ -949,3 +986,6 @@ MyVRageMatLib.main()
 /* Example Code to open Browser
 MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()
 */
+
+--Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
+MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()

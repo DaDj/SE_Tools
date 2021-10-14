@@ -15,7 +15,7 @@ struct VRageConfig
 	UseGameTextures = False,
 	TextureType = 1,
 	PathGame = " ",
-	UsePbrMats = False, --Needs GUI
+	UsePbrMats = True, --Needs GUI
 	DefaultThumbnail = VrageConfigDir + "\\MaterialThumbnails\\" + "NoThumbnail.jpg",
 
 	/*Export Settings */
