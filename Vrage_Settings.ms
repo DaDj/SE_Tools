@@ -275,12 +275,18 @@ fn OpenSettings = (
 			)
 	)
 	
+	try (cui.UnRegisterDialogBar MyVRageCfgFloater) catch () 	
 	try (closeRolloutFloater MyVRageCfgFloater) catch ()
-	MyVRageCfgFloater = newRolloutFloater  "VRage Utilities Config" 600 400 20 130 
+
+	Pos = getMaxWindowSize() 	
+	PosX = Pos[1]/2 - 300
+	MyVRageCfgFloater = newRolloutFloater  "VRage Utilities Config" 600 380 PosX 250 
 	addRollout VrageUtils_CfgScene MyVRageCfgFloater
 	addRollout VrageUtils_CfgTools MyVRageCfgFloater
 	addRollout VrageUtils_CfgTextures MyVRageCfgFloater
 	addRollout VrageUtils_CfgGame MyVRageCfgFloater
+
+	cui.RegisterDialogBar MyVRageCfgFloater style:#(#cui_floatable,#cui_dock_right ,#cui_dock_left) 
 )
 
 --OpenSettings()

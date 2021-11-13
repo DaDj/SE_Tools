@@ -48,13 +48,9 @@ struct Vrage_LayerHandler
         
         -- Dummies Layer
         CreateOrRenameLayer (MyVrageScene.ModelName + " #Dummies")  (MyVrageScene.OldModelname + " #Dummies") parent_layer:Mainlayer
-        
-        --Create Lods 0-5  (5 is max possible,  also deletes if there are too many)
-        CreateLodsLayer  MyVrageScene.ModelName  MyVrageScene.OldModelname MyVrageScene.i_LODS parent:Mainlayer
 
-
+        -- Construction layer
         CreateOrRenameLayer (MyVrageScene.ModelName + " #Construction")  (MyVrageScene.OldModelname + " #Construction") parent_layer:Mainlayer
-        ConstructionLayer = LayerManager.getLayerFromName((MyVrageScene.ModelName + " #Construction") )
 
 
         --Create Construction 0-5  (5 is max possible,  also deletes if there are too many)

@@ -274,12 +274,14 @@ fn OpenVrageExport = (
 -- try (closeRolloutFloater MyVRageEXPFloater) catch ()
 -- MyVRageEXPFloater = newRolloutFloater  "VRage Export Scene" 600 500 20 130 
 -- addRollout rollExpUI MyVRageEXPFloater
+try (cui.UnRegisterDialogBar rollExpUI) catch () 
+try (DestroyDialog  rollExpUI) catch ()
+
+createDialog rollExpUI   
+cui.RegisterDialogBar rollExpUI   style:#(#cui_floatable)
 
 
-createDialog rollExpUI   style:#(#style_sysmenu, #style_titlebar)
 )
-
-
 
 	
 	

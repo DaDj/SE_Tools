@@ -15,14 +15,14 @@ rollout Rollout_VrageLog "VRage Utilies Log" width:900 height:500
 	(		
 		deletefile Vrage_Logfile
 		logsystem.logEntry "Start Logging" debug:1 info:0 warning:0 error:0
-	--	VRageLog_Show()
+		--	VRageLog_Show()
 	)	
 
 	button btn_OpenLogFile "Open Log" width:120 height:25 toolTip:"Clears the Logfile " align:#center 
 	on btn_OpenLogFile pressed do
 	(		
 		shellLaunch Vrage_Logfile ""
-	--	VRageLog_Show()
+		--	VRageLog_Show()
 	)	
 
 	checkbox Chbx_AutoUpdate "AutoUpdate" checked:true
@@ -32,37 +32,37 @@ rollout Rollout_VrageLog "VRage Utilies Log" width:900 height:500
 	dotNetControl textboxctrl "System.Windows.Forms.TextBox" width:850 height:450 align: #center
 	
 	timer clock "testClock" interval:1000 --tick  every 2 sec
-  on clock tick do
-  (
-	  if Chbx_AutoUpdate.state then
+	on clock tick do
 	(
-	fs = openFile Vrage_Logfile
-	  textboxctrl.text  = "";
-	while not eof fs do
-		( 
-			Theline = readline fs
-			Tmp = filterstring Theline " "
-			--MyNewHeader = Tmp[1] + " | " + Tmp[2]  + " | " + Tmp[3]      
-			MyNewHeader =  Tmp[2]  + " | " + Tmp[3]      
-			MyNewText = ""
-			for i = 6 to Tmp.count do MyNewText = MyNewText + " " + Tmp[i] 
-			--2020/11/28 22:25:35 WRN: [08532] [07356] What the  actual thing ist this  
-			textboxctrl.text = textboxctrl.text +  MyNewHeader  +  MyNewText +"\r\n\r\n" 
-		)
-		close fs
-	 		textboxctrl.SelectionStart = textboxctrl.Text.count;
+		if Chbx_AutoUpdate.state then
+		(
+			fs = openFile Vrage_Logfile
+			textboxctrl.text  = "";
+			while not eof fs do
+			( 
+				Theline = readline fs
+				Tmp = filterstring Theline " "
+				--MyNewHeader = Tmp[1] + " | " + Tmp[2]  + " | " + Tmp[3]      
+				MyNewHeader =  Tmp[2]  + " | " + Tmp[3]      
+				MyNewText = ""
+				for i = 6 to Tmp.count do MyNewText = MyNewText + " " + Tmp[i] 
+				--2020/11/28 22:25:35 WRN: [08532] [07356] What the  actual thing ist this  
+				textboxctrl.text = textboxctrl.text +  MyNewHeader  +  MyNewText +"\r\n\r\n" 
+			)
+			close fs
+			textboxctrl.SelectionStart = textboxctrl.Text.count;
 			textboxctrl.ScrollToCaret();
+		)
 	)
-  )
 	
 	
 	on Rollout_VrageLog open do
 	(
-	textboxctrl.AcceptsReturn = true;
-	textboxctrl.AcceptsTab = true;
-	textboxctrl.WordWrap = false;
-	textboxctrl.Multiline = true;
-	textboxctrl.ScrollBars = textboxctrl.ScrollBars.vertical;
+		textboxctrl.AcceptsReturn = true;
+		textboxctrl.AcceptsTab = true;
+		textboxctrl.WordWrap = false;
+		textboxctrl.Multiline = true;
+		textboxctrl.ScrollBars = textboxctrl.ScrollBars.vertical;
 	)
 )
 
@@ -77,15 +77,21 @@ rollout MyVRageMessageFloaterMenu "Menu"
 (
 	button btnAClearmsg "Clear Messages" width:100 height:25 toolTip:"Apply new name" across:3
 	on btnAClearmsg pressed do(
-	try (closeRolloutFloater MyVRageMessageFloater) catch ()
-		MyVRageMessageFloater = newRolloutFloater  "VRage Log" 500 600 20 130 
+		try (cui.UnRegisterDialogBar MyVRageMessageFloater) catch () 	
+		try (closeRolloutFloater MyVRageMessageFloater) catch ()
+		Pos = getMaxWindowSize() 
+		PosX = Pos[1] - 700
+		PosY = Pos[2] - 450
+		MyVRageMessageFloater = newRolloutFloater  "VRage Messages" 400 300 PosX PosY
 		addrollout MyVRageMessageFloaterMenu MyVRageMessageFloater
+
+		cui.RegisterDialogBar MyVRageMessageFloater style:#(#cui_floatable, #cui_dock_all)
 		MyVrageMessageArray = #()
 	)
 	button btnAOpenlog "Open Log" width:100 height:25 toolTip:"Apply new name" 	
 	on btnAOpenlog pressed do VRageLog_Show()
 	button btnClearname "Clear Log" width:100 height:25 toolTip:"Apply new name" 	
-		
+	
 	label description "Last 15 Vrage Messages - New to Old"
 )
 
@@ -104,12 +110,20 @@ struct VrageLogSys
 (
 	
 	fn CreateMessageRollout =(
+		try (cui.UnRegisterDialogBar MyVRageMessageFloater) catch () 	
 		try (closeRolloutFloater MyVRageMessageFloater) catch ()
-		MyVRageMessageFloater = newRolloutFloater  "VRage Messages" 500 600 20 130 
+		
+		Pos = getMaxWindowSize() 
+		PosX = Pos[1] - 700
+		PosY = Pos[2] - 450
+		MyVRageMessageFloater = newRolloutFloater  "VRage Messages" 400 300 PosX PosY
 		addrollout MyVRageMessageFloaterMenu MyVRageMessageFloater
+
+		cui.RegisterDialogBar MyVRageMessageFloater style:#(#cui_floatable, #cui_dock_all)
+		--	cui.DockDialogBar MyVRageMessageFloater #cui_dock_bottom
 	),
 
-	 fn AddLogRollout NumMsg Type Title Labltext Critical Date= (
+	fn AddLogRollout NumMsg Type Title Labltext Critical Date= (
 		Rolloutname = "Rfl" + NumMsg as string
 		rfTest = rolloutCreator Rolloutname (Type + ":  " +Title) 
 		rfTest.begin()
@@ -126,30 +140,30 @@ struct VrageLogSys
 		rfTest.addControl #button #myButton "Open Help"	paramStr:"width:100 height:20 align:#right  Enabled:false"	-- add a button
 		--rfTest.addLocal "thisRolloutNumber" init:"RolloutID"
 		--rfTest.addHandler #myButton #pressed filter:on codeStr:"removeRollout  MyVRageMessageFloater.rollouts[thisRolloutNumber]  MyVRageMessageFloater" 
-	
+		
 		lbl = substituteString Labltext "\"" "'"
-		lbl = Vrage_wrapText lbl 350
+		lbl = Vrage_wrapText lbl 500
 		rfTest.addControl #label #mylabel  lbl paramStr:("height:40  align:#Left ")
 		rfTest.end()
 		addrollout rfTest.def MyVRageMessageFloater 
-	 ),
+	),
 	
 	fn AddMessage Type Title Message Critical = (
-	
+		
 		insertItem(VrageLogMessage()) MyVrageMessageArray 1
 		MyVrageMessageArray[1].Type = Type 
 		MyVrageMessageArray[1].Title = Title 
 		MyVrageMessageArray[1].Message = Message 
 		MyVrageMessageArray[1].Date = localTime
 		MyVrageMessageArray[1].Critical = Critical
-					
+		
 		if 	MyVrageMessageArray.count > 10 do deleteItem  MyVrageMessageArray MyVrageMessageArray.count 	
-	
+		
 		if MyVRageMessageFloater == undefined or MyVRageMessageFloater.open  == false do CreateMessageRollout()
 		
 
 		if MyVRageMessageFloater != undefined then (
-	
+			
 			for i  in MyVRageMessageFloater.rollouts do removeRollout i  MyVRageMessageFloater 
 			addrollout MyVRageMessageFloaterMenu MyVRageMessageFloater	
 			
@@ -158,9 +172,9 @@ struct VrageLogSys
 				AddLogRollout i  MyVrageMessageArray[i].Type  MyVrageMessageArray[i].Title  MyVrageMessageArray[i].Message MyVrageMessageArray[i].Critical MyVrageMessageArray[i].Date
 			)
 		)
-	
+		
 	),	
-	 
+	
 
 	silent = False,
 

@@ -112,8 +112,9 @@ struct VrageMainBlockDef
 	(
 		--local MyBlock = VrageMainBlockDef()
 		Layer = LayerManager.getLayerFromName LayerName
-		Layer.getNumChildren() 
+		--Layer.getNumChildren() 
 		Lods  = CreateLodList Layer 
+		print LayerName
 			
 		for i = 1 to Layer.getNumChildren() do
 		(
@@ -149,16 +150,10 @@ struct VrageMainBlockDef
 )
 
 MyMainBlock = VrageMainBlockDef()
-MyMainBlock.CreateBlockDef "MySEModel"
+MyMainBlock.CreateBlockDef "MissileTurret"
 MyMainBlock
-MyMainBlock.Subparts
 
-MyMainBlock.Constructions
- test = VRageLayerInfos()
- test.CreateLayerlist()
-
-
-  test
+MyMainBlock.Subparts[1].Lods
 -- for obj in test.List do
 -- (
 --  print	obj.Title

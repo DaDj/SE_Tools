@@ -1,3 +1,12 @@
+function MXSColor_to_dotNetColor hColor = --New function
+(
+	m_dnColor = dotNetClass "System.Drawing.Color"
+	--[brief] Converts a maxscript color to a .NET color
+	--[param] The maxscript color to convert
+	--[return] A System.Drawing.Color object
+	m_dnColor.fromARGB hColor.r hColor.g hColor.b
+)
+
 fn Vrage_getFacesByMatId mesh =(
 	
     mesh_faces_by_mat_id = #()
@@ -188,7 +197,6 @@ fn Vrage_XMLtoColor xml =(
 	([xml.item["X"].innertext as float, xml.item["Y"].innertext as float, xml.item["Z"].innertext as float]) as color
 )
 
-
 fn Vrage_wrapText str maxW=
 (
 	local strArr=#()
@@ -210,3 +218,13 @@ fn Vrage_wrapText str maxW=
 	return str
 )
 
+fn ReplaceWords mString mFromStr mToStr mIgnoreCase:false =
+	(
+		mStream = mString as stringStream 
+		regex = dotnetclass "system.text.regularexpressions.regex"
+		pattern =  mFromStr 
+		if mIgnoreCase do pattern = "(?i)" + pattern
+		
+		result = regex.replace mStream pattern mToStr
+		return (result as string)
+	)

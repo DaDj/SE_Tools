@@ -18,7 +18,6 @@ global MyVRageMatLib
 global MyVrageNoTex
 global MyVrageMatBrowser
 
-
 MyVrageNoTex = pathConfig.removePathLeaf (getSourceFileName()) + "\\NoTex.tif"
 try MyVrageMatBrowser.close() catch()
 
@@ -399,10 +398,10 @@ struct VRageMaterialLibrary (
 struct Vrage_MaterialButton (
 	
 	name = '',
-	bsize = 100,
-	bpadding = 6,
+	bsize = 180,
+	bpadding = 0,
 	bsize_image = bsize - bpadding * 2,
-	bmargin = 3,
+	bmargin = 2,
 	imageList = undefined,
 
 	fn click_event=(
@@ -552,7 +551,7 @@ struct Vrage_MaterialButton (
 		mButton = dotNetObject "System.Windows.Forms.Button"
 		mButton.text = name
 		mButton.size = dotNetObject "System.Drawing.Size" bsize bsize
-		
+		mButton.flatStyle=mButton.flatStyle.Popup
 		mButton.ImageList = imageList
 		mButton.ImageIndex = 0
 
@@ -572,8 +571,8 @@ struct Vrage_MaterialButton (
 
 struct Vrage_MaterialBrowser (
 	
-	Margin = dotNetObject "System.Windows.Forms.Padding" 5,
-	Padding = dotNetObject "System.Windows.Forms.Padding" 5,
+	Margin = dotNetObject "System.Windows.Forms.Padding" 3,
+	Padding = dotNetObject "System.Windows.Forms.Padding" 3,
 	DockStyle = dotNetClass "System.Windows.Forms.DockStyle",
 	BorderStyle = dotNetClass "System.Windows.Forms.BorderStyle",
 	Color = dotNetClass "System.Drawing.Color",
@@ -581,32 +580,40 @@ struct Vrage_MaterialBrowser (
 	AnchorStyles = dotNetClass "System.Windows.Forms.AnchorStyles",
 	dnKeys = dotnetclass "System.Windows.Forms.Keys",
 	
-	form_size = [815, 480],
+	form_size = [800, 900],
 	Mat_Layout = dotNetObject "System.Windows.Forms.FlowLayoutPanel",
 	Mat_Group = dotNetObject "System.Windows.Forms.Groupbox",
 	Filter_Group = dotNetObject "System.Windows.Forms.Groupbox",
 	hForm = dotNetObject "MaxCustomControls.MaxForm",
 	filter_box = dotNetObject "System.Windows.Forms.Textbox",
 	filter_button = dotNetObject "System.Windows.Forms.button",
-	
+
+	filter_button_Painted = dotNetObject "System.Windows.Forms.button",
+	filter_button_Metal = dotNetObject "System.Windows.Forms.button",
+	filter_button_Rubber = dotNetObject "System.Windows.Forms.button",
+	filter_button_Emissive = dotNetObject "System.Windows.Forms.button",
+	filter_button_Glass = dotNetObject "System.Windows.Forms.button",
+	filter_button_Atlas = dotNetObject "System.Windows.Forms.button",
 	last_txt = "",
-	
-	fn populateMats txt:"" =(
+
+
+
+	fn populateMats txt:"" cleanMats:true exactWord:false =(
 		
-		Mat_Layout.controls.clear()
-		
-		for n in MyVrageMatLib.mat_names where matchpattern n pattern:("*" + txt + "*") do (			
+		if cleanMats == true do Mat_Layout.controls.clear()
+		for n in MyVrageMatLib.mat_names where matchpattern n pattern:("*" + txt + "*") do (		
 			Mat_Layout.controls.add ((Vrage_MaterialButton name:n).getButton())
 		)
-		
-		print Mat_Layout.controls.count
+		--print Mat_Layout.controls.count
 		
 	),
 	
 	fn filter_box_ku sender eb =(
 		if eb.KeyCode == eb.KeyCode.Enter and sender.text != last_txt do (
+			eb.Handled = eb.SuppressKeyPress = true
 			last_txt = sender.text
 			populateMats txt:sender.text
+	
 		)
 	),
 		
@@ -617,6 +624,73 @@ struct Vrage_MaterialBrowser (
 			populateMats txt:new_txt
 		)
 	),
+
+	fn filter_painted_click sender eb =(
+		new_txt = "Painted"
+		filter_box.text= "Painted"
+		if new_txt != last_txt do (
+			last_txt = new_txt
+			populateMats txt:new_txt
+			populateMats txt:"Conveyor" cleanMats:false
+		)
+	),
+
+	fn filter_metal_click sender eb =(
+		new_txt = "Metal"
+		filter_box.text= "Metal"
+		if new_txt != last_txt do (
+			last_txt = new_txt
+			populateMats txt:new_txt
+			populateMats txt:"Exhaustpipe" cleanMats:false
+			populateMats txt:"Grating" cleanMats:false
+			populateMats txt:"Chrome" cleanMats:false
+			populateMats txt:"Construction" cleanMats:false
+			populateMats txt:"Pipe" cleanMats:false
+		)
+	),
+
+	fn filter_Rubber_click sender eb =(
+		new_txt = "Non Metal"
+		filter_box.text= "Rubber"
+		if new_txt != last_txt do (
+			last_txt = new_txt
+			populateMats txt:"Rubber"
+			populateMats txt:"Cloth" cleanMats:false
+			populateMats txt:"Solarpanel" cleanMats:false
+		)
+	),
+
+	fn filter_Emissive_click sender eb =(
+		new_txt = "Emissive"
+		filter_box.text= "Emissive"
+		if new_txt != last_txt do (
+			last_txt = new_txt
+			populateMats txt:new_txt
+		)
+	),
+
+	fn filter_Glass_click sender eb =(
+		new_txt = "Glass"
+		filter_box.text= "Glass"
+		if new_txt != last_txt do (
+			last_txt = new_txt
+			populateMats txt:new_txt cleanMats:true
+			populateMats txt:"window" cleanMats:false
+		)
+	),
+
+	fn filter_Atlas_click sender eb =(
+		new_txt = "Atlas"
+		filter_box.text= ""
+		if new_txt != last_txt do (
+		last_txt = new_txt
+		populateMats txt:new_txt cleanMats:true
+		populateMats txt:"Decals" cleanMats:false
+		populateMats txt:"Paneling" cleanMats:false
+		)
+	),
+
+
 
 	fn closeForm =(
 		--Mat_Layout.dispose()
@@ -638,9 +712,11 @@ struct Vrage_MaterialBrowser (
 		
 		/*Filter_Group*/
 		Filter_Group.location = dotNetObject "System.Drawing.Point" 5 5
-		Filter_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - 30) ((form_size.y - 30) * 0.12)
+	--	Filter_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - 10) ((form_size.y - 10) * 0.12)
+		Filter_Group.size = dotNetObject "System.Drawing.Size"  form_size.x  110
 		Filter_Group.Margin = Margin
 		Filter_Group.padding = Padding
+		Filter_Group.flatStyle=Filter_Group.flatStyle.System
 		Filter_Group.text = "Filter:"
 		Filter_Group.Dock = DockStyle.Top
 		Filter_Group.forecolor = Color.white
@@ -650,10 +726,11 @@ struct Vrage_MaterialBrowser (
 		--Mat_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - 30) ((form_size.y - 30) * 0.85 - 20)
 		Mat_Group.Margin = Margin
 		Mat_Group.padding = Padding
-		Mat_Group.text = "Materials:"
+		--Mat_Group.text = "Materials:"
 		Mat_Group.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left --AnchorStyles.Right AnchorStyles.Bottom
 		Mat_Group.Dock = DockStyle.Fill
 		Mat_Group.forecolor = Color.white
+		Mat_Group.flatStyle=Filter_Group.flatStyle.System
 		
 		/*Mat_Layout*/
 		Mat_Layout.location = dotNetObject "System.Drawing.Point" (Mat_Group.location.x + 10) (Mat_Group.location.y + 10)
@@ -665,42 +742,90 @@ struct Vrage_MaterialBrowser (
 		Mat_Layout.padding = Padding
 				
 		/*filter box*/
-		filter_box.size = dotNetObject "System.Drawing.Size" (form_size.x - 160) 50
-		filter_box.location = dotNetObject "System.Drawing.Point" 15 20
-		filter_box.Margin = Margin
-		filter_box.padding = Padding
+		filter_box.size = dotNetObject "System.Drawing.Size" (form_size.x - 200) 60
+		filter_box.location = dotNetObject "System.Drawing.Point" 15 30
 		filter_box.Anchor = dotNet.combineEnums AnchorStyles.Left AnchorStyles.Top AnchorStyles.right
-		dotNet.addEventHandler filter_box "keyUp" filter_box_ku
+		filter_box.BackColor = (dotnetclass "System.Drawing.Color").FromArgb 100 100 100
+		filter_box.ForeColor = (dotnetclass "System.Drawing.Color").FromArgb 220 220 220
+		filter_box.BorderStyle = filter_box.BorderStyle.FixedSingle
+		dotNet.addEventHandler filter_box "KeyDown" filter_box_ku
 		
 		dotnet.setLifetimeControl filter_box #dotnet
 		
 		/*filter button*/
-		filter_button.size = dotNetObject "System.Drawing.Size" 100 30
-		filter_button.location = dotNetObject "System.Drawing.Point" (form_size.x - filter_button.size.width - 40) 12
-		filter_button.Margin = Margin
-		filter_button.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Right
+		filter_button.size = dotNetObject "System.Drawing.Size" 170 30
+		filter_button.location = dotNetObject "System.Drawing.Point" (form_size.x - filter_button.size.width - 5 ) 29
 		filter_button.Dock = DockStyle.right
-		filter_button.padding = Padding
 		filter_button.text = "Filter"
+		filter_button.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Right
+		filter_button.flatStyle=filter_button.flatStyle.System
 		dotNet.addEventHandler filter_button "click" filter_box_click
-		
 		dotnet.setLifetimeControl filter_button #dotnet
+
+		filter_button_Painted.size = dotNetObject "System.Drawing.Size" 90 40
+		filter_button_Painted.location = dotNetObject "System.Drawing.Point" 10 60
+		filter_button_Painted.text = "Painted"
+		filter_button_Painted.flatStyle=filter_button_Painted.flatStyle.System
+		dotNet.addEventHandler filter_button_Painted "click" filter_painted_click
+		dotnet.setLifetimeControl filter_button_Painted #dotnet
+
+		filter_button_Metal.size = dotNetObject "System.Drawing.Size" 90 40
+		filter_button_Metal.location = dotNetObject "System.Drawing.Point" 100 60
+		filter_button_Metal.text = "Metal"
+		filter_button_Metal.flatStyle=filter_button_Metal.flatStyle.System
+		dotNet.addEventHandler filter_button_Metal "click" filter_metal_click
+		dotnet.setLifetimeControl filter_button_Metal #dotnet
+
+		filter_button_Rubber.size = dotNetObject "System.Drawing.Size" 90 40
+		filter_button_Rubber.location = dotNetObject "System.Drawing.Point" 190 60
+		filter_button_Rubber.text = "Non Metal"
+		filter_button_Rubber.flatStyle=filter_button_Rubber.flatStyle.System
+		dotNet.addEventHandler filter_button_Rubber "click" filter_Rubber_click
+		dotnet.setLifetimeControl filter_button_Rubber #dotnet
+
+		filter_button_Emissive.size = dotNetObject "System.Drawing.Size" 90 40
+		filter_button_Emissive.location = dotNetObject "System.Drawing.Point" 280 60
+		filter_button_Emissive.text = "Emissive"
+		filter_button_Emissive.flatStyle=filter_button_Emissive.flatStyle.System
+		dotNet.addEventHandler filter_button_Emissive "click" filter_Emissive_click
+		dotnet.setLifetimeControl filter_button_Emissive #dotnet
+
+		filter_button_Glass.size = dotNetObject "System.Drawing.Size" 90 40
+		filter_button_Glass.location = dotNetObject "System.Drawing.Point" 370 60
+		filter_button_Glass.text = "Glass"
+		filter_button_Glass.flatStyle=filter_button_Glass.flatStyle.System
+		dotNet.addEventHandler filter_button_Glass "click" filter_Glass_click
+		dotnet.setLifetimeControl filter_button_Glass #dotnet
+
+		filter_button_Atlas.size = dotNetObject "System.Drawing.Size" 90 40
+		filter_button_Atlas.location = dotNetObject "System.Drawing.Point" 460 60
+		filter_button_Atlas.text = "Atlas"
+		filter_button_Atlas.flatStyle=filter_button_Atlas.flatStyle.System
+		dotNet.addEventHandler filter_button_Atlas "click" filter_Atlas_click
+		dotnet.setLifetimeControl filter_button_Atlas #dotnet
+
 		
 		Filter_Group.controls.add filter_button
 		Filter_Group.controls.add filter_box
-		
+		Filter_Group.controls.add filter_button_Painted
+		Filter_Group.controls.add filter_button_Metal
+		Filter_Group.controls.add filter_button_Rubber
+		Filter_Group.controls.add filter_button_Emissive
+		Filter_Group.controls.add filter_button_Glass
+		Filter_Group.controls.add filter_button_Atlas
 		
 		hForm.text = "Vrage Material Browser"
 		hForm.padding = Padding
 		hForm.margin = Margin
+		hForm.FormBorderStyle = hForm.FormBorderStyle.SizableToolWindow
+		--Mat_Group.controls.add 
 		
-		Mat_Group.controls.add Mat_Layout
-		
-		hForm.controls.add Mat_Group
+		hForm.controls.add Mat_Layout
 		hForm.controls.add Filter_Group
-		
-		populateMats()
-		
+
+
+		populateMats txt:"Painted"
+		filter_box.text= "Painted"
 		--hForm.controls.add Form_Layout
 		--hForm.topmost = true
 		
@@ -715,7 +840,10 @@ struct Vrage_MaterialBrowser (
 		--hForm.topmost = true
 		hForm
 	)
+
+
 )
+
 
 
 fn VRage_getMatByName name=(
@@ -891,6 +1019,64 @@ fn VRage_write_material_xml obj_list =(
 	
 )
 
+fn Vrage_GetMaterialSample inputMaterial Filename inputWidth inputHeight =(
+    result = undefined
+    with redraw off
+    with undo off
+    (
+        tempHiddenObject = for tempObject in Objects where not tempObject.ishidden collect tempObject
+        Hide tempHiddenObject
+        tempCamera = Freecamera fov:45 targetDistance:50 nearclip:1 farclip:1000 nearrange:0 farrange:1000 mpassEnabled:off mpassRenderPerPass:off pos:[0,0,40]
+        tempBackground = Plane pos:[0,0,-10] Length:150 Width:150 wireColor:gray
+        tempSphere = Sphere pos:[0,0,0] rotation:(quat -0.707107 0 0 0.707107) wirecolor:gray radius:12 smooth:on segs:32 chop:0 slice:off sliceFrom:0 sliceTo:0 mapcoords:on recenter:off
+       -- tempSphere.rotation = eulerAngles -90 0 0
+        tempSphere.material = inputMaterial
+        for tempLight in Lights where IsProperty tempLight #excludeList do 
+        (
+            tempLight.excludeList = Append tempLight.excludeList tempSphere
+            tempLight.excludeList = Append tempLight.excludeList tempBackground
+        )
+        tempLight = Omnilight multiplier:1.0 pos:[20,20,40]
+        tempLight2 = Omnilight multiplier:1.0 pos:[-15,-20,0]
+        result = render camera:tempCamera outputsize:[inputWidth,inputHeight] vfb:false outputfile:Filename
+        delete #(tempCamera,tempLight,tempLight2,tempSphere,tempBackground)
+        UnHide tempHiddenObject
+    )
+    result
+)
+
+fn Vrage_GenerateMatThumbnails names = (
+	thumb_dir = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\"
+	try (makeDir thumb_dir) catch()
+	
+	start = timestamp()
+	
+	if classOf names == String do (
+		names = #(names)
+	)
+	progressStart "Generating Thumbnails"
+	MyVRageLog.silent = True
+	prog = 0.0
+	limit = names.count as float
+
+	cur_rdr = renderers.current
+	new_rdr = Quicksilver_Hardware_Renderer()
+	renderers.current = new_rdr
+
+	for n in names do (
+		local fname = thumb_dir + n + ".jpg"
+		MyMaterial = Vrage_getmatbyname n
+		MaterialSample = (Vrage_GetMaterialSample MyMaterial fname 150 150)
+		prog += 1.0
+		progressUpdate (prog / limit * 100.0)
+	)
+
+	renderers.current = cur_rdr
+	MyVRageLog.silent = false
+	progressEnd()	
+)
+
+/*
 fn Vrage_getMaterialThumbnails names= (
 	thumb_dir = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\"
 	try (makeDir thumb_dir) catch()
@@ -903,13 +1089,14 @@ fn Vrage_getMaterialThumbnails names= (
 	
 	MatEditor.Close()
 	backup = IDisplayGamma.affectMEdit
-	IDisplayGamma.affectMEdit = False
+	IDisplayGamma.affectMEdit = true
 	local backupMat = meditMaterials[1]
 	MyVRageLog.silent = True
 	
+	IDisplayGamma.gamma = 2.2
 	cur_rdr = renderers.current
 	
-	new_rdr = Default_Scanline_Renderer()
+	new_rdr = Quicksilver_Hardware_Renderer()
 	
 	renderers.current = new_rdr
 	
@@ -937,7 +1124,7 @@ fn Vrage_getMaterialThumbnails names= (
 			local size = pStamp.Width
 			
 			try (
-				thumb = bitmap size size gamma:1 filename:fname
+				thumb = bitmap size size gamma:50 filename:fname
 				
 				local step = size * 3
 				for y = 1 to bytes.count by step do (
@@ -970,7 +1157,7 @@ fn Vrage_getMaterialThumbnails names= (
 	progressEnd()
 	
 	renderers.current = cur_rdr
-	
+	IDisplayGamma.gamma = 2.2
 	meditMaterials[1] = backupMat
 	IDisplayGamma.affectMEdit = backup
 	
@@ -978,7 +1165,7 @@ fn Vrage_getMaterialThumbnails names= (
 	MyVRageLog.silent = False
 	--format "Time: % ms" (end - start)
 )
-
+*/
 
 MyVRageMatLib = VRageMaterialLibrary()
 MyVRageMatLib.main()
@@ -986,6 +1173,8 @@ MyVRageMatLib.main()
 /* Example Code to open Browser
 MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()
 */
+--Vrage_GenerateMatThumbnails  MyVrageMatLib.mat_names
+
 
 --Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
-MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()
+--MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()

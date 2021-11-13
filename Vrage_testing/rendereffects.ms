@@ -20,7 +20,7 @@ on apply r_image progressCB: do
     for x = 1 to bmp_w do
     (
       p_v = pixel_line[x].value
-		blueval = pixel_line[x].blue *1.5
+		blueval = pixel_line[x].blue *5
       pixel_line[x] = color p_v p_v blueval pixel_line[x].alpha
     )--end x loop
     setPixels r_image [0,y] pixel_line
