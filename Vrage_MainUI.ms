@@ -8,21 +8,19 @@ rollout VrageUtils_Scene "Scene/Models" width:210 height:104
 (		
 	-- 	button 'Prep_scene' "Pepare scene" width:185 height:25 toolTip:"Generates the basic Setup for working with SE)" align:#center across:1
 	-- 	on Prep_scene pressed do MySE.run "Scene_Setup.ms"		
-
 	group "Scene"
 	(
 		label lblmdlname "Model name:" across: 3 align: #left
 		edittext EditBlockName "" fieldWidth:125 labelOnTop:false text: "MyBlock" tooltip:"Name of the Model, also gonna be the Displayname ingame" align:#left bold: true height:20
 		button btnApplyname "Apply" width:40 height:20 toolTip:"Apply new name" align:#right across:1
 
-
 		label lblModeltype "Scene Type:" across: 3 align: #left
 		dropdownlist dropdnMdlType "" items:#("Block","Character")   tooltip:"FF" across:1 labelOnTop: false  Width:183 enabled: false
 		label fakelbl1 "" across: 1 align: #left
 	)
 
-	on btnApplyname pressed   do (
-
+	on btnApplyname pressed  do 
+	(
 		MyVrageScene.OldModelname = MyVrageScene.ModelName
 		MyVrageScene.ModelName = EditBlockName.text
 		MyVrageLayers.CreatefromSetting()	

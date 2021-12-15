@@ -164,7 +164,6 @@ fn OpenSettings = (
 
 	rollout VrageUtils_CfgTools "Tools" width:210 height:400
 	(
-
 		label lbl_PathTools  "VrageToolbox Utils Folder:"align:#left across:2
 		button btn_PathTools  MyVRageCfg.PathToolsFolder width:400 height:25 align:#right \
 			tooltip:"Path to the Vragetoolbox Folder which has the external tools and Utilities" 
@@ -215,7 +214,6 @@ fn OpenSettings = (
 	
 	rollout VrageUtils_CfgTextures "Textures" width:210 height:400	
 	(
-
 		label lbl_textureType "Texture Format:"   across:4
 		dropdownlist ddl_TexType "" items:VrageTexTypes enabled:(not MyVRageCfg.UseGameTextures) selection:MyVRageCfg.TextureType width:60
 			on ddl_TexType selected sel do (

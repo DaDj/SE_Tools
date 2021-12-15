@@ -1,6 +1,15 @@
+/* 
+This File handles all the Layer stuff
+It implements:
+	 - custom attributes to define what the layers are.
+	 - custom attributes with corresponding layer data
+	 - UI tool do modify this data + add/delete layers
+*/
+
 global VRAGE_ModelUI
 global VrageTempAllTypes = #("CubeBlock","Cockpit","Gravity","Refinery","Armor")
 
+-- Custom Attributes for Layer Data
 VrageLayerData= attributes "VrageLayerData" attribID:#(0x5eac4f6e, 0xd624011)
 (
 	parameters main
@@ -58,7 +67,7 @@ VrageLayer_LODData = attributes "VrageLayer_LODData" attribID:#(0xdcaefca, 0x59c
 	)
 )
 
-
+-- Functions for the Layers
 struct VRageLayers 
 (
 	fn CreateOrRenameLayer MyName MyOldName parent_layer:undefined = (
@@ -91,12 +100,19 @@ struct VRageLayers
 	),
 
 	fn Delete LayerHandle = (
-		try 
-		(
+		--try 
+		--(
 			canDelete = (LayerHandle.canDelete()) and not (LayerManager.doesLayerHierarchyContainNodes LayerHandle.name)
 			if canDelete then 
 			(
-				print LayerHandle.name
+				if LayerHandle.getNumChildren() > 0 then 
+				(
+					for i= 1 to (LayerHandle.getNumChildren()) do 
+					(
+					VRLayers.Delete (LayerHandle.getChild(i))
+				--	LayerManager.deleteLayerByName ((LayerHandle.getChild(i)).name) 
+					)
+				)
 				LayerManager.deleteLayerByName LayerHandle.name
 			) 
 			else
@@ -106,11 +122,10 @@ struct VRageLayers
 				else (MyVRageLog.Info ("Can't Delete Layer.") Show:true )
 				
 			) 
-		)
-		catch( MyVRageLog.Info ("Something went wreng while trying to delete LayerS") Show:true )
+		--)
+		--catch( MyVRageLog.Info ("Something went wreng while trying to delete LayerS") Show:true )
 	)
 )
-
 VRLayers = VRageLayers()
 
 struct VrageLodLayer
@@ -185,8 +200,14 @@ struct VrageConstructionLayer
 					layerRT.Type = "VRageConstructstage"
 					layerRT.ConstructionID = Idx_BuildStage as Integer
 					layerRT.BuildPercent = 33 
+					
+					-- always add the Lod 0 automatically
+					LodLayer = VrageLodLayer()
+					LodLayer.Add Mainlayer:layerRT
 				)
 			)
+
+			
 		)
 		else MyVRageLog.Info ("No Layer selected") Show:true
 
@@ -195,9 +216,7 @@ struct VrageConstructionLayer
 
 struct VrageCubeBlock
 (
-
 	MyDummy ="",
-
 	-- Creates A Cubeblock with barebonex defintions (no lods ar anything)
 	fn CreateSkel BlockName optional_param:unsupplied =
 	(
@@ -226,6 +245,11 @@ struct VrageCubeBlock
 		custAttributes.add layerRT VrageLayerData
 		layerRT.Type = "ConstructArrayDef"
 		layerRT.SeName = BlockName	
+
+		-- always add the Lod 0 automatically
+		layerRT = Mainlayer.layerAsRefTarg
+		LodLayer = VrageLodLayer()
+		LodLayer.Add Mainlayer:layerRT
 	),
 
 	-- Creates a Cubeblock with given amount of lods an buldstages + builstages lods.
@@ -235,12 +259,12 @@ struct VrageCubeBlock
 	),
 
 	-- Renames all Layers of Cubeblock except Subparts cause they can have different names
-	fn RenameAll Layer OldName NewName =(
-		print (Layer.name)
+	fn RenameAll Layer OldName NewName =
+	(
 		layerRT = Layer.layerAsRefTarg
 		Attr = custAttributes.get layerRT VrageLayerData
 		if Attr.Type == "CubeBlockDef" or 
-		Attr.Type == "SubpartDef" or  
+		Attr.Type == "SubPartArray" or  
 		Attr.Type == "VRageConstructstage" or
 		Attr.Type == "CollisionDef" or  
 		Attr.Type == "ConstructArrayDef" or 
@@ -253,8 +277,6 @@ struct VrageCubeBlock
 
 		for i = 1 to Layer.getNumChildren() do
 		(
-			print (Layer.name)
-			print (Layer.getNumChildren()) 
 			CurrentChildLayer= Layer.getChild  i
 			RenameAll CurrentChildLayer OldName NewName
 
@@ -264,14 +286,12 @@ struct VrageCubeBlock
 
 )
 
-
-
+--  Rollouts for Layer Types
 rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 (	
 	button btnValidate "Validate" width:120 height:25 tooltip:"Check if all expected data/Layer exist"	align:#right
 	group "CubeBlock Settings"
 	(
-		
 		label lbl_Size "Block Size" across:2 align: #left
 		dropdownlist dropdnSize "" items:#("Large","Small")   tooltip:"Size of the Block Grid (large =2.5m, Small: 0.25m)"  labelOnTop: false  Width:150 enabled: true align: #right
 
@@ -283,8 +303,6 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 
 		label lbl_SubID "Subtype ID" across:2 align: #left
 		edittext editt_SubID "" fieldWidth:150 labelOnTop:true align: #right
-
-
 	)
 
 	group "Actions"
@@ -292,14 +310,14 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 		button btnAddLod "Add a Lod" width:120 height:25
 		edittext editt_Rename "Rename:" fieldWidth:100 labelOnTop:false align: #right across:2 offset:[0,4] 
 		button btnrenameBlock "Rename" width:120 height:25 
-
 	)
 
 	on btnAddLod pressed do 
 	(
 		Layer = VrageLodLayer()
 		Layer.Add Mainlayer:(VRLayers.GetSelected())
-	)	
+	)
+
 	on btnrenameBlock pressed do 
 	(
 		if editt_Rename.text != "" then 
@@ -316,9 +334,8 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 		(
 			messageBox "No New Name entered in field!" beep:false
 		)
-	
-
 	)
+	
 	on Vrage_CubeBlockRollout open do 
 	(
 		Layer = VRLayers.GetSelected();
@@ -338,7 +355,6 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 			
 			-- Subtype  ID
 			editt_SubID.text = MainAttr.SubtypeID
-			
 		)
 	)
 
@@ -434,7 +450,7 @@ rollout Vrage_ConstructionRollout "VrageLayer_ConstructData" width:250 height:20
 	group "Actions"
 	(
 		button btnValidate "Delete" width:120 height:25 tooltip:"Deletes this Layer."	align:#center across:2 
-		checkbox CHbox_ReSortLods "Resort after Delete" offset:[0,5] align:#right checked:true tooltip:"Resort after the deletion of this Layer."
+		--checkbox CHbox_ReSortLods "Resort after Delete" offset:[0,5] align:#right checked:true tooltip:"Resort after the deletion of this Layer."
 		button btnAddLod "Add a Lod" width:120 height:25
 	)
 
@@ -446,7 +462,27 @@ rollout Vrage_ConstructionRollout "VrageLayer_ConstructData" width:250 height:20
 
 	on btnValidate pressed do 
 	(
-		VRLayers.Delete (VRLayers.GetSelected())
+		Mainlayer = (VRLayers.GetSelected()).getParent()
+
+		--find current Construction index
+		Idx_BuildStage =0;
+		for i=1 to Mainlayer.getNumChildren() do 
+		(
+			ChildLayer = Mainlayer.getChild i
+			layerRT = ChildLayer.layerAsRefTarg
+			Constrttr = custAttributes.get layerRT VrageLayerData
+			if Constrttr != undefined and Constrttr.Type == "VRageConstructstage" do Idx_BuildStage += 1
+		)
+		
+		layerRT = (VRLayers.GetSelected()).layerAsRefTarg
+		if layerRT.ConstructionID < Idx_BuildStage then 
+		(
+			MyVRageLog.Warn("Can't delete Construction Layer if a higher  ID exists" + "\n" + "Current:" + (layerRT.ConstructionID as string) + " < Highest:"+ (Idx_BuildStage as string))
+		)
+		else 
+		(
+			VRLayers.Delete (VRLayers.GetSelected())
+		)
 	)
 )
 
@@ -456,7 +492,6 @@ rollout Vrage_LODRollout "VrageLayer_LODData" width:250 height:200
 	(
 		label t1 "Draw Distance:" across:2
 		spinner SpinLodDD "" fieldwidth:40 range:[0,200,1] type:#integer  align:#center
-
 		label t2 "ID:" across:2
 		spinner SpinID "" fieldwidth:40 range:[0,10,1] type:#integer  align:#center enabled:false
 	)
@@ -496,16 +531,33 @@ rollout Vrage_LODRollout "VrageLayer_LODData" width:250 height:200
 	)
 	group "Actions"
 	(
-		button btnValidate "Delete" width:120 height:25 tooltip:"Deletes this Layer."	align:#center across:2 
-		checkbox CHbox_ReSortLods "Resort after Delete" offset:[0,5] align:#right checked:true tooltip:"Resort LodIds after the deletion of this Layer."
+		button btnDelete "Delete" width:120 height:25 tooltip:"Deletes this Layer."	align:#center across:2 
+		--	checkbox CHbox_ReSortLods "Resort after Delete" offset:[0,5] align:#right checked:true tooltip:"Resort LodIds after the deletion of this Layer."
 	)
 
-	on btnValidate pressed do 
+	on btnDelete pressed do 
 	(
-		VRLayers.Delete (VRLayers.GetSelected())
+		Mainlayer = (VRLayers.GetSelected()).getParent()
+		Idx_Lod =0;
+		for i=1 to Mainlayer.getNumChildren() do 
+		(
+			ChildLayer = Mainlayer.getChild i
+			layerRT = ChildLayer.layerAsRefTarg
+			LodAttr = custAttributes.get layerRT VrageLayerData
+			if LodAttr != undefined and LodAttr.Type == "VRageLOD" do Idx_Lod += 1
+		)
+		layerRT = (VRLayers.GetSelected()).layerAsRefTarg
+
+		if (layerRT.LODID+1) < Idx_Lod then 
+		(
+			MyVRageLog.Warn("Can't delete Lod Layer if a higher Lod ID exists" + "\n" + "Current LOD:" + ((layerRT.LODID+1) as string) + " < Highest LOD:"+ (Idx_Lod as string))
+		)
+		else 
+		(
+			VRLayers.Delete (VRLayers.GetSelected())
+		)
 	)
 )
-
 
 rollout VrageModels "ModelData" width:200 height:200
 (
@@ -559,19 +611,16 @@ rollout VrageModels "ModelData" width:200 height:200
 	)
 )
 
-
-fn VrageModelLayer_ShowUI = (
+fn VrageModelLayer_ShowUI = 
+(
 	try (cui.UnRegisterDialogBar VRAGE_ModelUI) catch () 	
-	--Create a rollout
 	try (closeRolloutFloater VRAGE_ModelUI) catch () 
 	VRAGE_ModelUI = newRolloutFloater  "VRage Utilies" 350 600 450 300 
 	addRollout VrageModels VRAGE_ModelUI border:true
 	cui.RegisterDialogBar VRAGE_ModelUI style:#(#cui_floatable)
 )
 
-
 Tesxtthing = VrageCubeBlock()
 Tesxtthing.CreateSkel "MyNewBlock"
 --Tesxtthing.RenameAll  (LayerManager.getLayerFromName "NyNEwblock2") "NyNEwblock2"  "NyNEwblock3"
 VrageModelLayer_ShowUI()
-

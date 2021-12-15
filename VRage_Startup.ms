@@ -31,8 +31,8 @@ fn Vrage_LoadToolbox =(
 	format "loaded script '%'\n"  "\\Vrage_Settings.ms"
 	fileIn (MyVRageRoot + "\\Vrage_Logging.ms")
 	format "loaded script '%'\n"   "\\Vrage_Logging.ms"
-	fileIn (MyVRageRoot + "\\Vrage_LayerHandle.ms")
-	format "loaded script '%'\n"   "\\Vrage_LayerHandle.ms"
+	fileIn (MyVRageRoot + "\\VRage_Layers.ms")
+	format "loaded script '%'\n"   "\\VRage_Layers.ms"
 	fileIn (MyVRageRoot + "\\Vrage_IO\\Vrage_MaterialLibrary.ms")
 	format "loaded script '%'\n"  "\\Vrage_IO\\Vrage_MaterialLibrary.ms"
 	--fileIn "Vrage_MainUI"
