@@ -48,7 +48,6 @@ VrageLayer_BlockPartData = attributes "VrageLayer_BlockPartData" attribID:#(0x52
 	)
 )
 
-
 VrageLayer_ConstructData = attributes "VrageLayer_ConstructData" attribID:#(0x4d367979, 0x6e68ad54)
 (
 	parameters main
@@ -88,29 +87,43 @@ struct VRageLayers
 	),
 	
 	fn GetSelected =(
+		-- Tries to get the selected Layer and also sets it active.
+		-- If no Layer is selected it will get the  Layer of the first obj in the selection.
 		layerExplorer = SceneExplorerManager.GetActiveExplorer()
 		items = layerExplorer.SelectedItems()
-
 		Layer = undefined
 		for i in items where isKindOf i Base_Layer do
 		(
 			Layer = i
 		)
+
+		-- Set the currently selected layer automatically as the current layer
+		if Layer != undefined then Layer.current = true  
+
+		-- Set the layer to the first selected object if no Layer is directly selected
+		if Layer == undefined then 
+		(
+			if selection[1] != undefined then  
+			(
+				Layer = selection[1].layer.layerAsRefTarg
+				selection[1].layer.current = true
+			)
+		)
 		Layer
 	),
 
 	fn Delete LayerHandle = (
-		--try 
-		--(
+		try 
+		(
 			canDelete = (LayerHandle.canDelete()) and not (LayerManager.doesLayerHierarchyContainNodes LayerHandle.name)
 			if canDelete then 
 			(
 				if LayerHandle.getNumChildren() > 0 then 
 				(
-					for i= 1 to (LayerHandle.getNumChildren()) do 
+					for i in (LayerHandle.getNumChildren()) to 1 by -1  do 
 					(
-					VRLayers.Delete (LayerHandle.getChild(i))
-				--	LayerManager.deleteLayerByName ((LayerHandle.getChild(i)).name) 
+						VRLayers.Delete (LayerHandle.getChild(i))
+						--	LayerManager.deleteLayerByName ((LayerHandle.getChild(i)).name) 
 					)
 				)
 				LayerManager.deleteLayerByName LayerHandle.name
@@ -118,19 +131,19 @@ struct VRageLayers
 			else
 			(
 				if LayerManager.doesLayerHierarchyContainNodes LayerHandle.name then 
-				(MyVRageLog.Info ("Can't Delete Layer. Layers with Nodes/Objects in it can'#'t be deleted!") Show:true )
+				(MyVRageLog.Info ("Can't Delete Layer. Layers with Nodes/Objects in it can't be deleted!") Show:true )
 				else (MyVRageLog.Info ("Can't Delete Layer.") Show:true )
 				
 			) 
-		--)
-		--catch( MyVRageLog.Info ("Something went wreng while trying to delete LayerS") Show:true )
+		)
+		catch( MyVRageLog.Info ("Something went wrong while trying to delete Layer/s") Show:true )
 	)
 )
 VRLayers = VRageLayers()
 
 struct VrageLodLayer
 (
-	fn Add Mainlayer:undefined =
+	fn Add Mainlayer:undefined LodDistanceMultiplier:15 =
 	(
 		If Mainlayer == undefined then Mainlayer = VRLayers.GetSelected()
 
@@ -159,7 +172,7 @@ struct VrageLodLayer
 					custAttributes.add layerRT VrageLayer_LODData
 					layerRT.Type = "VRageLOD"
 					layerRT.LODID = Idx_Lod as Integer
-					layerRT.DrawDistance =  20.0 + (Idx_Lod as Integer)*20.0
+					layerRT.DrawDistance =   LodDistanceMultiplier*(Idx_Lod as Integer) - 5*(Idx_Lod as Integer)^2 + 5*(Idx_Lod as Integer)^3
 				)
 			)
 		)
@@ -275,13 +288,15 @@ struct VrageCubeBlock
 			Layer.setName (ReplaceWords Layer.Name OldName NewName mIgnoreCase:true)
 		)
 
-		for i = 1 to Layer.getNumChildren() do
+		if Attr.Type != "SubPartArray" then
 		(
-			CurrentChildLayer= Layer.getChild  i
-			RenameAll CurrentChildLayer OldName NewName
-
+			for i = 1 to Layer.getNumChildren() do
+			(
+				CurrentChildLayer= Layer.getChild  i
+				RenameAll CurrentChildLayer OldName NewName
+	
+			)
 		)
-
 	)
 
 )
@@ -311,6 +326,17 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 		edittext editt_Rename "Rename:" fieldWidth:100 labelOnTop:false align: #right across:2 offset:[0,4] 
 		button btnrenameBlock "Rename" width:120 height:25 
 	)
+
+	group "I/O "	
+	(
+		button 'Btn_Import' "Import" width:100 height:25 toolTip:"Imports an Fbx from the ModSDK" align:#center across:2
+		--on Prep_scene pressed do MySE.run "Scene_Setup.ms"	
+		
+		button 'Btn_export' "Export" width:100 height:25 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
+		on Btn_export pressed do OpenVrageExport()
+		
+	)
+
 
 	on btnAddLod pressed do 
 	(
@@ -491,7 +517,7 @@ rollout Vrage_LODRollout "VrageLayer_LODData" width:250 height:200
 	group "LOD Settings"
 	(
 		label t1 "Draw Distance:" across:2
-		spinner SpinLodDD "" fieldwidth:40 range:[0,200,1] type:#integer  align:#center
+		spinner SpinLodDD "" fieldwidth:40 range:[0,5000,1] type:#integer  align:#center
 		label t2 "ID:" across:2
 		spinner SpinID "" fieldwidth:40 range:[0,10,1] type:#integer  align:#center enabled:false
 	)
@@ -548,9 +574,10 @@ rollout Vrage_LODRollout "VrageLayer_LODData" width:250 height:200
 		)
 		layerRT = (VRLayers.GetSelected()).layerAsRefTarg
 
-		if (layerRT.LODID+1) < Idx_Lod then 
+			Idx_Lod -= 1
+		if (layerRT.LODID) < Idx_Lod then 
 		(
-			MyVRageLog.Warn("Can't delete Lod Layer if a higher Lod ID exists" + "\n" + "Current LOD:" + ((layerRT.LODID+1) as string) + " < Highest LOD:"+ (Idx_Lod as string))
+			MyVRageLog.Warn("Can't delete Lod Layer if a higher Lod ID exists" + "\n" + "Current LOD:" + (layerRT.LODID as string) + " < Highest LOD:"+ (Idx_Lod as string))
 		)
 		else 
 		(
@@ -559,21 +586,86 @@ rollout Vrage_LODRollout "VrageLayer_LODData" width:250 height:200
 	)
 )
 
+rollout Vrage_CollisonRollout "VrageLayer Collison Data" width:250 height:200
+(
+	group "Create RigidBodies"	
+	(
+		button btn_RigidBox "Box" width:30 height:30 toolTip:"Box" align:#center across:5 
+		button btn_RigidSphere "Sphere" width:30 height:30 toolTip:"Sphere" align:#center
+		button btn_RigidCylinder "Cylinder" width:30 height:30 toolTip:"Cylinder" align:#center
+		button btn_RigidMesh "Hull" width:30 height:30 toolTip:"Hull" align:#center
+		button btn_RigidCapsule "Capsule" width:30 height:30 toolTip:"Capsule" align:#center enabled:false
+		
+		checkbox chbox_FitSelec "Fit to Selection"  tooltip:"Fits the generated Rididbody to the selected Object. Generates an Convex Hull if mesh is choosen" align:#center
+		
+		button btn_Convertselection "Convert selection" width:100 height:25 toolTip:" Convert selected objects to rigid bodies." align:#center across:2
+		button btn_StartConvexHulltool "Convex Hull Tool" width:100 height:25 toolTip:" " align:#center
+		--	on btn_StartMountpoints pressed do filein "Mountpoint_GUI.ms"
+	)
+
+	on btn_RigidBox pressed do  CreateRigidBodyObject   "Box" chbox_FitSelec.checked 
+	on btn_RigidSphere pressed do  CreateRigidBodyObject "Sphere"  chbox_FitSelec.checked 
+	on btn_RigidCylinder pressed do  CreateRigidBodyObject "Cylinder" chbox_FitSelec.checked 
+	on btn_RigidMesh pressed do  CreateRigidBodyObject "Hull" chbox_FitSelec.checked 
+
+	on Vrage_CollisonRollout open do 
+	(
+		btn_RigidBox.images = #("Standard_24i.bmp", undefined,11, 1, 1,1, 1, true, true)
+		btn_RigidSphere.images = #("Standard_24i.bmp", undefined,11, 2, 2,2, 2, false, true)
+		btn_RigidCylinder.images = #("Standard_24i.bmp", undefined,11, 3, 3,3, 3, false, true)
+		btn_RigidMesh.images = #("Extended_24i.bmp", undefined,12, 5, 5,5, 5, false, true)
+		btn_RigidCapsule.images = #("Extended_24i.bmp", undefined,12, 9, 9,9, 9, false, true)
+	)
+
+	timer clock "testClock" interval:5000 
+	on clock tick do
+	( 
+		
+	)
+
+	group "Actions"
+	(
+		button btnDelete "Delete" width:120 height:25 tooltip:"Deletes this Layer."	align:#center across:2 
+		--	checkbox CHbox_ReSortLods "Resort after Delete" offset:[0,5] align:#right checked:true tooltip:"Resort LodIds after the deletion of this Layer."
+	)
+
+	on btnDelete pressed do 
+	(
+		VRLayers.Delete (VRLayers.GetSelected())
+	)
+)
+
+
 rollout VrageModels "ModelData" width:200 height:200
 (
-	--dropdownlist Model_DD "Model" items:#("1/2", "1/4", "1/8", "1/16")
-	--dotnetcontrol tv "TreeView" width:240 height:400  pos:[0, 20]
-	label lbl_LayernameA "Name: "  across: 2 
-	label lbl_LayernameB "--" 
-	label lbl_LayterTypeA "LayerType: " across: 2 
-	label lbl_LayterTypeb "--" 
+	--	label lbl_LayernameA "Name: "  across: 2 
+	--	label lbl_LayernameB "--" 
+	--	label lbl_LayterTypeA "LayerType: " across: 2 
+	--	label lbl_LayterTypeb "--" 
 	--button theButton "+"   width:30 height:30 toolTip:"Apply new name" pos:[300, 40] 
 	--button theButton1 "-" width:30 height:30 toolTip:"Apply new name" pos:[330, 40] 
 	
+	
+	button butt_MAtlib "Material Browser" width:100  height:25 align:#center across:3
+	button btn_Settings "Open Settings" width:100 height:25 toolTip:" " align:#center 
+	button btn_LOg "Open Notifications" width:100 height:25 toolTip:" " align:#center
+	
+
+	on butt_MAtlib pressed do 
+	( 
+		try ( MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()  ) 
+		catch messagebox "Failed to open Vrage UI" title:"Error!"
+	)	
+
+	on btn_Settings pressed do OpenSettings()	
+	on btn_LOg pressed do VrageLogSys.CreateMessageRollout()
+
 	timer clock "testClock" interval:10 --tick  every 2 sec
 	on clock tick do
 	( 
 		i = VRLayers.GetSelected()
+		
+
 		if i != undefined then 
 		(
 			FullNameToFind =  i.name
@@ -581,8 +673,8 @@ rollout VrageModels "ModelData" width:200 height:200
 			
 			if MainAttr != undefined then 
 			(
-				lbl_LayernameB.text =  FullNameToFind  
-				lbl_LayterTypeb.text =  MainAttr.Type
+				--lbl_LayernameB.text =  FullNameToFind  
+				--lbl_LayterTypeb.text =  MainAttr.Type
 				
 				if MainAttr.Type == "VRageConstructstage" then 
 				addRollout Vrage_ConstructionRollout VRAGE_ModelUI 
@@ -599,6 +691,10 @@ rollout VrageModels "ModelData" width:200 height:200
 				if MainAttr.Type == "ConstructArrayDef" then 
 				addRollout Vrage_ConstructionArrayRollout VRAGE_ModelUI 
 				else try (removeRollout Vrage_ConstructionArrayRollout VRAGE_ModelUI ) catch ()  
+
+				if MainAttr.Type == "CollisionDef" then 
+				addRollout Vrage_CollisonRollout VRAGE_ModelUI 
+				else try (removeRollout Vrage_CollisonRollout VRAGE_ModelUI ) catch ()  
 			)
 		)
 		else 
@@ -607,6 +703,7 @@ rollout VrageModels "ModelData" width:200 height:200
 			try (removeRollout Vrage_CubeBlockRollout VRAGE_ModelUI ) catch () 
 			try (removeRollout Vrage_LODRollout VRAGE_ModelUI ) catch () 
 			try (removeRollout Vrage_ConstructionArrayRollout VRAGE_ModelUI ) catch ()  
+			try (removeRollout Vrage_CollisonRollout VRAGE_ModelUI ) catch () 
 		)
 	)
 )

@@ -231,22 +231,24 @@ fn ReplaceWords mString mFromStr mToStr mIgnoreCase:false =
 
 function GetObjsMats objs = 
 (    
-	--Get a unique Matlist of Objs
+	--Get a unique Material list of Objs
 	local MatList = #()
 	for obj in objs do 
 	(
-		if ((ClassOf Obj.Material)  as string) != "Multimaterial" then 
+		if Obj.Material != undefined then 
 		(
-			appendIfUnique MatList Obj.Material.Name
-		) 
-		else 
-		(
-			for MtlID = 1 to obj.Material.MaterialList.Count do 
+			if ((ClassOf Obj.Material)  as string) != "Multimaterial" then 
 			(
-				appendIfUnique MatList Obj.Material.MaterialList[MtlID].Name
+				appendIfUnique MatList Obj.Material.Name
+			) 
+			else 
+			(
+				for MtlID = 1 to obj.Material.MaterialList.Count do 
+				(
+					appendIfUnique MatList Obj.Material.MaterialList[MtlID].Name
+				)
 			)
 		)
-		
 	)
 	MatList
 )

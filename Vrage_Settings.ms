@@ -195,7 +195,7 @@ fn OpenSettings = (
 		hyperlink Chbx_MwMBuilder "MWMBuilder"  Enabled:false color: (color 240 0 0)   align:#right
 		hyperlink Chbx_Havoktools "Havoktools "  Enabled:false color: (color 240 0 0)   align:#right
 				
-		timer clock "testClock" interval:1000 --tick  every 2 sec
+		timer clock "testClock" interval:500 --tick  every 2 sec
 	  	on clock tick do
 	  	(
 				if getDirectories(MyVRageCfg.PathToolsFolder) != undefined then (	
