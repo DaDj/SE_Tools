@@ -48,7 +48,7 @@ VrageLayer_BlockPartData = attributes "VrageLayer_BlockPartData" attribID:#( 0x5
 	)
 )
 
-VrageLayer_SubpartPartData = attributes "VrageLayer_SubpartPartData" attribID:#(0xd6eac3c, 0x44c8462e)
+VrageLayer_SubpartPartData = attributes "VrageLayer_SubpartPartData" attribID:#( 0xd6eac3c, 0x44c8462e )
 (
 	parameters main
 	(
@@ -216,7 +216,7 @@ struct VrageConstructionLayer
 			
 			if Attr != undefined then 
 			(
-				print Attr.Type
+				--print Attr.Type
 				if Attr.Type == "ConstructArrayDef" then 
 				(
 					Idx_BuildStage = Idx_BuildStage as string
@@ -241,6 +241,35 @@ struct VrageConstructionLayer
 	)
 )
 
+struct VrageSubpartLayer
+(
+	fn Add Mainlayer:undefined Name:undefined =
+	(
+		Attr = undefined
+		ParentLayerDummies = undefined 
+		ParentLayer = undefined
+
+		if Mainlayer == undefined then Mainlayer = VRLayers.GetSelected()
+		if Mainlayer != undefined then ( Attr = custAttributes.get Mainlayer VrageLayerData )
+		if Attr != undefined and Attr.Type == "SubPartArray" then 
+		(
+			ParentLayer = Mainlayer.getParent() --Cubeblock or a Subpartdef
+			if ParentLayer != undefined then 
+			( -- trying to find the Dummie layer in which the dummy for the subpart has to be placed
+				layerRT = ParentLayer.layerAsRefTarg
+				layerRT.SeName
+				ParentLayerDummies = ( LayerManager.getLayerFromName ( layerRT.SeName + " #Dummies" ) ).layerAsRefTarg
+				if ParentLayerDummies.Type != "DummiesDef" then ( ParentLayerDummies = undefined )
+			) 
+			if ParentLayerDummies != undefined then 
+			(
+				--1. Place the Dummy
+				--2. Create the Subpart Layer
+			)
+		)
+	)
+)
+--test = VrageSubpartLayer()
 struct VrageCubeBlock
 (
 	MyDummy = "",
@@ -325,7 +354,7 @@ struct VrageCubeBlock
 --  Rollouts for Layer Types
 rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 (	
-	button btnValidate "Validate" width:120 height:25 tooltip:"Check if all expected data/Layer exist"	align:#right
+	--button btnValidate "Validate" width:120 height:25 tooltip:"Check if all expected data/Layer exist"	align:#right
 	group "CubeBlock Settings"
 	(
 		label lbl_Size "Block Size" across:2 align: #left
@@ -656,6 +685,84 @@ rollout Vrage_CollisonRollout "VrageLayer Collison Data" width:250 height:200
 	)
 )
 
+
+rollout Vrage_IconRollout "CubeBlock Icon" width:250 height:200 
+(
+	button btn_Preview "Preview" width:150 height:20 toolTip:"Generates a preview of the Icon" align:#left 
+	imgTag the_bmp across:1 width:150 height:150 align:#left
+	colorpicker theColor "Tint Color:" color:[200, 248, 255] modal:false align:#right pos:[180, 40] 
+	--on theColor changed new_col do selection.wirecolor = new_col
+	button btn_Setup "Re/Create Camera Setup" width:150 height:25 toolTip:"recreate the Camera Setup if its lost or if it needs to be reset." align:#right pos:[180, 90]
+	button btn_CreateIcon "Create Icon" width:150 height:50 toolTip:"Box" align:#right pos:[180, 130]
+
+	--timer clock "testClock" interval:1500 --tick  every 2 sec
+
+	on Vrage_IconRollout open do
+	(
+		Layer = ( VRLayers.GetSelected()) ;
+		MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+		if MainAttr != undefined do 
+		(
+			try
+			(
+				if ( MyVrageIcon == undefined ) then fileIn ( GetDir #userScripts + "\\VRageToolbox\\VRage_Icon.ms" )
+				MyIcon = VRage_Icon()
+				MyIcon.SetupObjects Layer
+			)
+			catch (	MyVRageLog.Warn ( "Failed to re/create Camera Objs" ) )
+		)
+	)
+
+	on btn_Preview pressed do 
+	(
+		try
+		(
+			Layer = ( VRLayers.GetSelected()) ;
+			MyIcon = VRage_Icon()
+			theBmp = MyIcon.RenderIcon 300 300 Layer:Layer TintColor:( theColor.color )
+			the_bmp.bitmap = theBmp
+		)
+		catch (	MyVRageLog.Warn ( "Failed to render Icon Preview" ) )
+	) 
+
+	on btn_Setup pressed do 
+	(
+		try
+		(
+			Layer = ( VRLayers.GetSelected()) ;
+			MyIcon = VRage_Icon() 
+			MyIcon = MyIcon.SetupObjects Layer reset:true	
+		)
+		catch (	MyVRageLog.Warn ( "Failed to Reset Icon Setup" ) )
+	) 
+
+	on btn_CreateIcon pressed do 
+	(
+		try
+		(
+			Layer = ( VRLayers.GetSelected()) ;
+			MyIcon = VRage_Icon()
+			theBmp = MyIcon.RenderIcon 128 128 Layer:Layer TintColor:( theColor.color )
+			the_bmp.bitmap = theBmp
+		)
+		catch (	MyVRageLog.Warn ( "Failed to render Icon " ) )
+		try 
+		(
+			FileName = SelectSaveBitmap caption:"Select a file"
+			if FileName != undefined then theBmp.filename = FileName
+			if ( theBmp.filename != undefined ) do save theBmp
+		) 
+		catch (	MyVRageLog.Warn ( "Failed to save Icon" ) )
+	) 
+
+	on theColor changed new_col do
+	(
+		--Layer = VRLayers.GetSelected()
+		--MyIcon = VRage_Icon() 
+		--MyIcon.SetupObjects Layer Lightcolor:new_col 
+	)
+)
+
 rollout VrageModels "ModelData" width:200 height:200
 (
 	--	label lbl_LayernameA "Name: "  across: 2 
@@ -665,18 +772,18 @@ rollout VrageModels "ModelData" width:200 height:200
 	--button theButton "+"   width:30 height:30 toolTip:"Apply new name" pos:[300, 40] 
 	--button theButton1 "-" width:30 height:30 toolTip:"Apply new name" pos:[330, 40] 
 	button butt_MAtlib "Material Browser" width:100 height:25 align:#center across:4
-	button btn_Settings "Open Settings" width:100 height:25 toolTip:" " align:#center  offset:[25,0]
-	button btn_LOg "Open Notifications" width:100 height:25 toolTip:" " align:#right offset:[61,0]
-	button btn_ReloadVrage "\x21BA" width:25 height:25 toolTip:"Reloads Vrage Utilies. Use if scripts may not work." align:#right offset:[15,0]
-	on btn_ReloadVrage pressed do fileIn(GetDir #userScripts+"\\VRageToolbox\\VRage_Startup.ms")
+	button btn_Settings "Open Settings" width:100 height:25 toolTip:" " align:#center offset:[25, 0]
+	button btn_LOg "Open Notifications" width:100 height:25 toolTip:" " align:#right offset:[61, 0]
+	button btn_ReloadVrage "\x21BA" width:25 height:25 toolTip:"Reloads Vrage Utilies. Use if scripts may not work." align:#right offset:[15, 0]
+	on btn_ReloadVrage pressed do fileIn ( GetDir #userScripts + "\\VRageToolbox\\VRage_Startup.ms" )
 
 	on butt_MAtlib pressed do
 	(
-		try (MyVrageMatBrowser = ( Vrage_MaterialBrowser()).getForm() ) 
+		try ( MyVrageMatBrowser = ( Vrage_MaterialBrowser()).getForm() ) 
 		catch 
 		(
 			fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_MaterialLibrary.ms" )
-			try (MyVrageMatBrowser = ( Vrage_MaterialBrowser()).getForm() ) 
+			try ( MyVrageMatBrowser = ( Vrage_MaterialBrowser()).getForm() ) 
 			catch ( messagebox "Failed to open MaterialBrwoser" title:"Error!" )
 		)
 	) 
@@ -702,8 +809,15 @@ rollout VrageModels "ModelData" width:200 height:200
 				else try ( removeRollout Vrage_ConstructionRollout VRAGE_ModelUI ) catch () 
 
 				if MainAttr.Type == "CubeBlockDef" then 
-				addRollout Vrage_CubeBlockRollout VRAGE_ModelUI 
-				else try ( removeRollout Vrage_CubeBlockRollout VRAGE_ModelUI ) catch () 
+				(
+					addRollout Vrage_CubeBlockRollout VRAGE_ModelUI 
+					addRollout Vrage_IconRollout VRAGE_ModelUI rolledUp:true
+				)
+				else try 
+				( 
+					removeRollout Vrage_CubeBlockRollout VRAGE_ModelUI 
+					removeRollout Vrage_IconRollout VRAGE_ModelUI 
+				) catch () 
 
 				if MainAttr.Type == "VRageLOD" then 
 				addRollout Vrage_LODRollout VRAGE_ModelUI 
@@ -725,6 +839,7 @@ rollout VrageModels "ModelData" width:200 height:200
 			try ( removeRollout Vrage_LODRollout VRAGE_ModelUI ) catch () 
 			try ( removeRollout Vrage_ConstructionArrayRollout VRAGE_ModelUI ) catch () 
 			try ( removeRollout Vrage_CollisonRollout VRAGE_ModelUI ) catch () 
+			try ( removeRollout Vrage_IconRollout VRAGE_ModelUI ) catch () 
 		)
 	)
 )
@@ -738,7 +853,7 @@ fn VrageModelLayer_ShowUI =
 	cui.RegisterDialogBar VRAGE_ModelUI style:#( #cui_floatable )
 )
 
-Tesxtthing = VrageCubeBlock()
-Tesxtthing.CreateSkel "MyNewBlock"
+Testthing = VrageCubeBlock();
+Testthing.CreateSkel "MyNewBlock" ;
 --Tesxtthing.RenameAll  (LayerManager.getLayerFromName "NyNEwblock2") "NyNEwblock2"  "NyNEwblock3"
-VrageModelLayer_ShowUI()
+VrageModelLayer_ShowUI();

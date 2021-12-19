@@ -110,7 +110,7 @@ struct VRageExporter (
 			) 
 		) 
 
-		if MyObjects.count > 16 do MyVRageLog.Warn ("More than 16 Collisionshapes in " + LayerManager.current.name ) 
+		if MyObjects.count > 10 do MyVRageLog.Warn ("More than 10 Collisionshapes in " + LayerManager.current.name ) 
 		-- set pivto of objs to world origin , needed for havok
 		MyObjects.pivot = [0,0,0]
 

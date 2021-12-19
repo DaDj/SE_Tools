@@ -1,6 +1,6 @@
 global MyVRageRoot 
 
-MyVRageRoot = pathConfig.removePathLeaf (getSourceFileName());
+MyVRageRoot = pathConfig.removePathLeaf ( getSourceFileName()) ;
 
 -- Struct of Global Scence Settings
 struct MyVRageSceneDef
@@ -9,10 +9,10 @@ struct MyVRageSceneDef
 	i_Construction = 1,
 	i_ConstructionLODS = 1,
 	i_Subparts = 0,
-	Scenetype = 1,  --1 = Block, --2 == Character , 3 = Animation
+	Scenetype = 1, --1 = Block, --2 == Character , 3 = Animation
 	ModelName = "MySEModel",
 	OldModelname = "MySEModel",
-	LodDistance1  = 10,
+	LodDistance1 = 10,
 	LodDistance2 = 20,
 	LodDistance3 = 40,
 	LodDistance4 = 80,
@@ -23,39 +23,46 @@ struct MyVRageSceneDef
 --deklaration of the global
 global MyVrageScene = MyVRageSceneDef()
 
-fn Vrage_LoadToolbox =(
+fn Vrage_LoadToolbox = (
 
-	fileIn (MyVRageRoot  + "\\Vrage_Common.ms")
-	format "loaded script '%'\n"  "\\Vrage_Common.ms"
-	fileIn (MyVRageRoot + "\\Vrage_Settings.ms")
-	format "loaded script '%'\n"  "\\Vrage_Settings.ms"
-	fileIn (MyVRageRoot + "\\Vrage_Logging.ms")
-	format "loaded script '%'\n"   "\\Vrage_Logging.ms"
-	fileIn (MyVRageRoot + "\\VRage_Layers.ms")
-	format "loaded script '%'\n"   "\\VRage_Layers.ms"
-	fileIn (MyVRageRoot + "\\Vrage_IO\\Vrage_MaterialLibrary.ms")
-	format "loaded script '%'\n"  "\\Vrage_IO\\Vrage_MaterialLibrary.ms"
+	fileIn ( MyVRageRoot + "\\Vrage_Common.ms" )
+	format "loaded script '%'\n" "\\Vrage_Common.ms"
+
+	fileIn ( MyVRageRoot + "\\Vrage_Settings.ms" )
+	format "loaded script '%'\n" "\\Vrage_Settings.ms"
+
+	fileIn ( MyVRageRoot + "\\Vrage_Logging.ms" )
+	format "loaded script '%'\n" "\\Vrage_Logging.ms"
+
+	fileIn ( MyVRageRoot + "\\VRage_Icon.ms" )
+	format "loaded script '%'\n" "\\VRage_Icon.ms"
+
+	fileIn ( MyVRageRoot + "\\VRage_Layers.ms" )
+	format "loaded script '%'\n" "\\VRage_Layers.ms"
+	
+	fileIn ( MyVRageRoot + "\\Vrage_IO\\Vrage_MaterialLibrary.ms" )
+	format "loaded script '%'\n" "\\Vrage_IO\\Vrage_MaterialLibrary.ms"
 	--fileIn "Vrage_MainUI"
 	
 	
 	noThumbSrc = MyVRageRoot + "\\Vrage_IO\\" + "NoThumbnail.jpg"
 	noThumbTrg = GetDir #plugcfg + "\\VRageUtilities" + "\\MaterialThumbnails\\" + "NoThumbnail.jpg"
-		
+	
 	copyFile noThumbSrc noThumbTrg
 	
 	
-	files = #()
-	dirs = getDirectories ((trimright MyVRageRoot "\\") +"\\*")
+	files = #( )
+	dirs = getDirectories ( ( trimright MyVRageRoot "\\" ) + "\\*" )
 
 	for d in dirs do (
-		join dirs (getDirectories ((trimright d "\\") +"\\*"))
+		join dirs ( getDirectories ( ( trimright d "\\" ) + "\\*" ) )
 	)
 	
-	for d in dirs where not (matchpattern d pattern:"*vrage_testing*") do (
-		join files (getFiles ((trimright d "\\") +"\\*.ms"))
+	for d in dirs where not ( matchpattern d pattern:"*vrage_testing*" ) do (
+		join files ( getFiles ( ( trimright d "\\" ) + "\\*.ms" ) )
 	)
-		
-	for f in files where matchpattern (getfilenamefile f) pattern:"*vrage*" do (
+	
+	for f in files where matchpattern ( getfilenamefile f ) pattern:"*vrage*" do (
 		
 		fileIn f
 		format "loaded script '%'\n" f
