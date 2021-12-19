@@ -33,8 +33,9 @@ struct VRage_Icon
 		IconCam = undefined	
 		IconCamtarget = undefined
 		IconLight = undefined
+		SunLight = undefined
 
-		--find the camera/omnis in the defiened layer
+		--find the camera/omnis in the defined layer
 		( Layer.layerAsRefTarg ).nodes &theNodes
 		for tNode in theNodes do 
 		(
@@ -43,6 +44,7 @@ struct VRage_Icon
 				if tNode.name == "IconCam" then IconCam = tNode
 				if tNode.name == "IconCam.Target" then IconCamtarget = tNode
 				if tNode.name == "IconLight" then IconLight = tNode
+				if tNode.name == "SunLight" then SunLight = tNode
 			) 
 		)
 		-- if any object is missing OR if reset is true then delete existing and recreate
@@ -63,12 +65,28 @@ struct VRage_Icon
 			IconCam = tempCamera
 		)
 
+		if SunLight == undefined or reset == true then 
+		(
+			if SunLight != undefined then delete SunLight
+			
+			SunLight = Skylight multiplier:1.0 name:"SunLight"
+			SunLight.rgb = [255, 255, 255]
+			--SunLight.attenDecay = 1
+			--SunLight.castShadows = true
+			--SunLight.baseObject.castShadows = true
+			SunLight.position.x = units.decodeValue "2500cm" 
+			SunLight.position.y = units.decodeValue "3500cm" 
+			SunLight.position.z = units.decodeValue "0cm" 
+			( Layer.layerAsRefTarg ).addnode	SunLight
+		
+		)
+
 		if IconLight == undefined or reset == true then 
 		(
 			if IconLight != undefined then delete IconLight
 			
 			tempLight = Omnilight multiplier:5.0 name:"IconLight"
-			tempLight.rgb = [200, 220, 220]
+			tempLight.rgb = [255, 255, 255]
 			tempLight.attenDecay = 1
 			tempLight.castShadows = true
 			tempLight.baseObject.castShadows = true
@@ -79,8 +97,16 @@ struct VRage_Icon
 			IconLight = tempLight
 		)
 		
-		if activate == true then IconLight.enabled = true 
-		else IconLight.enabled = false
+		if activate == true then 
+		(
+			IconLight.enabled = true 
+			SunLight.enabled = true 
+		) 
+		else 
+		(
+			IconLight.enabled = false
+			SunLight.enabled = false
+		)
 		IconCam
 	),
 
@@ -91,7 +117,11 @@ struct VRage_Icon
 		cur_rdr = renderers.current
 		new_rdr = Quicksilver_Hardware_Renderer()
 		renderers.current = new_rdr
-
+		new_rdr.AmbientOcclusionEnabled = true
+		new_rdr.AmbientOcclusionIntensity = 2.0
+		new_rdr.AmbientOcclusionRadius = 10.0
+		new_rdr.IndirectIlluminationEnabled = true
+		new_rdr.IndirectIlluminationMultiplier = 2.0
 		-- setup objects as safety again and get the camera
 		tempCamera = SetupObjects Layer activate:true
 		
@@ -117,6 +147,11 @@ struct VRage_Icon
 		-- reset of Render to previous one
 		renderers.current = cur_rdr
 		result
+	),
+
+	fn SaveIcon Bitmap Filename Format:"dds" =
+	(
+
 	)
 )
 

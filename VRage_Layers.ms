@@ -99,13 +99,19 @@ struct VRageLayers
 		-- Tries to get the selected Layer and also sets it active.
 		-- If no Layer is selected it will get the  Layer of the first obj in the selection.
 		layerExplorer = SceneExplorerManager.GetActiveExplorer()
-		items = layerExplorer.SelectedItems()
+		items = undefined
+		if layerExplorer != undefined then items = layerExplorer.SelectedItems() 
+		
 		Layer = undefined
-		for i in items where isKindOf i Base_Layer do
+		if items != undefined then 
 		(
-			Layer = i
-		)
+			for i in items where isKindOf i Base_Layer do
+			(
+				Layer = i
+			)
 
+		)
+		
 		-- Set the currently selected layer automatically as the current layer
 		if Layer != undefined then Layer.current = true 
 
