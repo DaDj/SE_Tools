@@ -214,7 +214,7 @@ struct VrageMaterial (
 			if col != undefined then 
 			(
 				dCol = ( Vrage_XMLtoColor col ) * 255
-				print dcol
+				--print dcol
 				--dCol.alpha = 255
 				material.basecolor = dCol
 				OpacityColorclamp = osl_ColorClamp()
@@ -457,6 +457,7 @@ struct Vrage_MaterialButton (
 	bsize_image = bsize - bpadding * 2,
 	bmargin = 2,
 	imageList = undefined,
+	mButton = dotNetObject "System.Windows.Forms.Button",
 
 	fn click_event = (
 		
@@ -577,14 +578,24 @@ struct Vrage_MaterialButton (
 		
 		redrawViews()
 	),
+
+	fn hover_event sender eb = (
+		Color = dotNetClass "System.Drawing.Color"
+		mButton.BackColor = Color.gray 
+	),
+
+	fn hoverEnd_event sender eb = (
+		Color = dotNetClass "System.Drawing.Color"
+		mButton.BackColor = Color.transparent
+	),
 	
 	fn getButton = (
 		
 		imageList = dotNetObject "System.Windows.Forms.ImageList"
 		imageList.ImageSize = dotNetObject "System.Drawing.Size" bsize_image bsize_image
 		imageList.ColorDepth = ( dotNetClass "System.Windows.Forms.ColorDepth" ).Depth32bit
-		
-		thumb_path = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\" + name + ".jpg"
+	
+		thumb_path = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\" + name + ".png"
 		img_path = MyVrageCfg.DefaultThumbnail
 
 		if doesFileExist thumb_path do (
@@ -602,10 +613,11 @@ struct Vrage_MaterialButton (
 		bFontStyle = ( dotNetClass "System.Drawing.FontStyle" ).bold
 		bfont = dotNetObject "System.Drawing.Font" "Microsoft Sans Serif" 7 bFontStyle
 
-		mButton = dotNetObject "System.Windows.Forms.Button"
+		
 		mButton.text = name
 		mButton.size = dotNetObject "System.Drawing.Size" bsize bsize
 		mButton.flatStyle = mButton.flatStyle.Popup
+	--	mButton.BackColor = Color.gray -- just for fun
 		mButton.ImageList = imageList
 		mButton.ImageIndex = 0
 
@@ -617,6 +629,9 @@ struct Vrage_MaterialButton (
 		mButton.Margin = dotNetObject "System.Windows.Forms.Padding" bmargin
 		
 		dotNet.addEventHandler mButton "click" click_event
+	--	dotNet.addEventHandler mButton "MouseHover" hover_event
+		--dotNet.addEventHandler mButton "MouseLeave" hoverEnd_event
+		 
 		dotnet.setLifetimeControl mButton #dotnet
 		
 		mButton
@@ -648,6 +663,7 @@ struct Vrage_MaterialBrowser (
 	filter_button_Emissive = dotNetObject "System.Windows.Forms.button",
 	filter_button_Glass = dotNetObject "System.Windows.Forms.button",
 	filter_button_Atlas = dotNetObject "System.Windows.Forms.button",
+	filter_button_Screen = dotNetObject "System.Windows.Forms.button",
 	last_txt = "",
 
 
@@ -655,7 +671,9 @@ struct Vrage_MaterialBrowser (
 	fn populateMats txt:"" cleanMats:true exactWord:false = (
 		
 		if cleanMats == true do Mat_Layout.controls.clear()
-		for n in MyVrageMatLib.mat_names where matchpattern n pattern:( "*" + txt + "*" ) do ( 
+		if exactWord == true then ThePattern = txt else ThePattern = ( "*" + txt + "*" )
+
+		for n in MyVrageMatLib.mat_names where matchpattern n pattern:ThePattern do ( 
 			Mat_Layout.controls.add ( ( Vrage_MaterialButton name:n ).getButton())
 		)
 		--print Mat_Layout.controls.count
@@ -685,7 +703,9 @@ struct Vrage_MaterialBrowser (
 		if new_txt != last_txt do (
 			last_txt = new_txt
 			populateMats txt:new_txt
-			populateMats txt:"Conveyor" cleanMats:false
+			populateMats txt:"Conveyor" cleanMats:false exactWord:true
+			populateMats txt:"Conveyor_Yellow" cleanMats:false exactWord:true
+			populateMats txt:"Doodads" cleanMats:false
 		)
 	),
 
@@ -700,6 +720,7 @@ struct Vrage_MaterialBrowser (
 			populateMats txt:"Chrome" cleanMats:false
 			populateMats txt:"Construction" cleanMats:false
 			populateMats txt:"Pipe" cleanMats:false
+
 		)
 	),
 
@@ -711,6 +732,13 @@ struct Vrage_MaterialBrowser (
 			populateMats txt:"Rubber"
 			populateMats txt:"Cloth" cleanMats:false
 			populateMats txt:"Solarpanel" cleanMats:false
+			populateMats txt:"Seat" cleanMats:false
+			populateMats txt:"CameraLens" cleanMats:false
+			--populateMats txt:"BlackMattePlastic" cleanMats:false
+			populateMats txt:"Terminal" cleanMats:false
+			populateMats txt:"Plastic" cleanMats:false
+			populateMats txt:"ProgrammingBlock" cleanMats:false exactWord:true
+			populateMats txt:"HydrogenThrusterNozzle" cleanMats:false exactWord:true
 		)
 	),
 
@@ -743,6 +771,18 @@ struct Vrage_MaterialBrowser (
 			populateMats txt:"Paneling" cleanMats:false
 		)
 	),
+
+	fn filter_Screen_click sender eb = (
+		new_txt = "Screen"
+		filter_box.text = ""
+		if new_txt != last_txt do (
+			last_txt = new_txt
+			populateMats txt:new_txt cleanMats:true
+			--populateMats txt:"Decals" cleanMats:false
+			--populateMats txt:"Paneling" cleanMats:false
+		)
+	),
+
 
 
 
@@ -858,6 +898,13 @@ struct Vrage_MaterialBrowser (
 		dotNet.addEventHandler filter_button_Atlas "click" filter_Atlas_click
 		dotnet.setLifetimeControl filter_button_Atlas #dotnet
 
+		filter_button_Screen.size = dotNetObject "System.Drawing.Size" 90 40
+		filter_button_Screen.location = dotNetObject "System.Drawing.Point" 550 60
+		filter_button_Screen.text = "Screen"
+		filter_button_Screen.flatStyle = filter_button_Screen.flatStyle.System
+		dotNet.addEventHandler filter_button_Screen "click" filter_Screen_click
+		dotnet.setLifetimeControl filter_button_Screen #dotnet
+
 		
 		Filter_Group.controls.add filter_button
 		Filter_Group.controls.add filter_box
@@ -867,6 +914,7 @@ struct Vrage_MaterialBrowser (
 		Filter_Group.controls.add filter_button_Emissive
 		Filter_Group.controls.add filter_button_Glass
 		Filter_Group.controls.add filter_button_Atlas
+		Filter_Group.controls.add filter_button_Screen
 		
 		hForm.text = "Vrage Material Browser"
 		hForm.padding = Padding
@@ -1081,19 +1129,20 @@ fn Vrage_GetMaterialSample inputMaterial Filename inputWidth inputHeight = (
 		tempHiddenObject = for tempObject in Objects where not tempObject.ishidden collect tempObject
 		Hide tempHiddenObject
 		tempCamera = Freecamera fov:45 targetDistance:50 nearclip:1 farclip:1000 nearrange:0 farrange:1000 mpassEnabled:off mpassRenderPerPass:off pos:[0, 0, 40]
-		tempBackground = Plane pos:[0, 0, -10] Length:150 Width:150 wireColor:gray
+		--tempBackground = Plane pos:[0, 0, -10] Length:150 Width:150 wireColor:gray
 		tempSphere = Sphere pos:[0, 0, 0] rotation:( quat -0.707107 0 0 0.707107 ) wirecolor:gray radius:12 smooth:on segs:32 chop:0 slice:off sliceFrom:0 sliceTo:0 mapcoords:on recenter:off
 		-- tempSphere.rotation = eulerAngles -90 0 0
 		tempSphere.material = inputMaterial
 		for tempLight in Lights where IsProperty tempLight #excludeList do 
 		(
 			tempLight.excludeList = Append tempLight.excludeList tempSphere
-			tempLight.excludeList = Append tempLight.excludeList tempBackground
+			--tempLight.excludeList = Append tempLight.excludeList tempBackground
 		)
 		tempLight = Omnilight multiplier:1.0 pos:[20, 20, 40]
 		tempLight2 = Omnilight multiplier:1.0 pos:[-15, -20, 0]
+		pngio.setAlpha true ;
 		result = render camera:tempCamera outputsize:[inputWidth, inputHeight] vfb:false outputfile:Filename
-		delete #( tempCamera, tempLight, tempLight2, tempSphere, tempBackground )
+		delete #( tempCamera, tempLight, tempLight2, tempSphere /*, tempBackground*/ )
 		UnHide tempHiddenObject
 	)
 	result
@@ -1118,7 +1167,7 @@ fn Vrage_GenerateMatThumbnails names = (
 	renderers.current = new_rdr
 
 	for n in names do (
-		local fname = thumb_dir + n + ".jpg"
+		local fname = thumb_dir + n + ".png"
 		MyMaterial = Vrage_getmatbyname n
 		MaterialSample = ( Vrage_GetMaterialSample MyMaterial fname 150 150 )
 		prog += 1.0

@@ -36,6 +36,7 @@ VrageLayer_CubeBlockData = attributes "VrageLayer_CubeBlockData" attribID:#( 0x2
 		Size type:#string default:"Large" ;
 		TypeId type:#string	default:"CubeBlock" ;
 		SubtypeID type:#string	default:"MyBlock" ;
+		IconTintColor type:#color	default:[200, 248, 255] ;
 	)
 )
 
@@ -711,6 +712,7 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:250 height:200
 		(
 			try
 			(
+				theColor.color = MainAttr.IconTintColor 
 				if ( MyVrageIcon == undefined ) then fileIn ( GetDir #userScripts + "\\VRageToolbox\\VRage_Icon.ms" )
 				MyIcon = VRage_Icon()
 				MyIcon.SetupObjects Layer
@@ -724,6 +726,8 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:250 height:200
 		try
 		(
 			Layer = ( VRLayers.GetSelected()) ;
+			MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+			MainAttr.IconTintColor = theColor.color
 			MyIcon = VRage_Icon()
 			theBmp = MyIcon.RenderIcon 300 300 Layer:Layer TintColor:( theColor.color )
 			the_bmp.bitmap = theBmp
@@ -747,6 +751,8 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:250 height:200
 		try
 		(
 			Layer = ( VRLayers.GetSelected()) ;
+			MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+			MainAttr.IconTintColor = theColor.color
 			MyIcon = VRage_Icon()
 			theBmp = MyIcon.RenderIcon 128 128 Layer:Layer TintColor:( theColor.color )
 			the_bmp.bitmap = theBmp
@@ -763,9 +769,9 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:250 height:200
 
 	on theColor changed new_col do
 	(
-		--Layer = VRLayers.GetSelected()
-		--MyIcon = VRage_Icon() 
-		--MyIcon.SetupObjects Layer Lightcolor:new_col 
+		Layer = ( VRLayers.GetSelected()) ;
+		MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+		MainAttr.IconTintColor = theColor.color
 	)
 )
 

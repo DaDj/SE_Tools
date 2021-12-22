@@ -4,7 +4,7 @@ struct VRageConfig
 	/*Static Options */
 	VRageConfigDir = GetDir #plugcfg+ @"\VRageUtilities",
 	VRageConfigFile = VRageConfigDir + @"\MyVRageCfg.ini",
-
+	VRageScriptsDir = GetDir #userScripts + "\\VRageToolbox\\",
 	/*configureable User Paths*/
 	PathToolsFolder = "",
 	PathHavokContentTools = " ",
@@ -34,10 +34,10 @@ struct VRageConfig
 			messageBox title:"Permission Error!"
 		)
 		
-		if (PathToolsFolder) != "" then (
-				if getDirectories(PathToolsFolder) != undefined then (	
-					PathFBXImporter = if (tmp = getFiles (PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
-					PathMwmBuilder = if (tmp = getFiles (PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
+		if (VRageScriptsDir) != "" then (
+				if getDirectories(VRageScriptsDir) != undefined then (	
+					PathFBXImporter = if (tmp = getFiles (VRageScriptsDir + "\\Vrage_Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
+					PathMwmBuilder = if (tmp = getFiles (VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
 					PathTextures =  if (tmp = getDirectories (PathToolsFolder + "\\Textures")).count != 0 then PathToolsFolder else ""
 				)
 			)
@@ -69,8 +69,8 @@ struct VRageConfig
 			PathToolsFolder =  if (tmp =getINISetting VRageConfigFile "Directories" "Toolsfolder") != undefined then tmp else ""   
 			if (PathToolsFolder) != "" then (
 				if getDirectories(PathToolsFolder) != undefined then (	
-					PathFBXImporter = if (tmp = getFiles (PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
-				PathMwmBuilder = if (tmp = getFiles (PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
+					PathFBXImporter = if (tmp = getFiles (VRageScriptsDir + "\\Vrage_Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
+				PathMwmBuilder = if (tmp = getFiles (VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( PathToolsFolder + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
 					PathTextures =  if (tmp = getDirectories (PathToolsFolder + "\\Textures")).count != 0 then PathToolsFolder else ""
 				)
 			)
@@ -199,11 +199,11 @@ fn OpenSettings = (
 	  	on clock tick do
 	  	(
 				if getDirectories(MyVRageCfg.PathToolsFolder) != undefined then (	
-					MyVRageCfg.PathFBXImporter = if (tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
-					MyVRageCfg.PathMwmBuilder = if (tmp = getFiles (MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( MyVRageCfg.PathToolsFolder + "\\Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
 					MyVRageCfg.PathTextures  =  if (tmp = getDirectories (MyVRageCfg.PathToolsFolder + "\\Textures")).count != 0 then MyVRageCfg.PathToolsFolder else ""	
 				)
-		
+			MyVRageCfg.PathFBXImporter = if (tmp = getFiles (MyVRageCfg.VRageScriptsDir + "\\Vrage_Tools\\FbxImporter.exe")).count != 0 then tmp[1] else ""
+			MyVRageCfg.PathMwmBuilder = if (tmp = getFiles (MyVRageCfg.VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe")).count != 0 then ( MyVRageCfg.VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
+					
 			MyVRageCfg.PathHavokContentTools =   if (tmp = getFiles (MyVRageCfg.PathHavokContentTools + "\\hctStandAloneFilterManager.exe")).count != 0 then MyVRageCfg.PathHavokContentTools  else "none"
 			if MyVRageCfg.PathFBXImporter != "" then (Chbx_FBXImporter.color = (color 0 200 0)   ) else (Chbx_FBXImporter.color = (color 240 0 0) )
 			if MyVRageCfg.PathMwmBuilder != "" then (Chbx_MwMBuilder.color = (color 0 200 0)   ) else (Chbx_MwMBuilder.color = (color 240 0 0) )
@@ -214,15 +214,15 @@ fn OpenSettings = (
 	
 	rollout VrageUtils_CfgTextures "Textures" width:210 height:400	
 	(
-		label lbl_textureType "Texture Format:"   across:4
-		dropdownlist ddl_TexType "" items:VrageTexTypes enabled:(not MyVRageCfg.UseGameTextures) selection:MyVRageCfg.TextureType width:60
+		label lbl_textureType "Texture Format:"   across:4 enabled:false
+		dropdownlist ddl_TexType "" items:VrageTexTypes selection:MyVRageCfg.TextureType width:60 enabled:false -- enabled:(not MyVRageCfg.UseGameTextures)
 			on ddl_TexType selected sel do (
 				MyVRageCfg.TextureType = ddl_TexType.selection
 				MyVRageCfg.save()
 			)
 			
 		checkbutton cbn_UseGameTextures "Use Game Textures"  width:120 height:25 checked:MyVRageCfg.UseGameTextures
-			tooltip:"Check if you want to use DDS Textures straight from the Game files" 
+			tooltip:"Check if you want to use DDS Textures straight from the Game files"  enabled:false
 			on cbn_UseGameTextures changed state do (
 				if not (doesDirectoryExist MyVRageCfg.PathGame) then (
 					state = False
