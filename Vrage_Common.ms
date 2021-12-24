@@ -7,25 +7,25 @@ function MXSColor_to_dotNetColor hColor = --New function
 	m_dnColor.fromARGB hColor.r hColor.g hColor.b
 )
 
-fn Vrage_getFacesByMatId mesh =(
+fn Vrage_getFacesByMatId mesh = (
 	
-	mesh_faces_by_mat_id = #()
+	mesh_faces_by_mat_id = #( )
 
 	for f = 1 to mesh.numfaces do (
 		mat_id = getFaceMatID mesh f
 		
 		if mesh_faces_by_mat_id[mat_id] != undefined then (
-			mesh_faces_by_mat_id[mat_id] += #(f)
+			mesh_faces_by_mat_id[mat_id] += #( f )
 		)
 		else (
-			mesh_faces_by_mat_id[mat_id] = #(f)
+			mesh_faces_by_mat_id[mat_id] = #( f )
 		)
 	)
 
 	mesh_faces_by_mat_id
 )
 
-fn Vrage_getNormalData theMod =(
+fn Vrage_getNormalData theMod = (
 	
 	
 	
@@ -36,21 +36,21 @@ fn Vrage_getNormalData theMod =(
 		
 	)
 	
-	faces = 	for f = 1 to theMod.GetNumFaces() collect (
+	faces = for f = 1 to theMod.GetNumFaces() collect (
 		for c = 1 to theMod.GetFaceDegree f collect theMod.GetNormalID f c
 	)
-	normals = #() 
+	normals = #( ) 
 	
 	
 	for n = 1 to theMod.GetNumNormals() do (
-		append normals (theMod.getNormal n)
+		append normals ( theMod.getNormal n )
 	)
 	
 	VrageNormalData faces:faces normals:normals
 	
 )
 
-fn Vrage_setNormalData theMod data =(
+fn Vrage_setNormalData theMod data = (
 
 	for f = 1 to theMod.GetNumFaces() do (
 		deg = theMod.GetFaceDegree f 
@@ -65,15 +65,15 @@ fn Vrage_setNormalData theMod data =(
 	
 )
 
-fn Vrage_condenseMatIds obj non_destructive:true =(
+fn Vrage_condenseMatIds obj non_destructive:true = (
 
 	if classOf obj.material == Multimaterial do (
 		
-		face_ids = Vrage_getFacesByMatId(obj.mesh)
+		face_ids = Vrage_getFacesByMatId ( obj.mesh )
 		
-		materials = #() 
+		materials = #( ) 
 		
-		new_ids = #() 
+		new_ids = #( ) 
 		
 		for i = 1 to face_ids.count where face_ids[i] != undefined do (
 			
@@ -109,8 +109,8 @@ fn Vrage_condenseMatIds obj non_destructive:true =(
 				subobjectlevel = 4
 				
 				for g = 1 to new_ids.count do (
-					MaterialMod.setSelection #Face #{}
-					MaterialMod.select #Face (new_ids[g] as BitArray)
+					MaterialMod.setSelection #Face #{ }
+					MaterialMod.select #Face ( new_ids[g] as BitArray )
 					MaterialMod.SetOperation #SetMaterial
 					MaterialMod.materialIDToSet = g
 					MaterialMod.Commit()
@@ -137,25 +137,29 @@ fn Vrage_condenseMatIds obj non_destructive:true =(
 			)
 		)
 		
-		new_material = Multimaterial numsubs:materials.count materialList:materials names:(for m in materials collect m.name)
+		new_material = Multimaterial numsubs:materials.count materialList:materials names:( for m in materials collect m.name )
 		
 		obj.material = new_material
 	)
 )
 
-fn Vrage_cleanLayers =( --Deletes empty layers after import
+fn Vrage_cleanLayers this_layer:undefined =
+( --Deletes empty layers after import
+	if this_layer == undefined then this_layer = (LayerManager.getLayer 0)
 
-	for l=LayerManager.count-1 to 0 by -1 do (
-		local this_layer = LayerManager.getLayer l
-		
-		canDelete = (this_layer.canDelete()) and not (LayerManager.doesLayerHierarchyContainNodes this_layer.name)
-		if canDelete do (
-			LayerManager.deleteLayerByName this_layer.name
-		)
+	if this_layer.getNumChildren() > 0 then 
+	(
+		for i = 1 to this_layer.getNumChildren() do 
+		(
+			Vrage_cleanLayers this_layer:(this_layer.getChild (i))
+		) 
 	)
+	canDelete = ( this_layer.canDelete()) and not ( LayerManager.doesLayerHierarchyContainNodes this_layer.name ) 
+	layerRT = this_layer.layerAsRefTarg
+	if canDelete and not (isProperty layerRT #VRType ) do LayerManager.deleteLayerByName this_layer.name
 )
 
-fn Vrage_sumArray arr =(
+fn Vrage_sumArray arr = (
 
 	sum = 0
 
@@ -178,43 +182,43 @@ fn Vrage_sumArray arr =(
 )
 
 
-fn Vrage_SetLayerbyName Name =(
+fn Vrage_SetLayerbyName Name = (
 	
-	if LayerManager.getLayerFromName(Name) == undefined then(
-		return undefined  
+	if LayerManager.getLayerFromName ( Name ) == undefined then (
+		return undefined 
 	) 
-	else(
-		(LayerManager.getLayerFromName(Name)).current = true;
-		return LayerManager.getLayerFromName(Name)
+	else (
+		( LayerManager.getLayerFromName ( Name ) ).current = true ;
+		return LayerManager.getLayerFromName ( Name )
 	) 
 )
 
-fn Vrage_XMLtoVec xml =(
+fn Vrage_XMLtoVec xml = (
 	[xml.item["X"].innertext as float, xml.item["Y"].innertext as float, xml.item["Z"].innertext as float]
 )
 
-fn Vrage_XMLtoColor xml =(
-	([xml.item["X"].innertext as float, xml.item["Y"].innertext as float, xml.item["Z"].innertext as float]) as color
+fn Vrage_XMLtoColor xml = (
+	([xml.item["X"].innertext as float, xml.item["Y"].innertext as float, xml.item["Z"].innertext as float] ) as color
 )
 
-fn Vrage_wrapText str maxW=
+fn Vrage_wrapText str maxW =
 (
-	local strArr=#()
-	local lastSpace=1
+	local strArr = #( )
+	local lastSpace = 1
 	for i = 1 to str.count do
 	(
-		if str[i]==" " then lastSpace=i
-		local curLine=substring str 1 (lastSpace)
-		local w=(getTextExtent curLine).x
-		if w>maxW then
+		if str[i] == " " then lastSpace = i
+		local curLine = substring str 1 ( lastSpace )
+		local w = ( getTextExtent curLine ).x
+		if w > maxW then
 		(
 			append strArr curLine
-			str=substring str (curLine.count+1) str.count
+			str = substring str ( curLine.count + 1 ) str.count
 		)
 	)
 	append strArr str
-	str=""
-	for s in strArr do str+=s+"\n"
+	str = ""
+	for s in strArr do str += s + "\n"
 	return str
 )
 
@@ -222,22 +226,22 @@ fn ReplaceWords mString mFromStr mToStr mIgnoreCase:false =
 (
 	mStream = mString as stringStream 
 	regex = dotnetclass "system.text.regularexpressions.regex"
-	pattern =  mFromStr 
+	pattern = mFromStr 
 	if mIgnoreCase do pattern = "(?i)" + pattern
 	
 	result = regex.replace mStream pattern mToStr
-	return (result as string)
+	return ( result as string )
 )
 
 function GetObjsMats objs = 
-(    
+( 
 	--Get a unique Material list of Objs
-	local MatList = #()
+	local MatList = #( )
 	for obj in objs do 
 	(
 		if Obj.Material != undefined then 
 		(
-			if ((ClassOf Obj.Material)  as string) != "Multimaterial" then 
+			if ( ( ClassOf Obj.Material ) as string ) != "Multimaterial" then 
 			(
 				appendIfUnique MatList Obj.Material.Name
 			) 

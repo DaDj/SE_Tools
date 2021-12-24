@@ -15,7 +15,7 @@ VrageLayerData= attributes "VrageLayerData" attribID:#( 0x5eac4f6e, 0xd624011 )
 (
 	parameters main
 	(
-		Type type:#string default:"CubeBlockDef" ;
+		VRType type:#string default:"CubeBlockDef" ;
 		/*
 		CubeBlockDef -- Info regarding cubeblockstoff gridsize, defintion etc.	
 		CollisionDef -- Collision ofc
@@ -141,7 +141,7 @@ struct VRageLayers
 				if MainAttr != undefined then 
 				(
 					Thecurrentlayer = false ;
-					if MainAttr.Type == "VRageLOD" or MainAttr.Type == "CollisionDef" then --dont hide or MainAttr.Type == "DummiesDef" for now...
+					if MainAttr.VRType== "VRageLOD" or MainAttr.VRType== "CollisionDef" then --dont hide or MainAttr.Type == "DummiesDef" for now...
 					(
 						if layer2.current == true then layer2.ishidden = false else layer2.ishidden = true
 					)
@@ -167,7 +167,7 @@ struct VRageLayers
 
 					for i = 1 to LayerHandle.getNumChildren() do 
 					(
-						VRLayers.Delete ( LayerHandle.getChild ( 1 ) )
+						VRLayers.Delete ( LayerHandle.getChild ( i ) )
 					) 
 				)
 				LayerManager.deleteLayerByName LayerHandle.name
@@ -201,20 +201,20 @@ struct VrageLodLayer
 				ChildLayer = Mainlayer.getChild i
 				layerRT = ChildLayer.layerAsRefTarg
 				LodAttr = custAttributes.get layerRT VrageLayerData
-				if LodAttr != undefined and LodAttr.Type == "VRageLOD" do Idx_Lod += 1
+				if LodAttr != undefined and LodAttr.VRType== "VRageLOD" do Idx_Lod += 1
 			)
 			
 			if Attr != undefined then 
 			(
-				print Attr.Type
-				if Attr.Type == "CubeBlockDef" or Attr.Type == "SubpartDef" or Attr.Type == "VRageConstructstage" then 
+				--print Attr.Type
+				if Attr.VRType== "CubeBlockDef" or Attr.VRType== "SubpartDef" or Attr.VRType== "VRageConstructstage" then 
 				(
 					Idx_Lod = Idx_Lod as string
 					layer = VRLayers.CreateOrRenameLayer ( Mainlayer.name + " #LOD" + Idx_Lod ) ( Mainlayer.name + " #LOD" + Idx_Lod ) parent_layer:( Mainlayer.LayerProperties )
 					layerRT = layer.layerAsRefTarg
 					custAttributes.add layerRT VrageLayerData
 					custAttributes.add layerRT VrageLayer_LODData
-					layerRT.Type = "VRageLOD"
+					layerRT.VRType= "VRageLOD"
 					layerRT.LODID = Idx_Lod as Integer
 					layerRT.DrawDistance = LodDistanceMultiplier * ( Idx_Lod as Integer ) - 5 * ( Idx_Lod as Integer ) ^ 2 + 5 * ( Idx_Lod as Integer ) ^ 3
 				)
@@ -241,20 +241,20 @@ struct VrageConstructionLayer
 				ChildLayer = Mainlayer.getChild i
 				layerRT = ChildLayer.layerAsRefTarg
 				Constrttr = custAttributes.get layerRT VrageLayerData
-				if Constrttr != undefined and Constrttr.Type == "VRageConstructstage" do Idx_BuildStage += 1
+				if Constrttr != undefined and Constrttr.VRType== "VRageConstructstage" do Idx_BuildStage += 1
 			)
 			
 			if Attr != undefined then 
 			(
 				--print Attr.Type
-				if Attr.Type == "ConstructArrayDef" then 
+				if Attr.VRType== "ConstructArrayDef" then 
 				(
 					Idx_BuildStage = Idx_BuildStage as string
 					layer = VRLayers.CreateOrRenameLayer ( Attr.SeName + "Construction_" + Idx_BuildStage ) ( Attr.SeName + "Construction_" + Idx_BuildStage ) parent_layer:( Mainlayer.LayerProperties )
 					layerRT = layer.layerAsRefTarg
 					custAttributes.add layerRT VrageLayerData
 					custAttributes.add layerRT VrageLayer_ConstructData
-					layerRT.Type = "VRageConstructstage"
+					layerRT.VRType= "VRageConstructstage"
 					layerRT.ConstructionID = Idx_BuildStage as Integer
 					layerRT.BuildPercent = 33 
 					
@@ -281,7 +281,7 @@ struct VrageSubpartLayer
 
 		if Mainlayer == undefined then Mainlayer = VRLayers.GetSelected()
 		if Mainlayer != undefined then ( Attr = custAttributes.get Mainlayer VrageLayerData )
-		if Attr != undefined and Attr.Type == "SubPartArray" then 
+		if Attr != undefined and Attr.VRType== "SubPartArray" then 
 		(
 			ParentLayer = Mainlayer.getParent() --Cubeblock or a Subpartdef
 			if ParentLayer != undefined then 
@@ -289,7 +289,7 @@ struct VrageSubpartLayer
 				layerRT = ParentLayer.layerAsRefTarg
 				layerRT.SeName
 				ParentLayerDummies = ( LayerManager.getLayerFromName ( layerRT.SeName + " #Dummies" ) ).layerAsRefTarg
-				if ParentLayerDummies.Type != "DummiesDef" then ( ParentLayerDummies = undefined )
+				if ParentLayerDummies.VRType!= "DummiesDef" then ( ParentLayerDummies = undefined )
 			) 
 			if ParentLayerDummies != undefined then 
 			(
@@ -317,27 +317,27 @@ struct VrageCubeBlock
 		layer = VRLayers.CreateOrRenameLayer ( BlockName + " #Collision" ) ( BlockName + " #Collision" ) parent_layer:Mainlayer
 		layerRT = layer.layerAsRefTarg
 		custAttributes.add layerRT VrageLayerData
-		layerRT.Type = "CollisionDef"
+		layerRT.VRType= "CollisionDef"
 		layerRT.SeName = BlockName
 		-- Dummies Layer
 		layer = VRLayers.CreateOrRenameLayer ( BlockName + " #Dummies" ) ( BlockName + " #Dummies" ) parent_layer:Mainlayer
 		layerRT = layer.layerAsRefTarg
 		custAttributes.add layerRT VrageLayerData
-		layerRT.Type = "DummiesDef"
+		layerRT.VRType= "DummiesDef"
 		layerRT.SeName = BlockName
 
 		-- Construction Layer
 		layer = VRLayers.CreateOrRenameLayer ( BlockName + " #Construction" ) ( BlockName + " #Construction" ) parent_layer:Mainlayer
 		layerRT = layer.layerAsRefTarg
 		custAttributes.add layerRT VrageLayerData
-		layerRT.Type = "ConstructArrayDef"
+		layerRT.VRType= "ConstructArrayDef"
 		layerRT.SeName = BlockName	
 
 		-- Subpart Layer
 		layer = VRLayers.CreateOrRenameLayer ( BlockName + " #Subparts" ) ( BlockName + " #Subparts" ) parent_layer:Mainlayer
 		layerRT = layer.layerAsRefTarg
 		custAttributes.add layerRT VrageLayerData
-		layerRT.Type = "SubPartArray"
+		layerRT.VRType= "SubPartArray"
 		layerRT.SeName = BlockName	
 
 		-- always add the Lod 0 automatically
@@ -357,19 +357,19 @@ struct VrageCubeBlock
 	(
 		layerRT = Layer.layerAsRefTarg
 		Attr = custAttributes.get layerRT VrageLayerData
-		if Attr.Type == "CubeBlockDef" or 
-		Attr.Type == "SubPartArray" or 
-		Attr.Type == "VRageConstructstage" or
-		Attr.Type == "CollisionDef" or 
-		Attr.Type == "ConstructArrayDef" or 
-		Attr.Type == "VRageLOD" or 
-		Attr.Type == "DummiesDef" then 
+		if Attr.VRType== "CubeBlockDef" or 
+		Attr.VRType== "SubPartArray" or 
+		Attr.VRType== "VRageConstructstage" or
+		Attr.VRType== "CollisionDef" or 
+		Attr.VRType== "ConstructArrayDef" or 
+		Attr.VRType== "VRageLOD" or 
+		Attr.VRType== "DummiesDef" then 
 		(	
 			Attr.SeName = NewName
 			Layer.setName ( ReplaceWords Layer.Name OldName NewName mIgnoreCase:true )
 		)
 
-		if Attr.Type != "SubPartArray" then
+		if Attr.VRType!= "SubPartArray" then
 		(
 			for i = 1 to Layer.getNumChildren() do
 			(
@@ -588,7 +588,7 @@ rollout Vrage_ConstructionRollout "VrageLayer_ConstructData" width:250 height:20
 			ChildLayer = Mainlayer.getChild i
 			layerRT = ChildLayer.layerAsRefTarg
 			Constrttr = custAttributes.get layerRT VrageLayerData
-			if Constrttr != undefined and Constrttr.Type == "VRageConstructstage" do Idx_BuildStage += 1
+			if Constrttr != undefined and Constrttr.VRType== "VRageConstructstage" do Idx_BuildStage += 1
 		)
 		
 		layerRT = ( VRLayers.GetSelected()).layerAsRefTarg
@@ -662,7 +662,7 @@ rollout Vrage_LODRollout "VrageLayer_LODData" width:200 height:200
 			ChildLayer = Mainlayer.getChild i
 			layerRT = ChildLayer.layerAsRefTarg
 			LodAttr = custAttributes.get layerRT VrageLayerData
-			if LodAttr != undefined and LodAttr.Type == "VRageLOD" do Idx_Lod += 1
+			if LodAttr != undefined and LodAttr.VRType== "VRageLOD" do Idx_Lod += 1
 		)
 		layerRT = ( VRLayers.GetSelected()).layerAsRefTarg
 
@@ -925,11 +925,11 @@ rollout VrageModels "VrageToolbox" width:200 height:200
 			(
 				--lbl_LayernameB.text =  FullNameToFind  
 				--lbl_LayterTypeb.text =  MainAttr.Type
-				if MainAttr.Type == "VRageConstructstage" then 
+				if MainAttr.VRType== "VRageConstructstage" then 
 				addRollout Vrage_ConstructionRollout VRAGE_ModelUI 
 				else try ( removeRollout Vrage_ConstructionRollout VRAGE_ModelUI ) catch () 
 
-				if MainAttr.Type == "CubeBlockDef" then 
+				if MainAttr.VRType== "CubeBlockDef" then 
 				(
 					addRollout Vrage_CubeBlockRollout VRAGE_ModelUI 
 					addRollout Vrage_IconRollout VRAGE_ModelUI rolledUp:true
@@ -940,15 +940,15 @@ rollout VrageModels "VrageToolbox" width:200 height:200
 					removeRollout Vrage_IconRollout VRAGE_ModelUI 				
 				) catch () 
 
-				if MainAttr.Type == "VRageLOD" then 
+				if MainAttr.VRType== "VRageLOD" then 
 				addRollout Vrage_LODRollout VRAGE_ModelUI 
 				else try ( removeRollout Vrage_LODRollout VRAGE_ModelUI ) catch () 
 
-				if MainAttr.Type == "ConstructArrayDef" then 
+				if MainAttr.VRType== "ConstructArrayDef" then 
 				addRollout Vrage_ConstructionArrayRollout VRAGE_ModelUI 
 				else try ( removeRollout Vrage_ConstructionArrayRollout VRAGE_ModelUI ) catch () 
 
-				if MainAttr.Type == "CollisionDef" then 
+				if MainAttr.VRType== "CollisionDef" then 
 				addRollout Vrage_CollisonRollout VRAGE_ModelUI 
 				else try ( removeRollout Vrage_CollisonRollout VRAGE_ModelUI ) catch () 
 			)
