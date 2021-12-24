@@ -9,7 +9,8 @@ It implements:
 global VRAGE_ModelUI
 global VrageTempAllTypes = #( "CubeBlock", "Cockpit", "Gravity", "Refinery", "Armor" )
 
--- Custom Attributes for Layer Data
+
+-- Custom Attributes for Layer Data 
 VrageLayerData= attributes "VrageLayerData" attribID:#( 0x5eac4f6e, 0xd624011 )
 (
 	parameters main
@@ -36,7 +37,6 @@ VrageLayer_CubeBlockData = attributes "VrageLayer_CubeBlockData" attribID:#( 0x2
 		Size type:#string default:"Large" ;
 		TypeId type:#string	default:"CubeBlock" ;
 		SubtypeID type:#string	default:"MyBlock" ;
-		IconTintColor type:#color	default:[200, 248, 255] ;
 	)
 )
 
@@ -79,6 +79,9 @@ VrageLayer_LODData = attributes "VrageLayer_LODData" attribID:#( 0xdcaefca, 0x59
 -- Functions for the Layers
 struct VRageLayers 
 (
+	AutoSwitchLayer = true,
+	AutoHideLAyer = false,
+	
 	fn CreateOrRenameLayer MyName MyOldName parent_layer:undefined = (
 		if ( LayerManager.getLayerFromName ( MyOldName ) == undefined ) then (
 			if ( LayerManager.getLayerFromName ( MyName ) == undefined ) then (
@@ -110,19 +113,39 @@ struct VRageLayers
 			(
 				Layer = i
 			)
-
 		)
 		
-		-- Set the currently selected layer automatically as the current layer
-		if Layer != undefined then Layer.current = true 
-
-		-- Set the layer to the first selected object if no Layer is directly selected
-		if Layer == undefined then 
+		if AutoSwitchLayer == true then 
 		(
-			if selection[1] != undefined then 
+			-- Set the currently selected layer automatically as the current layer
+			if Layer != undefined then Layer.current = true 
+			if Layer != undefined then Layer.ishidden = false 
+			-- Set the layer to the first selected object if no Layer is directly selected
+			if Layer == undefined then 
 			(
-				Layer = selection[1].layer.layerAsRefTarg
-				selection[1].layer.current = true
+				if selection[1] != undefined then 
+				(
+					Layer = selection[1].layer.layerAsRefTarg
+					selection[1].layer.current = true
+				)
+			)
+		)
+		
+		-- Following codes attempts to hide the other layers when the checkbox is checked.
+		if AutoHideLAyer == true then 
+		(
+			for L = 1 to LayerManager.count do
+			(
+				layer2 = ( layermanager.getlayer ( L - 1 ) )
+				MainAttr = custAttributes.get ( layer2.layerAsRefTarg ) VrageLayerData
+				if MainAttr != undefined then 
+				(
+					Thecurrentlayer = false ;
+					if MainAttr.Type == "VRageLOD" or MainAttr.Type == "CollisionDef" then --dont hide or MainAttr.Type == "DummiesDef" for now...
+					(
+						if layer2.current == true then layer2.ishidden = false else layer2.ishidden = true
+					)
+				)
 			)
 		)
 		Layer
@@ -288,6 +311,7 @@ struct VrageCubeBlock
 		layerRT = Mainlayer.layerAsRefTarg
 		custAttributes.add layerRT VrageLayerData
 		custAttributes.add layerRT VrageLayer_CubeBlockData
+		custAttributes.add layerRT VrageLayer_IconData
 		layerRT.SeName = BlockName
 		-- Collision Stuff  (Main Model ofc) 
 		layer = VRLayers.CreateOrRenameLayer ( BlockName + " #Collision" ) ( BlockName + " #Collision" ) parent_layer:Mainlayer
@@ -367,33 +391,40 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 		label lbl_Size "Block Size" across:2 align: #left
 		dropdownlist dropdnSize "" items:#( "Large", "Small" ) tooltip:"Size of the Block Grid (large =2.5m, Small: 0.25m)" labelOnTop: false Width:150 enabled: true align: #right
 
-		label lbl_Type "Block Type" across:2 align: #left
-		edittext FilterTypes "Filter" fieldWidth:100 labelOnTop:false align: #right
-		
-		label lbl_Filter "" across:2 align: #left
-		listbox listboxtype "" items:VrageTempAllTypes tooltip:"Type of Block" Width:150 Height:4 enabled: true align: #right 
+		--label lbl_Type "Block Type" across:2 align: #left
+		--edittext FilterTypes "Filter" fieldWidth:100 labelOnTop:false align: #right
+		label lbl_ID "Type ID" across:2 align: #left
+		edittext editt_TypeID "" fieldWidth:120 labelOnTop:true align: #right \ 
+		toolTip:"Type of Block. If no valid is entered, a default Cubeblock will be assumed"
+		button btnSearch "..." width:25 height:20 pos:[72, 52] \
+		toolTip:"Open List of existing Types."	images: #( VRageIcons, VRageIcons, VRageIcoLeng, 25, 25, 25, 25 )
+		--label lbl_Filter "" across:2 align: #left
+		--listbox listboxtype "" items:VrageTempAllTypes tooltip:"Type of Block" Width:150 Height:4 enabled: true align: #center 
 
 		label lbl_SubID "Subtype ID" across:2 align: #left
-		edittext editt_SubID "" fieldWidth:150 labelOnTop:true align: #right
+		edittext editt_SubID "" fieldWidth:120 labelOnTop:true align: #right
 	)
 
 	group "Actions"
 	(
-		button btnAddLod "Add a Lod" width:120 height:25
-		edittext editt_Rename "Rename:" fieldWidth:100 labelOnTop:false align: #right across:2 offset:[0, 4] 
-		button btnrenameBlock "Rename" width:120 height:25 
-	)
+		button btnAddLod "Add a Lod" width:100 height:25 align: #center across:2 \
+		toolTip:"Add Lod"	images: #( VRageIcons, VRageIcons, VRageIcoLeng, 28, 28, 28, 28 )
 
-	group "I/O "	
-	(
-		button 'Btn_Import' "Import" width:100 height:25 toolTip:"Imports an Fbx from the ModSDK" align:#center across:2
-		--on Prep_scene pressed do MySE.run "Scene_Setup.ms"	
-		
-		button 'Btn_export' "Export" width:100 height:25 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
-		on Btn_export pressed do OpenVrageExport()
+		label lbl_fake1 "" align: #left
+		button btnrenameBlock "Rename:" width:100 height:25 align: #center across:2
+		edittext editt_Rename "" fieldWidth:100 labelOnTop:true offset:[0, 4] align: #right 
 		
 	)
 
+
+	--button 'Btn_Import' "Import" width:100 height:25 toolTip:"Imports an Fbx from the ModSDK" align:#center across:2
+	--on Prep_scene pressed do MySE.run "Scene_Setup.ms"	
+	
+	button Btn_export "Export" width:230 height:25 align:#center \
+	toolTip:"Export: Generates  MWM file/s from the selected Block/s" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 12, 12, 12, 12 )
+	
+
+	on Btn_export pressed do OpenVrageExport()
 
 	on btnAddLod pressed do 
 	(
@@ -432,9 +463,9 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 			if MainAttr.TypeId != undefined then
 			(
 				Index = findItem VrageTempAllTypes MainAttr.TypeId
-				listboxtype.selection = Index
+				--listboxtype.selection = Index
 			)
-			else listboxtype.selection = 1
+			--else listboxtype.selection = 1
 			
 			-- Subtype  ID
 			editt_SubID.text = MainAttr.SubtypeID
@@ -487,7 +518,8 @@ rollout Vrage_ConstructionArrayRollout "VrageLayer_ConstructArray" width:250 hei
 (
 	group "Actions"
 	(
-		button btnAddConstr "Add ConstructionStage" width:120 height:25 tooltip:"Add a Construction Stage."	align:#center across:1 
+		button btnAddConstr "Add ConstructionStage" width:100 height:25 align:#center across:2 \
+		tooltip:"Add a Construction Stage." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 29, 29, 29, 29 )
 	)
 	on btnAddConstr pressed do 
 	(
@@ -532,9 +564,11 @@ rollout Vrage_ConstructionRollout "VrageLayer_ConstructData" width:250 height:20
 
 	group "Actions"
 	(
-		button btnValidate "Delete" width:120 height:25 tooltip:"Deletes this Layer."	align:#center across:2 
+		button btnValidate "Delete" width:100 height:25 align:#center across:2 \
+		tooltip:"Deletes this Layer." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 18, 18, 18, 18 )
 		--checkbox CHbox_ReSortLods "Resort after Delete" offset:[0,5] align:#right checked:true tooltip:"Resort after the deletion of this Layer."
-		button btnAddLod "Add a Lod" width:120 height:25
+		button btnAddLod "Add a Lod" width:100 height:25 \
+		tooltip:"Add a Lod" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 28, 28, 28, 28 )
 	)
 
 	on btnAddLod pressed do 
@@ -569,7 +603,7 @@ rollout Vrage_ConstructionRollout "VrageLayer_ConstructData" width:250 height:20
 	)
 )
 
-rollout Vrage_LODRollout "VrageLayer_LODData" width:250 height:200
+rollout Vrage_LODRollout "VrageLayer_LODData" width:200 height:200
 (
 	group "LOD Settings"
 	(
@@ -614,7 +648,8 @@ rollout Vrage_LODRollout "VrageLayer_LODData" width:250 height:200
 	)
 	group "Actions"
 	(
-		button btnDelete "Delete" width:120 height:25 tooltip:"Deletes this Layer."	align:#center across:2 
+		button btnDelete "Delete" width:100 height:25 align:#center across:2 \
+		tooltip:"Deletes this Layer." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 18, 18, 18, 18 )
 		--	checkbox CHbox_ReSortLods "Resort after Delete" offset:[0,5] align:#right checked:true tooltip:"Resort LodIds after the deletion of this Layer."
 	)
 
@@ -643,7 +678,7 @@ rollout Vrage_LODRollout "VrageLayer_LODData" width:250 height:200
 	)
 )
 
-rollout Vrage_CollisonRollout "VrageLayer Collison Data" width:250 height:200
+rollout Vrage_CollisonRollout "VrageLayer Collison Data" width:200 height:200
 (
 	group "Create RigidBodies"	
 	(
@@ -682,42 +717,74 @@ rollout Vrage_CollisonRollout "VrageLayer Collison Data" width:250 height:200
 
 	group "Actions"
 	(
-		button btnDelete "Delete" width:120 height:25 tooltip:"Deletes this Layer."	align:#center across:2 
+		--	button btnDelete "Delete" width:100 height:25	align:#center across:2 \
+		--		tooltip:"Deletes this Layer." images: #(VRageIcons, VRageIcons, VRageIcoLeng,18,18,18,18)
 		--	checkbox CHbox_ReSortLods "Resort after Delete" offset:[0,5] align:#right checked:true tooltip:"Resort LodIds after the deletion of this Layer."
 	)
-
-	on btnDelete pressed do 
+	/*	on btnDelete pressed do 
 	(
 		VRLayers.Delete ( VRLayers.GetSelected())
-	)
+	)*/
 )
 
+rollout Vrage_IconRollout "CubeBlock Icon" width:200 height:200 
+( -- UI for the Icon rendering.
+	checkbutton btn_IconMode "Icon Mode" width:230 height:25  align:#center  \
+		toolTip:"Icon Mode on/off" --images: #( VRageIcons, VRageIcons, VRageIcoLeng, 27, 27,27, 27 )
 
-rollout Vrage_IconRollout "CubeBlock Icon" width:250 height:200 
-(
-	button btn_Preview "Preview" width:150 height:20 toolTip:"Generates a preview of the Icon" align:#left 
-	imgTag the_bmp across:1 width:150 height:150 align:#left
-	colorpicker theColor "Tint Color:" color:[200, 248, 255] modal:false align:#right pos:[180, 40] 
-	--on theColor changed new_col do selection.wirecolor = new_col
-	button btn_Setup "Re/Create Camera Setup" width:150 height:25 toolTip:"recreate the Camera Setup if its lost or if it needs to be reset." align:#right pos:[180, 90]
-	button btn_CreateIcon "Create Icon" width:150 height:50 toolTip:"Box" align:#right pos:[180, 130]
 
-	--timer clock "testClock" interval:1500 --tick  every 2 sec
+
+	imgTag the_bmp width:100 height:100 align:#left across:2
+
+	button btn_Setup "Reset" width:40 height:25 align:#right pos:[192, 70] \
+		toolTip:"recreate the Camera Setup if its lost or if it needs to be reset." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 3, 3, 3, 3 )
+
+	colorpicker theColor "Tint Color:" color:[132, 170, 251905] modal:false align:#right pos:[135, 40] 
+
+	button btn_Preview "Preview" width:25 height:25 toolTip:"Generates a preview of the Icon" align:#righ pos:[3, 125]  \
+		toolTip:"Icon Mode on/off" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 32, 32,32, 32 )
+
+	button btn_CreateIcon "Create Icon" width:199 height:25 toolTip:"Box" align:#right pos:[33, 125]
+		toolTip:"Creates the Icon" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 12, 12,12, 12 )
 
 	on Vrage_IconRollout open do
 	(
 		Layer = ( VRLayers.GetSelected()) ;
-		MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
-		if MainAttr != undefined do 
+		MainAttr = custAttributes.get Layer VrageLayer_IconData
+		if Layer != undefined do 
 		(
 			try
 			(
 				theColor.color = MainAttr.IconTintColor 
-				if ( MyVrageIcon == undefined ) then fileIn ( GetDir #userScripts + "\\VRageToolbox\\VRage_Icon.ms" )
-				MyIcon = VRage_Icon()
-				MyIcon.SetupObjects Layer
 			)
 			catch (	MyVRageLog.Warn ( "Failed to re/create Camera Objs" ) )
+		)
+	)
+
+	on Vrage_IconRollout close do 
+	(
+		Layer = ( VRLayers.GetSelected()) ;
+		MyIcon = VRage_Icon()
+		if Layer != undefined do 
+		(
+			MyIcon.CloseDownObjects Layer
+		)
+	)
+
+	on btn_IconMode changed state do 
+	(
+		Layer = ( VRLayers.GetSelected()) ;
+		MyIcon = VRage_Icon()
+		if Layer != undefined do 
+		(
+			if state == on then 
+			(
+				MyIcon.SetupObjects Layer activate:true
+			)
+			else 
+			(
+				MyIcon.CloseDownObjects Layer 
+			)
 		)
 	)
 
@@ -726,7 +793,7 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:250 height:200
 		try
 		(
 			Layer = ( VRLayers.GetSelected()) ;
-			MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+			MainAttr = custAttributes.get Layer VrageLayer_IconData
 			MainAttr.IconTintColor = theColor.color
 			MyIcon = VRage_Icon()
 			theBmp = MyIcon.RenderIcon 300 300 Layer:Layer TintColor:( theColor.color )
@@ -740,8 +807,11 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:250 height:200
 		try
 		(
 			Layer = ( VRLayers.GetSelected()) ;
+			MainAttr = custAttributes.get Layer VrageLayer_IconData
 			MyIcon = VRage_Icon() 
 			MyIcon = MyIcon.SetupObjects Layer reset:true	
+			theColor.color = MainAttr.IconTintColor 
+			btn_IconMode.checked = true
 		)
 		catch (	MyVRageLog.Warn ( "Failed to Reset Icon Setup" ) )
 	) 
@@ -751,7 +821,7 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:250 height:200
 		try
 		(
 			Layer = ( VRLayers.GetSelected()) ;
-			MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+			MainAttr = custAttributes.get Layer VrageLayer_IconData
 			MainAttr.IconTintColor = theColor.color
 			MyIcon = VRage_Icon()
 			theBmp = MyIcon.RenderIcon 128 128 Layer:Layer TintColor:( theColor.color )
@@ -770,25 +840,52 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:250 height:200
 	on theColor changed new_col do
 	(
 		Layer = ( VRLayers.GetSelected()) ;
-		MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+		MainAttr = custAttributes.get Layer VrageLayer_IconData
 		MainAttr.IconTintColor = theColor.color
 	)
 )
 
-rollout VrageModels "ModelData" width:200 height:200
+rollout VrageModels "VrageToolbox" width:200 height:200
 (
-	--	label lbl_LayernameA "Name: "  across: 2 
-	--	label lbl_LayernameB "--" 
-	--	label lbl_LayterTypeA "LayerType: " across: 2 
-	--	label lbl_LayterTypeb "--" 
-	--button theButton "+"   width:30 height:30 toolTip:"Apply new name" pos:[300, 40] 
-	--button theButton1 "-" width:30 height:30 toolTip:"Apply new name" pos:[330, 40] 
-	button butt_MAtlib "Material Browser" width:100 height:25 align:#center across:4
-	button btn_Settings "Open Settings" width:100 height:25 toolTip:" " align:#center offset:[25, 0]
-	button btn_LOg "Open Notifications" width:100 height:25 toolTip:" " align:#right offset:[61, 0]
-	button btn_ReloadVrage "\x21BA" width:25 height:25 toolTip:"Reloads Vrage Utilies. Use if scripts may not work." align:#right offset:[15, 0]
-	on btn_ReloadVrage pressed do fileIn ( GetDir #userScripts + "\\VRageToolbox\\VRage_Startup.ms" )
+	button btn_Help "\x2699" width:20 height:20 align:#center pos:[120, 0] \
+	toolTip:"Opens the Documentation/Help" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 17, 17, 17, 17 )
 
+	button btn_Settings "\x2699" width:20 height:20 align:#center pos:[150, 0] \
+	toolTip:"Opens the VrageToolbox Settings" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 5, 5, 5, 5 )
+
+	button btn_LOg "Open Notifications" width:20 height:20 align:#center pos:[180, 0] \ 
+	toolTip:"Opens the VrageToolbox Notifications" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 2, 2, 2, 2 )
+
+	button btn_ReloadVrage "\x21BA" width:20 height:20 align:#right pos:[210, 0] \
+	toolTip:"Reloads Vrage Utilies. Use if scripts may not work." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 3, 3, 3, 3 )
+	
+	
+
+	button butt_Import "Import" width:30 height:30 align:#center pos:[5, 30] \
+	toolTip:"Import an FBX" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 11, 11, 11, 11 )
+
+	button butt_CreatMod "Create Mod" width:30 height:30 align:#center pos:[40, 30] \
+	toolTip:"Creates Layer Setup for Block/Character/Model" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 26, 26, 26, 26 )
+
+	button butt_MAtlib "Material Browser" width:30 height:30 align:#center pos:[85, 30] \ 
+	toolTip:"Opens the Material Browser" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 4, 4, 4, 4 )
+	
+
+	groupBox group1 "" pos:[0, 20] width:75 height:45
+	groupBox group4 "" pos:[80, 20] width:75 height:45
+	groupBox group2 "" pos:[160, 20] width:75 height:45 
+
+	checkbutton btn_MAgicLayer "\x21BA" width:20 height:30 align:#right pos:[190, 30] \
+	toolTip:"Only show Objects in selected Layer" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 23, 23, 23, 23 )
+	
+	checkbutton btn_SwitchLayer "\x21BA" width:20 height:30 align:#right pos:[165, 30] checked:true \
+	toolTip:"Automatically switch to selected Layer" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 31, 31, 31, 31 )
+
+
+	on VrageModels open do ()
+
+	on btn_ReloadVrage pressed do fileIn ( GetDir #userScripts + "\\VRageToolbox\\VRage_Startup.ms" )
+	
 	on butt_MAtlib pressed do
 	(
 		try ( MyVrageMatBrowser = ( Vrage_MaterialBrowser()).getForm() ) 
@@ -801,15 +898,27 @@ rollout VrageModels "ModelData" width:200 height:200
 	) 
 
 	on btn_Settings pressed do OpenSettings()	
+	
 	on btn_LOg pressed do VrageLogSys.CreateMessageRollout()
+
+	on butt_CreatMod pressed do 
+	(
+		Testthing = VrageCubeBlock();
+		Testthing.CreateSkel "MyNewBlock" ;
+
+	)
 
 	timer clock "testClock" interval:10 --tick  every 2 sec
 	on clock tick do
 	( 
+		
+		if btn_MAgicLayer.checked == true then VRLayers.AutoHideLAyer = true else VRLayers.AutoHideLAyer = false
+		if btn_SwitchLayer.checked == true then VRLayers.AutoSwitchLayer = true else VRLayers.AutoSwitchLayer = false
+
 		i = VRLayers.GetSelected()
 		if i != undefined then 
 		(
-			FullNameToFind = i.name
+			--FullNameToFind = i.name
 			MainAttr = custAttributes.get i VrageLayerData
 			
 			if MainAttr != undefined then 
@@ -828,7 +937,7 @@ rollout VrageModels "ModelData" width:200 height:200
 				else try 
 				( 
 					removeRollout Vrage_CubeBlockRollout VRAGE_ModelUI 
-					removeRollout Vrage_IconRollout VRAGE_ModelUI 
+					removeRollout Vrage_IconRollout VRAGE_ModelUI 				
 				) catch () 
 
 				if MainAttr.Type == "VRageLOD" then 
@@ -853,6 +962,7 @@ rollout VrageModels "ModelData" width:200 height:200
 			try ( removeRollout Vrage_CollisonRollout VRAGE_ModelUI ) catch () 
 			try ( removeRollout Vrage_IconRollout VRAGE_ModelUI ) catch () 
 		)
+
 	)
 )
 
@@ -860,12 +970,12 @@ fn VrageModelLayer_ShowUI =
 (
 	try ( cui.UnRegisterDialogBar VRAGE_ModelUI ) catch () 
 	try ( closeRolloutFloater VRAGE_ModelUI ) catch () 
-	VRAGE_ModelUI = newRolloutFloater "VRage Utilies" 350 600 450 300 
+	VRAGE_ModelUI = newRolloutFloater "VRage Utilies" 250 600 450 300 
 	addRollout VrageModels VRAGE_ModelUI border:true
-	cui.RegisterDialogBar VRAGE_ModelUI style:#( #cui_floatable )
+	cui.RegisterDialogBar VRAGE_ModelUI style:#( #cui_dock_all, #cui_dock_vert, #cui_floatable )
+	cui.DockDialogBar VRAGE_ModelUI #cui_dock_left
 )
 
-Testthing = VrageCubeBlock();
-Testthing.CreateSkel "MyNewBlock" ;
+
 --Tesxtthing.RenameAll  (LayerManager.getLayerFromName "NyNEwblock2") "NyNEwblock2"  "NyNEwblock3"
 VrageModelLayer_ShowUI();

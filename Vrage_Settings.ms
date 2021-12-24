@@ -13,7 +13,7 @@ struct VRageConfig
 	PathTextures = " ",
 	PathModSDK = " ",
 	UseGameTextures = False,
-	TextureType = 1,
+	TextureType = 2,
 	PathGame = " ",
 	UsePbrMats = True, --Needs GUI
 	DefaultThumbnail = VrageConfigDir + "\\MaterialThumbnails\\" + "NoThumbnail.jpg",
@@ -158,15 +158,15 @@ fn OpenSettings = (
 	rollout VrageUtils_CfgScene "VRage Utilities - Config" width:210 height:400
 	(
 		label lbl_text "Configuration Panel for the VRAGE Utilites. \nPlease refer to the setup tutorial if the settings are unclear."	height:30 align:#left across:2
-		button btn_CFgHelp "Help / Info" width:100 height:25 \
-		toolTip:"---" align:#right 
+		button btn_CFgHelp "Help / Info" width:50 height:25 align:#right  \
+			toolTip:"Opens the Documentation/Help"  images: #(VRageIcons, VRageIcons, VRageIcoLeng,17,17,17,17 )
 	)
 
-	rollout VrageUtils_CfgTools "Tools" width:210 height:400
+	rollout VrageUtils_CfgTools "Tools/Paths" width:210 height:400
 	(
 		label lbl_PathTools  "VrageToolbox Utils Folder:"align:#left across:2
 		button btn_PathTools  MyVRageCfg.PathToolsFolder width:400 height:25 align:#right \
-			tooltip:"Path to the Vragetoolbox Folder which has the external tools and Utilities" 
+			tooltip:"Path to the Vragetoolbox Folder which has/will contain textures and other custom materials for example" 
 			on btn_PathTools pressed do (
 				FilePath = getSavePath caption:"Test path..."
 				if(FilePath != undefined ) do (
@@ -214,7 +214,7 @@ fn OpenSettings = (
 	
 	rollout VrageUtils_CfgTextures "Textures" width:210 height:400	
 	(
-		label lbl_textureType "Texture Format:"   across:4 enabled:false
+		/*label lbl_textureType "Texture Format:"   across:4 enabled:false
 		dropdownlist ddl_TexType "" items:VrageTexTypes selection:MyVRageCfg.TextureType width:60 enabled:false -- enabled:(not MyVRageCfg.UseGameTextures)
 			on ddl_TexType selected sel do (
 				MyVRageCfg.TextureType = ddl_TexType.selection
@@ -231,16 +231,33 @@ fn OpenSettings = (
 				for c in #(ddl_TexType) do c.enabled = not state
 				MyVRageCfg.UseGameTextures = state
 				MyVRageCfg.save()
-			)
+			)*/
 			
-		button btn_ConvertTxt "Texture Convert Tool" width:120 height:25 toolTip:"Run the Bulk Texture Converter to convert the Game textures to the chosen format." 
+
+		button btn_ConvertTxt "Convert Textures" width:150 height:25 toolTip:"Run the Bulk Texture Converter to convert the Game textures to the 3dsmax readable format." across:3
 			on btn_ConvertTxt pressed do (
 				--TODO: Shell Launch BulkTextureConverter.exe "switches go here (In Theory)"
 				--TODO: Alternately use DosCommand/HiddenDosCommand
 				--REF: <full path to your texconv foldere>\texconv -nologo -ft png <path to the folder where your texture is>/<filename of the texture>
 				--Rel. Path from SDK: SpaceEngineersModSDK\Tools\TexturePacking\Tools\texconv.exe
 			)
-	
+
+			button btn_GenMatThumbs "Generate MaterialThumbnails" width:150 height:25 toolTip:"Re/Generates the Materialthumbnails"
+			on btn_GenMatThumbs pressed do (
+				--TODO: Shell Launch BulkTextureConverter.exe "switches go here (In Theory)"
+				--TODO: Alternately use DosCommand/HiddenDosCommand
+				--REF: <full path to your texconv foldere>\texconv -nologo -ft png <path to the folder where your texture is>/<filename of the texture>
+				--Rel. Path from SDK: SpaceEngineersModSDK\Tools\TexturePacking\Tools\texconv.exe
+			)
+			
+			on VrageUtils_CfgTextures open do 
+			(
+			
+			--theBmp = (openBitMap  @"C:\Users\patgr\Desktop\Standard_24i.tif")
+			--the_bmp.bitmap = theBmp
+			--print theBmp.color
+			--	btn_ConvertTxt.images =  #(theBmp, undefined, 1,1,1,1,1 )
+			) 
 	)
 
 	rollout VrageUtils_CfgGame "Game" width:210 height:400	

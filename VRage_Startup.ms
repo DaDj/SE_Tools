@@ -1,9 +1,10 @@
 global MyVRageRoot 
-
+global VRageIcons = GetDir #userScripts + "\\VRageToolbox\\VrageIcons.bmp"
+global VRageIcoLeng = 35
 MyVRageRoot = pathConfig.removePathLeaf ( getSourceFileName()) ;
 
 -- Struct of Global Scence Settings
-struct MyVRageSceneDef
+/*struct MyVRageSceneDef
 (
 	i_LODS = 1, --number of Lods i-1 
 	i_Construction = 1,
@@ -21,7 +22,7 @@ struct MyVRageSceneDef
 )
 
 --deklaration of the global
-global MyVrageScene = MyVRageSceneDef()
+global MyVrageScene = MyVRageSceneDef() */
 
 fn Vrage_LoadToolbox = (
 
