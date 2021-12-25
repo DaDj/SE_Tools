@@ -18,7 +18,8 @@ global MyVRageMatLib
 global MyVrageNoTex
 global MyVrageMatBrowser
 
-MyVrageNoTex = pathConfig.removePathLeaf ( getSourceFileName()) + "\\NoTex.tif"
+--MyVrageNoTex = pathConfig.removePathLeaf ( getSourceFileName()) + "\\NoTex.tif"
+MyVrageNoTex = GetDir #userScripts + "\\VRageToolbox\\Vrage_resources\\NoTex.tif"
 try MyVrageMatBrowser.close() catch()
 
 
@@ -716,10 +717,12 @@ struct Vrage_MaterialBrowser (
 			last_txt = new_txt
 			populateMats txt:new_txt
 			populateMats txt:"Exhaustpipe" cleanMats:false
+			populateMats txt:"BraidedSteel" cleanMats:false exactWord:true
 			populateMats txt:"Grating" cleanMats:false
 			populateMats txt:"Chrome" cleanMats:false
 			populateMats txt:"Construction" cleanMats:false
 			populateMats txt:"Pipe" cleanMats:false
+			
 
 		)
 	),
