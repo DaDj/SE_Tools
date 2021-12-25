@@ -96,11 +96,9 @@ struct VRage_Icon
 			tempCamera.fov = 40
 			if ( MainAttr != undefined ) then 
 			(
-				print "ol"
 			print reset
 				if reset == false then 
 				(
-					print "häää"
 					tempCamera.position = MainAttr.IconCameraPos
 					tempCamera.target.pos = MainAttr.IconCameraTgtPos
 					tempCamera.fov = MainAttr.IconCameraFOV
