@@ -8,8 +8,9 @@ struct VrageSubpartTypes
 
 
 /***************SubpartDummies****************/
+
 VrageSubpartDef = attributes "VrageSubpartDummy"
-(
+(-- File is the customattribute with the filename of the subpart
 	parameters main rollout:params
 	(
 		file type:#string ui:file default: ""
@@ -21,7 +22,7 @@ VrageSubpartDef = attributes "VrageSubpartDummy"
 )
 
 -- Add a subpartdummy 
--- File is the customattribute with the filename of the subpart
+
 fn VrageDummySubpartAdd DummyName File Layer = 
 (
 
@@ -34,7 +35,7 @@ fn VrageDummySubpartAdd DummyName File Layer =
 
 /***************HighlightDummies****************/
 VrageHighlightDef = attributes "VrageHighlightDummy"
-(
+(-- Highlights are the nam,es of the objects which will be highlighted
 	parameters main rollout:params
 	(
 		highlight type:#string ui:highlight default: ""

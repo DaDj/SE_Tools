@@ -1182,6 +1182,21 @@ fn Vrage_GenerateMatThumbnails names = (
 	progressEnd()	
 )
 
+
+fn VRage_Generate3dMaxMatLibrary Names Filepath=
+(--can generated a Materialibrary. We won't use that.
+	MyMaterials = #();
+	MyLibrary = materialLibrary   (Vrage_getmatbyname Names[1]);
+
+	for n in Names do 
+	(
+	append MyLibrary (Vrage_getmatbyname n)
+
+	)
+	saveTempMaterialLibrary  MyLibrary Filepath
+	thing  = loadMaterialLibrary  Filepath
+)
+
 /*
 fn Vrage_getMaterialThumbnails names= (
 	thumb_dir = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\"

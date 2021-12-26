@@ -1,3 +1,8 @@
+
+
+
+
+
 struct VRageConfig
 (
 
@@ -38,7 +43,7 @@ struct VRageConfig
 			if getDirectories ( VRageScriptsDir ) != undefined then (	
 				PathFBXImporter = if ( tmp = getFiles ( VRageScriptsDir + "\\Vrage_Tools\\FbxImporter.exe" ) ).count != 0 then tmp[1] else ""
 				PathMwmBuilder = if ( tmp = getFiles ( VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) ).count != 0 then ( VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
-				PathTextures = if ( tmp = getDirectories ( PathToolsFolder + "\\Textures" ) ).count != 0 then  ( PathToolsFolder  ) else ""
+				PathTextures = if ( tmp = getDirectories ( PathToolsFolder + "\\Textures" ) ).count != 0 then ( PathToolsFolder ) else ""
 			)
 		)
 		setINISetting VRageConfigFile "Directories" "Toolsfolder" PathToolsFolder
@@ -71,7 +76,7 @@ struct VRageConfig
 				if getDirectories ( PathToolsFolder ) != undefined then (	
 					PathFBXImporter = if ( tmp = getFiles ( VRageScriptsDir + "\\Vrage_Tools\\FbxImporter.exe" ) ).count != 0 then tmp[1] else ""
 					PathMwmBuilder = if ( tmp = getFiles ( VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) ).count != 0 then ( PathToolsFolder + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
-					PathTextures = if ( tmp = getDirectories ( PathToolsFolder + "\\Textures" ) ).count != 0 then PathToolsFolder  else ""
+					PathTextures = if ( tmp = getDirectories ( PathToolsFolder + "\\Textures" ) ).count != 0 then PathToolsFolder else ""
 				)
 			)
 
@@ -122,8 +127,20 @@ struct VRageConfig
 
 )
 
+
+global VrageTextureIO_ConvertSEtoReadable
+
 global MyVRageCfg = VRageConfig()
 MyVRageCfg.load()
+
+
+-- intialize Materiallibrary if its lost...
+if Vrage_getMaterialThumbnails == undefined then
+(
+	fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_MaterialLibrary.ms" )
+	
+) 
+
 
 global VRageTexTypes = #( ".dds", ".tif", ".png", ".tga", ".jpg" )
 sort VRageTexTypes
@@ -160,6 +177,9 @@ fn OpenSettings = (
 		label lbl_text "Configuration Panel for the VRAGE Utilites. \nPlease refer to the setup tutorial if the settings are unclear."	height:30 align:#left across:2
 		button btn_CFgHelp "Help / Info" width:50 height:25 align:#right \
 		toolTip:"Opens the Documentation/Help" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 17, 17, 17, 17 )
+
+		on btn_CFgHelp pressed  do (ShellLaunch "https://vragetoolbox.ratpool.de/doku.php?id=vrt:settings" "")
+	
 	)
 
 	rollout VrageUtils_CfgTools "Tools/Paths" width:210 height:400
@@ -199,7 +219,7 @@ fn OpenSettings = (
 		on clock tick do
 		(
 			if getDirectories ( MyVRageCfg.PathToolsFolder ) != undefined then (	
-				MyVRageCfg.PathTextures = if ( tmp = getDirectories ( MyVRageCfg.PathToolsFolder + "\\Textures" ) ).count != 0 then (MyVRageCfg.PathToolsFolder ) else ""	
+				MyVRageCfg.PathTextures = if ( tmp = getDirectories ( MyVRageCfg.PathToolsFolder + "\\Textures" ) ).count != 0 then ( MyVRageCfg.PathToolsFolder ) else ""	
 			)
 			MyVRageCfg.PathFBXImporter = if ( tmp = getFiles ( MyVRageCfg.VRageScriptsDir + "\\Vrage_Tools\\FbxImporter.exe" ) ).count != 0 then tmp[1] else ""
 			MyVRageCfg.PathMwmBuilder = if ( tmp = getFiles ( MyVRageCfg.VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) ).count != 0 then ( MyVRageCfg.VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
@@ -242,7 +262,7 @@ fn OpenSettings = (
 				fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_TextureIO.ms" )
 			) 
 			if queryBox "This will take ~5 minutes or more. \n Do you want to continue?" beep:false then VrageTextureIO_ConvertSEtoReadable()
-	
+			
 		)
 
 		button btn_GenMatThumbs "Generate MaterialThumbnails" width:150 height:25 toolTip:"Re/Generates the Materialthumbnails"

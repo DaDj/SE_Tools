@@ -17,17 +17,15 @@ fn Vrage_LoadToolbox = (
 	fileIn ( MyVRageRoot + "\\VRage_Icon.ms" )
 	format "loaded script '%'\n" "\\VRage_Icon.ms"
 
-	fileIn ( MyVRageRoot + "\\VRage_Layers.ms" )
-	format "loaded script '%'\n" "\\VRage_Layers.ms"
-	
 	fileIn ( MyVRageRoot + "\\Vrage_IO\\Vrage_MaterialLibrary.ms" )
 	format "loaded script '%'\n" "\\Vrage_IO\\Vrage_MaterialLibrary.ms"
 
+	fileIn ( MyVRageRoot + "\\VRage_Layers.ms" )
+	format "loaded script '%'\n" "\\VRage_Layers.ms"
 	
 	--Copy the No Thumbnail to the Thumbnails folder
 	noThumbSrc = MyVRageRoot + "\\Vrage_resources\\" + "NoThumbnail.jpg"
 	noThumbTrg = GetDir #plugcfg + "\\VRageUtilities" + "\\MaterialThumbnails\\" + "NoThumbnail.jpg"
-	
 	copyFile noThumbSrc noThumbTrg
 	
 	
