@@ -40,6 +40,26 @@ VrageMaterial_CA = attributes VrageMaterial attribID:#( 0x162d47c4, 0x6a278b17 )
 	)
 )
 
+
+fn getDnColor val = (
+	
+	dnColor = dotNetClass "System.Drawing.Color"
+	
+	if isKindof val name then (
+		maxColor = colorMan.getColor val
+	)
+	else if isKindOf val Color then (
+		maxColor = val
+	)
+	else (
+		maxColor = undefined
+	)
+		
+	dnColor.fromArgb (maxColor[1] * 255.0f) (maxColor[2] * 255.0f) (maxColor[3] * 255.0f)
+
+)
+
+
 struct VrageMaterial (
 	
 	xml_mat,
@@ -417,20 +437,28 @@ struct VRageMaterialLibrary (
 				)
 				
 				xmlDoc = dotNetObject "system.xml.xmlDocument"
-				
-				all_mats = ( trimright MyVRageCfg.PathModSDK "\\" ) + "\\OriginalContent\\AllMaterials.xml"
+				header = xmlDoc.CreateXmlDeclaration "1.0" "" ""
+				xmlDoc.AppendChild header
+				matFiles = xmlDoc.createElement "MaterialFiles"
+				xmlDoc.AppendChild matFiles
+				all_mats = (trimright MyVRageCfg.PathModSDK "\\") + "\\OriginalContent\\AllMaterials.xml"
 				
 				if doesFileExist all_mats do (
 					insertItem all_mats files 1
 				)
 				
-				xmlDoc.load files[1]
-				
-				for f = 2 to files.count do (
+				for f = 1 to files.count do (
 					tempDoc = dotNetObject "system.xml.xmlDocument"
 					tempDoc.load files[f]
+					fname = filenameFromPath files[f]
+					
+					fileElement = xmlDoc.createElement "MaterialFile"
+					fileElement.SetAttribute "Name" fname
+					
 					theNode = xmlDoc.ImportNode tempDoc.documentElement True
-					xmlDoc.documentElement.appendchild theNode
+					
+					fileElement.appendChild theNode
+					matFiles.appendChild fileElement
 				)
 				
 				timeGen = timeStamp()
@@ -617,6 +645,9 @@ struct Vrage_MaterialButton (
 		
 		mButton.text = name
 		mButton.size = dotNetObject "System.Drawing.Size" bsize bsize
+		
+		mButton.ForeColor = getDnColor #trackbarCursor
+		
 		mButton.flatStyle = mButton.flatStyle.Popup
 	--	mButton.BackColor = Color.gray -- just for fun
 		mButton.ImageList = imageList
@@ -628,7 +659,7 @@ struct Vrage_MaterialButton (
 
 		mButton.Font = bfont
 		mButton.Margin = dotNetObject "System.Windows.Forms.Padding" bmargin
-		
+				
 		dotNet.addEventHandler mButton "click" click_event
 	--	dotNet.addEventHandler mButton "MouseHover" hover_event
 		--dotNet.addEventHandler mButton "MouseLeave" hoverEnd_event
@@ -641,16 +672,23 @@ struct Vrage_MaterialButton (
 
 struct Vrage_MaterialBrowser (
 	
-	Margin = dotNetObject "System.Windows.Forms.Padding" 3,
-	Padding = dotNetObject "System.Windows.Forms.Padding" 3,
+	Margin = dotNetObject "System.Windows.Forms.Padding" 10,
+	Padding = dotNetObject "System.Windows.Forms.Padding" 10,
 	DockStyle = dotNetClass "System.Windows.Forms.DockStyle",
 	BorderStyle = dotNetClass "System.Windows.Forms.BorderStyle",
 	Color = dotNetClass "System.Drawing.Color",
 	AutoSizeMode = dotNetClass "System.Windows.Forms.AutoSizeMode",
 	AnchorStyles = dotNetClass "System.Windows.Forms.AnchorStyles",
 	dnKeys = dotnetclass "System.Windows.Forms.Keys",
+	SortOrder = dotnetclass "System.Windows.Forms.SortOrder",
+	View = dotnetclass "System.Windows.Forms.View",
+	HorizontalAlignment = dotNetclass "System.Windows.Forms.HorizontalAlignment",
 	
-	form_size = [800, 900],
+	dnPoint = dotNetClass "System.Drawing.Point",
+	dnSize = dotNetClass "System.Drawing.Size",
+	dnRectangle = dotNetClass "System.Drawing.Rectangle",
+		
+	form_size = [815, 480],
 	Mat_Layout = dotNetObject "System.Windows.Forms.FlowLayoutPanel",
 	Mat_Group = dotNetObject "System.Windows.Forms.Groupbox",
 	Filter_Group = dotNetObject "System.Windows.Forms.Groupbox",
@@ -658,6 +696,29 @@ struct Vrage_MaterialBrowser (
 	filter_box = dotNetObject "System.Windows.Forms.Textbox",
 	filter_button = dotNetObject "System.Windows.Forms.button",
 
+	Source_Group =  dotNetObject "System.Windows.Forms.Groupbox",
+	Source_ListView = dotNetObject "System.Windows.Forms.ListView",
+	Info_Group =  dotNetObject "System.Windows.Forms.Groupbox",
+
+	last_txt = "",
+
+	fn populateSource =(
+
+		SourcE_Listview.clear()
+		dir = (trimright MyVRageCfg.PathModSDK "\\") + "\\OriginalContent\\Materials\\"
+		files = getFiles (dir + "*.xml")
+
+		for f in files do (
+			fname = getFilenameFile f
+			item = dotNetObject "System.Windows.Forms.ListViewItem" fname 0
+			item.checked = True
+			--item.SubItems.Add("1");
+			--item.SubItems.Add("2");
+			--item.SubItems.Add("3");
+			Source_ListView.Items.Add item
+		)
+	),
+	
 	filter_button_Painted = dotNetObject "System.Windows.Forms.button",
 	filter_button_Metal = dotNetObject "System.Windows.Forms.button",
 	filter_button_Rubber = dotNetObject "System.Windows.Forms.button",
@@ -667,8 +728,6 @@ struct Vrage_MaterialBrowser (
 	filter_button_Screen = dotNetObject "System.Windows.Forms.button",
 	last_txt = "",
 
-
-
 	fn populateMats txt:"" cleanMats:true exactWord:false = (
 		
 		if cleanMats == true do Mat_Layout.controls.clear()
@@ -677,7 +736,6 @@ struct Vrage_MaterialBrowser (
 		for n in MyVrageMatLib.mat_names where matchpattern n pattern:ThePattern do ( 
 			Mat_Layout.controls.add ( ( Vrage_MaterialButton name:n ).getButton())
 		)
-		--print Mat_Layout.controls.count
 		
 	),
 	
@@ -842,8 +900,10 @@ struct Vrage_MaterialBrowser (
 		filter_box.size = dotNetObject "System.Drawing.Size" ( form_size.x - 200 ) 60
 		filter_box.location = dotNetObject "System.Drawing.Point" 15 30
 		filter_box.Anchor = dotNet.combineEnums AnchorStyles.Left AnchorStyles.Top AnchorStyles.right
-		filter_box.BackColor = ( dotnetclass "System.Drawing.Color" ).FromArgb 100 100 100
-		filter_box.ForeColor = ( dotnetclass "System.Drawing.Color" ).FromArgb 220 220 220
+		
+		filter_box.BackColor = getDnColor #background
+		filter_box.ForeColor = getDnColor #Text
+		dotNet.addEventHandler filter_box "keyUp" filter_box_ku
 		filter_box.BorderStyle = filter_box.BorderStyle.FixedSingle
 		dotNet.addEventHandler filter_box "KeyDown" filter_box_ku
 		
@@ -911,6 +971,45 @@ struct Vrage_MaterialBrowser (
 		
 		Filter_Group.controls.add filter_button
 		Filter_Group.controls.add filter_box
+
+		/*Source File List*/
+
+		Source_Group.Margin = Margin
+		Source_Group.padding = Padding
+		Source_Group.text = "Filter:"
+		Source_Group.Dock = DockStyle.Left
+		Source_Group.forecolor = Color.white
+
+		
+		Source_ListView.View = View.List -- Set the view to show details.
+		Source_ListView.LabelEdit = False -- Allow the user to edit item text.
+		Source_ListView.AllowColumnReorder = False -- Allow the user to rearrange columns.
+		Source_ListView.CheckBoxes = true -- Display check boxes.
+		Source_ListView.FullRowSelect = true -- Select the item and subitems when selection is made.
+		Source_ListView.GridLines = true -- Display grid lines.
+		Source_ListView.Sorting = SortOrder.Ascending -- Sort the items in the list in ascending order.
+		
+		Source_ListView.location = dotNetObject "System.Drawing.Point" (Source_Group.location.x + 10) (Source_Group.location.y + 20)
+		Source_ListView.size = dotNetObject "System.Drawing.Size" (Source_Group.size.width - 30) (Source_Group.size.height * 2)
+		--Source_ListView.bounds = (dotNetClass "System.Shapes.Rectangle") (dotNetObject "System.Drawing.Point" (Source_Group.location.x + 10) (Source_Group.location.y + 20)) (dotNetObject "System.Drawing.Size" (Source_Group.size.width - 30) (Source_Group.size.height * 2))
+		Source_ListView.Dock = DockStyle.Fill
+		Source_ListView.padding = Padding
+		Source_ListView.margin = Margin
+		Source_ListView.Scrollable = True
+		Source_ListView.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left --AnchorStyles.Right AnchorStyles.Bottom
+		
+		Source_ListView.backcolor = getDnColor #background
+		Source_ListView.forecolor = getDnColor #text
+		
+		Source_ListView.Columns.Add "File" 4 HorizontalAlignment.Left
+		--Source_ListView.Columns.Add "Column 2" -2 HorizontalAlignment.Left
+		--Source_ListView.Columns.Add "Column 3" -2 HorizontalAlignment.Left
+		--Source_ListView.Columns.Add "Column 4" -2 HorizontalAlignment.Center
+
+		populateSource()
+
+		Source_Group.controls.add source_ListView
+
 		Filter_Group.controls.add filter_button_Painted
 		Filter_Group.controls.add filter_button_Metal
 		Filter_Group.controls.add filter_button_Rubber
@@ -927,7 +1026,9 @@ struct Vrage_MaterialBrowser (
 		
 		hForm.controls.add Mat_Layout
 		hForm.controls.add Filter_Group
+		hForm.controls.add Source_Group
 
+		--populateMats()
 
 		populateMats txt:"Painted"
 		filter_box.text = "Painted"
@@ -935,10 +1036,12 @@ struct Vrage_MaterialBrowser (
 		--hForm.topmost = true
 		
 		nw = DotNetObject "System.Windows.Forms.NativeWindow"
-		nw.AssignHandle ( DotNetObject "System.IntPtr" ( Windows.GetMaxHWND()) )
-
+		nw.AssignHandle (DotNetObject "System.IntPtr" (Windows.GetMaxHWND()))
+			
+		hForm.backcolor = getDnColor #background
+			
 		dotNet.addEventHandler hForm "Closed" closeForm
-
+		
 		hForm.size = dotNetObject "System.Drawing.Size" form_size.x form_size.y
 		hForm.show ( nw )
 		nw.releaseHandle()
@@ -1013,7 +1116,7 @@ fn VRage_cleanMats obj_list = (
 								else (
 									if not MatchPattern old_material.name pattern:"*_Blocks Slot #*" do (
 										error_stream = "" as StringStream
-										format "No Material named \"%\" for object \"%\" in XML files" old_material.name o to:error_stream
+										--format "No Material named \"%\" for object \"%\" in XML files" old_material.name o to:error_stream
 										errorMsg = error_stream as string
 										
 										if findItem MyVrageMatLib.errors old_material.name == 0 do (
@@ -1033,7 +1136,7 @@ fn VRage_cleanMats obj_list = (
 							)
 							else (
 								error_stream = "" as StringStream
-								format "No Material named \"%\" for object \"%\" in XML files" o.material.name o to:error_stream
+								--format "No Material named \"%\" for object \"%\" in XML files" o.material.name o to:error_stream
 								errorMsg = error_stream as string
 								
 								if findItem MyVrageMatLib.errors o.material.name == 0 do (
@@ -1253,7 +1356,7 @@ fn Vrage_getMaterialThumbnails names= (
 					setpixels thumb [0, size -= 1] row
 				)
 				
-				format "%\n" thumb.filename
+				--format "%\n" thumb.filename
 				
 				try (
 					save thumb
@@ -1288,9 +1391,13 @@ fn Vrage_getMaterialThumbnails names= (
 )
 */
 
-MyVRageMatLib = VRageMaterialLibrary()
-MyVRageMatLib.main()
 
+if MyVRageMatLib == undefined do (
+	MyVRageMatLib = VRageMaterialLibrary()
+	MyVRageMatLib.main()
+)
+
+clearListener()
 /* Example Code to open Browser
 MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()
 */
