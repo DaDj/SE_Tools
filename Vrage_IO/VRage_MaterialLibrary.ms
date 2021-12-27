@@ -1272,7 +1272,9 @@ fn Vrage_GetMaterialSample inputMaterial Filename inputWidth inputHeight = (
 		-- tempSphere = Sphere pos:[0, 0, 0] rotation:( quat -0.707107 0 0 0.707107 ) wirecolor:gray radius:12 smooth:on segs:32 chop:0 slice:off sliceFrom:0 sliceTo:0 mapcoords:on recenter:off
 		-- tempSphere.rotation = eulerAngles -90 0 0
 		
-		tempSphere = box pos:[0,0,-12] width:24 length:24 height:24 mapcoords:on widthsegs:8 lengthsegs:8 heightsegs:8 wirecolor:gray mpassEnabled:off mpassRenderPerPass:off 
+		tsSegs = 12
+		
+		tempSphere = box pos:[0,0,-12] width:24 length:24 height:24 mapcoords:on widthsegs:tsSegs lengthsegs:tsSegs heightsegs:tsSegs wirecolor:gray mpassEnabled:off mpassRenderPerPass:off 
 		addModifier tempSphere (Relax Relax_Value: 1 Keep_Boundary_Pts_Fixed:0) 
 		addModifier tempSphere (Spherify percent:100)
 		addModifier tempSphere (SmoothModifier smoothingBits:1)
