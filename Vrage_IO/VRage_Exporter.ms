@@ -1,6 +1,3 @@
-
-
-
 struct VRageExporter (
 
 	Filepath = undefined,
@@ -38,6 +35,11 @@ struct VRageExporter (
 		FBXExporterSetParam "FileVersion" "FBX201300"
 	),
 
+	fn Create_MWM_XML MyModelName DestPath =
+	(
+
+	),
+
 	fn ExportFBX MyObjects DestPath =
 	(
 		pluginManager.loadClass FbxExporter
@@ -66,7 +68,7 @@ struct VRageExporter (
 			MyVRageLog.Info Logdata[i]
 			if matchPattern Logdata[i]  pattern: "Saved tag file:*" do Tool_Success = 1
 		)			
-	
+		
 		if  Tool_Success == 0 do
 		(
 			LogMessage = "FBXimporter Failed to Export:  " + TmpHktPath
@@ -108,7 +110,7 @@ struct VRageExporter (
 			) 
 		) 
 
-		if MyObjects.count > 16 do MyVRageLog.Warn ("More than 16 Collisionshapes in " + LayerManager.current.name ) 
+		if MyObjects.count > 10 do MyVRageLog.Warn ("More than 10 Collisionshapes in " + LayerManager.current.name ) 
 		-- set pivto of objs to world origin , needed for havok
 		MyObjects.pivot = [0,0,0]
 
@@ -131,7 +133,7 @@ struct VRageExporter (
 
 		MyVRageLog.Info "Starting MwmBuilder.exe" 
 		Materialspath =  MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials" 
-		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#(" \""  +  "/s:" + SrcPath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e" )
+		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#(" \""  +  "/s:" + SrcPath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e","/gss")
 		
 		Tool_Success = 1
 		for i = 1 to Logdata.count do 
@@ -139,7 +141,7 @@ struct VRageExporter (
 			MyVRageLog.Info Logdata[i]
 			if matchPattern Logdata[i]  pattern: "Finished :*" do Tool_Success = 1
 		)			
-	
+		
 		if  Tool_Success == 0 do
 		(
 			LogMessage = "MwmBuilder Failed to Export:  " + Destpath
@@ -167,7 +169,7 @@ struct VRageExporter (
 
 		Layer = Vrage_SetLayerbyName("#TestLayer")
 		if Layer == undefined then (
-		MyVRageLog.Error ("Testlayer not found ") 
+			MyVRageLog.Error ("Testlayer not found ") 
 			return -1
 		)
 		Layer.select true;
@@ -181,7 +183,7 @@ struct VRageExporter (
 		
 		Layer = Vrage_SetLayerbyName("Collision")
 		if Layer == undefined then (
-		MyVRageLog.Error ("Collision Layer not found ") 
+			MyVRageLog.Error ("Collision Layer not found ") 
 			return -1
 		)
 		Layer.select true;
@@ -205,37 +207,38 @@ fn OpenVrageExport = (
 
 	rollout rollExpUI "VRage Export Scene" width:450 height:200
 	(
-	
 		group "Main"(
-		label lbl_PathExp  "Export Folder:"align:#left across:2 offset:[00,5]
+			label lbl_PathExp  "Export Folder:"align:#left across:2 offset:[00,5]
 
-		button btn_PathExp  MyVRageCfg.Exp_DestPath width:350 height:25 align:#right \
-		tooltip: MyVRageCfg.Exp_DestPath
-			on btn_PathExp pressed do (
+			button btn_PathExp MyVRageCfg.Exp_DestPath width:350 height:25 tooltip:MyVRageCfg.Exp_DestPath align:#right 
+			on btn_PathExp pressed do 
+			(
 				FilePath = getSavePath caption:"Test path..."
-				if(FilePath != undefined ) do (
+				if(FilePath != undefined ) do 
+				(
 					btn_PathExp.text = MyVRageCfg.Exp_DestPath = FilePath
 					btn_PathExp.tooltip = MyVRageCfg.Exp_DestPath
 					MyVRageCfg.save()
 				)
 			)
-		on btn_PathExp rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.Exp_DestPath) "") catch()
 
-		label lblmdlname "Mod Name:" across: 3 align: #left
-		edittext EditBlockName "" fieldWidth:205 labelOnTop:false text: "MyAwesomeMod" tooltip:"Name of the Mod, also gonna be the Modfolder Name" align:#right bold: true height:20
-		button btnApplyname "Apply" width:80 height:22 toolTip:"Apply new name" align:#right across:3
+			on btn_PathExp rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.Exp_DestPath) "") catch()
+
+			label lblmdlname "Mod Name:" across: 3 align: #left
+			edittext EditBlockName "" fieldWidth:205 labelOnTop:false text: "MyAwesomeMod" tooltip:"Name of the Mod, also gonna be the Modfolder Name" align:#right bold: true height:20
+			button btnApplyname "Apply" width:80 height:22 toolTip:"Apply new name" align:#right across:3
 		)
 
 		group "Toggles"(
 			checkbutton ChkExp_GenerateBlockDef "Generate Block Def." checked:MyVRageCfg.Exp_GenerateBlockDef width:130  height:25\
-			tooltip:"Generate as Blockdefintion File (.sbc)"  across:3 align:#right
+						tooltip:"Generate as Blockdefintion File (.sbc)"  across:3 align:#right
 			on ChkExp_GenerateBlockDef changed state do (
 				MyVRageCfg.Exp_GenerateBlockDef = state   
 				MyVRageCfg.save()
 			)
 
 			checkbutton ChkExpotoModFolder "Export to Mod Folder" checked:MyVRageCfg.Exp_ToModFolder width:130  height:25\
-			tooltip:"Export directly to a mod folder in the appdata of Spaceengineers"   align:#right
+						tooltip:"Export directly to a mod folder in the appdata of Spaceengineers"   align:#right
 			on ChkExpotoModFolder changed state do (
 				MyVRageCfg.Exp_ToModFolder = state   
 				if MyVRageCfg.Exp_ToModFolder == true then btn_PathExp.enabled = false else btn_PathExp.enabled = true
@@ -243,18 +246,18 @@ fn OpenVrageExport = (
 			)
 
 			checkbutton ChkExp_StartGameAfter "Start Game after export"  checked:MyVRageCfg.Exp_StartGameAfter width:130  height:25 \
-			tooltip:"Start Game after export?"   align:#right
+						tooltip:"Start Game after export?"   align:#right
 			on ChkExp_StartGameAfter changed state do (
 				MyVRageCfg.Exp_StartGameAfter = state   
 				MyVRageCfg.save()
 			)
 		)
 
-	
-	
-			button 'Btn_export' "Export" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
+		
+		
+		button 'Btn_export' "Export" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
 		--	on Btn_export pressed do OpenVrageExport()
-	
+		
 
 
 		on rollExpUI open do 	(
@@ -271,17 +274,18 @@ fn OpenVrageExport = (
 	-- Exp_GenerateBlockDef = false, -- Flag is blockdef .sbc sall be generated
 	-- Exp_DestPath = "", -- Path if ExptoModfolder == false
 	-- Exp_ModName = "", -- current Modname for folder generation (may maxscene as default?)
--- try (closeRolloutFloater MyVRageEXPFloater) catch ()
--- MyVRageEXPFloater = newRolloutFloater  "VRage Export Scene" 600 500 20 130 
--- addRollout rollExpUI MyVRageEXPFloater
+	-- try (closeRolloutFloater MyVRageEXPFloater) catch ()
+	-- MyVRageEXPFloater = newRolloutFloater  "VRage Export Scene" 600 500 20 130 
+	-- addRollout rollExpUI MyVRageEXPFloater
+	try (cui.UnRegisterDialogBar rollExpUI) catch () 
+	try (DestroyDialog  rollExpUI) catch ()
+
+	createDialog rollExpUI   
+	cui.RegisterDialogBar rollExpUI   style:#(#cui_floatable)
 
 
-createDialog rollExpUI   style:#(#style_sysmenu, #style_titlebar)
 )
 
 
 
-	
-	
 
-	
