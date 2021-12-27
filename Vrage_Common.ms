@@ -1,10 +1,22 @@
 function MXSColor_to_dotNetColor hColor = --New function
 (
-	m_dnColor = dotNetClass "System.Drawing.Color"
 	--[brief] Converts a maxscript color to a .NET color
-	--[param] The maxscript color to convert
+	--[param] The maxscript color or registered #colorname to convert
 	--[return] A System.Drawing.Color object
-	m_dnColor.fromARGB hColor.r hColor.g hColor.b
+
+	dnColor = dotNetClass "System.Drawing.Color"
+	
+	if isKindof val name then (
+		maxColor = colorMan.getColor val
+	)
+	else if isKindOf val Color then (
+		maxColor = val
+	)
+	else (
+		maxColor = undefined
+	)
+		
+	dnColor.fromArgb (maxColor[1] * 255.0f) (maxColor[2] * 255.0f) (maxColor[3] * 255.0f)
 )
 
 fn Vrage_getFacesByMatId mesh = (

@@ -43,19 +43,7 @@ VrageMaterial_CA = attributes VrageMaterial attribID:#( 0x162d47c4, 0x6a278b17 )
 
 fn getDnColor val = (
 	
-	dnColor = dotNetClass "System.Drawing.Color"
-	
-	if isKindof val name then (
-		maxColor = colorMan.getColor val
-	)
-	else if isKindOf val Color then (
-		maxColor = val
-	)
-	else (
-		maxColor = undefined
-	)
-		
-	dnColor.fromArgb (maxColor[1] * 255.0f) (maxColor[2] * 255.0f) (maxColor[3] * 255.0f)
+	MXSColor_to_dotNetColor val
 
 )
 
@@ -699,9 +687,16 @@ struct Vrage_MaterialBrowser (
 	Source_Group =  dotNetObject "System.Windows.Forms.Groupbox",
 	Source_ListView = dotNetObject "System.Windows.Forms.ListView",
 	Info_Group =  dotNetObject "System.Windows.Forms.Groupbox",
-
+	
+	filter_button_Painted = dotNetObject "System.Windows.Forms.button",
+	filter_button_Metal = dotNetObject "System.Windows.Forms.button",
+	filter_button_Rubber = dotNetObject "System.Windows.Forms.button",
+	filter_button_Emissive = dotNetObject "System.Windows.Forms.button",
+	filter_button_Glass = dotNetObject "System.Windows.Forms.button",
+	filter_button_Atlas = dotNetObject "System.Windows.Forms.button",
+	filter_button_Screen = dotNetObject "System.Windows.Forms.button",
 	last_txt = "",
-
+	
 	fn populateSource =(
 
 		SourcE_Listview.clear()
@@ -718,15 +713,6 @@ struct Vrage_MaterialBrowser (
 			Source_ListView.Items.Add item
 		)
 	),
-	
-	filter_button_Painted = dotNetObject "System.Windows.Forms.button",
-	filter_button_Metal = dotNetObject "System.Windows.Forms.button",
-	filter_button_Rubber = dotNetObject "System.Windows.Forms.button",
-	filter_button_Emissive = dotNetObject "System.Windows.Forms.button",
-	filter_button_Glass = dotNetObject "System.Windows.Forms.button",
-	filter_button_Atlas = dotNetObject "System.Windows.Forms.button",
-	filter_button_Screen = dotNetObject "System.Windows.Forms.button",
-	last_txt = "",
 
 	fn populateMats txt:"" cleanMats:true exactWord:false = (
 		
@@ -1236,8 +1222,14 @@ fn Vrage_GetMaterialSample inputMaterial Filename inputWidth inputHeight = (
 		Hide tempHiddenObject
 		tempCamera = Freecamera fov:45 targetDistance:50 nearclip:1 farclip:1000 nearrange:0 farrange:1000 mpassEnabled:off mpassRenderPerPass:off pos:[0, 0, 40]
 		--tempBackground = Plane pos:[0, 0, -10] Length:150 Width:150 wireColor:gray
-		tempSphere = Sphere pos:[0, 0, 0] rotation:( quat -0.707107 0 0 0.707107 ) wirecolor:gray radius:12 smooth:on segs:32 chop:0 slice:off sliceFrom:0 sliceTo:0 mapcoords:on recenter:off
+		-- tempSphere = Sphere pos:[0, 0, 0] rotation:( quat -0.707107 0 0 0.707107 ) wirecolor:gray radius:12 smooth:on segs:32 chop:0 slice:off sliceFrom:0 sliceTo:0 mapcoords:on recenter:off
 		-- tempSphere.rotation = eulerAngles -90 0 0
+		
+		tempSphere = box pos:[0,0,-12] width:24 length:24 height:24 mapcoords:on widthsegs:8 lengthsegs:8 heightsegs:8 wirecolor:gray mpassEnabled:off mpassRenderPerPass:off 
+		addModifier tempSphere (Relax Relax_Value: 1 Keep_Boundary_Pts_Fixed:0) 
+		addModifier tempSphere (Spherify percent:100)
+		addModifier tempSphere (SmoothModifier smoothingBits:1)
+		
 		tempSphere.material = inputMaterial
 		for tempLight in Lights where IsProperty tempLight #excludeList do 
 		(
