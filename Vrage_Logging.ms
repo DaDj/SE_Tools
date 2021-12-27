@@ -123,7 +123,7 @@ struct VrageLogSys
 		--	cui.DockDialogBar MyVRageMessageFloater #cui_dock_bottom
 	),
 
-	fn AddLogRollout NumMsg Type Title Labltext Critical Date= (
+	fn AddLogRollout NumMsg Type Title Labltext Critical Date  = (
 		Rolloutname = "Rfl" + NumMsg as string
 		rfTest = rolloutCreator Rolloutname (Type + ":  " +Title) 
 		rfTest.begin()
