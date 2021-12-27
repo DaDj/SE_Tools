@@ -135,15 +135,14 @@ MyVRageCfg.load()
 
 
 -- intialize Materiallibrary if its lost...
-if Vrage_getMaterialThumbnails == undefined then
+if Vrage_MaterialThumbRenderer == undefined then
 (
 	fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_MaterialLibrary.ms" )
 	
 ) 
 
 
-global VRageTexTypes = #( ".dds", ".tif", ".png", ".tga", ".jpg" )
-sort VRageTexTypes
+global VRageTexTypes = #(".dds", ".jpg", ".png", ".tga", ".tif")
 
 /* has to be global to be closable from anywhere */
 global MyVRageCfgFloater
@@ -261,18 +260,22 @@ fn OpenSettings = (
 			(
 				fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_TextureIO.ms" )
 			) 
-			if queryBox "This will take ~5 minutes or more. \n Do you want to continue?" beep:false then VrageTextureIO_ConvertSEtoReadable()
+			if queryBox "This will take ~5 minutes or more. \n Do you want to continue?" beep:false title:"VrageToolbox" then VrageTextureIO_ConvertSEtoReadable()
 			
 		)
 
 		button btn_GenMatThumbs "Generate MaterialThumbnails" width:150 height:25 toolTip:"Re/Generates the Materialthumbnails"
 		on btn_GenMatThumbs pressed do 
 		(
-			if Vrage_getMaterialThumbnails == undefined then
+			if Vrage_MaterialThumbRenderer == undefined then
 			(
 				fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_MaterialLibrary.ms" )
 			) 
-			if queryBox "This will take ~5 minutes or more. \n Do you want to continue?" beep:false then Vrage_GenerateMatThumbnails MyVrageMatLib.mat_names
+			if queryBox "This will take ~5 minutes or more. \n Do you want to continue?" beep:false title:"VrageToolbox" do (
+				MyVrageThumbRenderer = Vrage_MaterialThumbRenderer()
+				MyVrageThumbRenderer.GenerateMatThumbnails MyVrageMatLib.mat_names
+			)
+			
 		)
 		
 		on VrageUtils_CfgTextures open do 

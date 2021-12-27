@@ -1086,6 +1086,119 @@ struct Vrage_MaterialBrowser (
 )
 
 
+struct Vrage_MaterialThumbRenderer (
+	
+	resolution = [150, 150],
+	
+	sceneObjects = #(),
+	sceneLights = #(),
+	
+	thumbPrimitive = undefined,
+	thumbCamera = undefined,
+	thumbSceneObjects = #(),
+	
+	fn setupLights =(
+		
+		HDRI_Map = OSLMap OSLPath:(getDir #maxroot + "OSL\\HDRIEnviron.osl")
+		HDRI_Map.HDRI = getDir #userscripts + @"VRageToolbox\Vrage_resources\myearth.hdr"
+		
+		tempLight = Omnilight multiplier:1.0 pos:[20, -40, 20]
+		tempLight2 = Omnilight multiplier:1.0 pos:[-15, 0, -20]
+		tempSky = Skylight sky_color_map_on:True sky_color_map:HDRI_Map
+		
+		append thumbSceneObjects tempLight
+		append thumbSceneObjects tempLight2
+		append thumbSceneObjects tempSky
+	),
+	
+	fn setupPrimitive =(
+		tsSegs = 12
+			
+		thumbPrimitive = box pos:[0,0,-12] width:24 length:24 height:24 mapcoords:on widthsegs:tsSegs lengthsegs:tsSegs heightsegs:tsSegs wirecolor:gray mpassEnabled:off mpassRenderPerPass:off 
+		addModifier thumbPrimitive (Relax Relax_Value: 1 Keep_Boundary_Pts_Fixed:0) 
+		addModifier thumbPrimitive (Spherify percent:100)
+		addModifier thumbPrimitive (SmoothModifier smoothingBits:1)
+		
+		append thumbSceneObjects thumbPrimitive
+	),
+	
+	fn setupCamera =(
+		thumbCamera = Freecamera fov:45 targetDistance:50 nearclip:1 farclip:1000 nearrange:0 farrange:1000 mpassEnabled:off mpassRenderPerPass:off rotation:(quat 0.707107 0 0 0.707107) pos:[0, -40, 0]
+		append thumbSceneObjects thumbCamera
+	),
+	
+	fn SceneSetup =(
+		
+		sceneObjects = for o in objects where not o.isdeleted and not o.ishidden collect o
+		sceneLights = for l in lights where o != undefined and not o.isdeleted collect l
+			
+		setupPrimitive()
+		setupLights()
+		setupCamera()
+		
+		hide sceneObjects
+		
+		for l in sceneLights do (
+			append l.excludeList thumbPrimitive
+		)
+		
+	),
+	
+	fn SceneReset =(
+		unhide sceneObjects
+		delete thumbSceneObjects
+	),
+	
+	fn GetMaterialSample Filename = (
+		result = render camera:thumbCamera outputsize:resolution vfb:false outputfile:Filename
+		result
+	),
+
+	fn GenerateMatThumbnails names = (
+		
+		with redraw off
+		with undo off
+		(
+		
+			thumb_dir = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\"
+			try ( makeDir thumb_dir ) catch()
+			
+			start = timestamp()
+			
+			if classOf names == String do (
+				names = #( names )
+			)
+			progressStart "Generating Thumbnails"
+			MyVRageLog.silent = True
+			prog = 0.0
+			limit = names.count as float
+
+			cur_rdr = renderers.current
+			new_rdr = Quicksilver_Hardware_Renderer()
+			renderers.current = new_rdr
+			pngio.setAlpha true
+			
+			SceneSetup()
+			
+			for n in names do (
+				if getProgressCancel() do exit
+				local fname = thumb_dir + n + ".png"
+				thumbPrimitive.material = Vrage_getmatbyname n
+				MaterialSample = ( GetMaterialSample fname )
+				prog += 1.0
+				progressUpdate ( prog / limit * 100.0 )
+			)
+			
+			SceneReset()
+
+			renderers.current = cur_rdr
+			MyVRageLog.silent = false
+			progressEnd()	
+		)
+	)
+
+	
+)
 
 fn VRage_getMatByName name = (
 	
@@ -1260,71 +1373,8 @@ fn VRage_write_material_xml obj_list = (
 	
 )
 
-fn Vrage_GetMaterialSample inputMaterial Filename inputWidth inputHeight = (
-	result = undefined
-	with redraw off
-	with undo off
-	(
-		tempHiddenObject = for tempObject in Objects where not tempObject.ishidden collect tempObject
-		Hide tempHiddenObject
-		tempCamera = Freecamera fov:45 targetDistance:50 nearclip:1 farclip:1000 nearrange:0 farrange:1000 mpassEnabled:off mpassRenderPerPass:off pos:[0, 0, 40]
-		--tempBackground = Plane pos:[0, 0, -10] Length:150 Width:150 wireColor:gray
-		-- tempSphere = Sphere pos:[0, 0, 0] rotation:( quat -0.707107 0 0 0.707107 ) wirecolor:gray radius:12 smooth:on segs:32 chop:0 slice:off sliceFrom:0 sliceTo:0 mapcoords:on recenter:off
-		-- tempSphere.rotation = eulerAngles -90 0 0
-		
-		tsSegs = 12
-		
-		tempSphere = box pos:[0,0,-12] width:24 length:24 height:24 mapcoords:on widthsegs:tsSegs lengthsegs:tsSegs heightsegs:tsSegs wirecolor:gray mpassEnabled:off mpassRenderPerPass:off 
-		addModifier tempSphere (Relax Relax_Value: 1 Keep_Boundary_Pts_Fixed:0) 
-		addModifier tempSphere (Spherify percent:100)
-		addModifier tempSphere (SmoothModifier smoothingBits:1)
-		
-		tempSphere.material = inputMaterial
-		for tempLight in Lights where IsProperty tempLight #excludeList do 
-		(
-			tempLight.excludeList = Append tempLight.excludeList tempSphere
-			--tempLight.excludeList = Append tempLight.excludeList tempBackground
-		)
-		tempLight = Omnilight multiplier:1.0 pos:[20, 20, 40]
-		tempLight2 = Omnilight multiplier:1.0 pos:[-15, -20, 0]
-		pngio.setAlpha true ;
-		result = render camera:tempCamera outputsize:[inputWidth, inputHeight] vfb:false outputfile:Filename
-		delete #( tempCamera, tempLight, tempLight2, tempSphere /*, tempBackground*/ )
-		UnHide tempHiddenObject
-	)
-	result
-)
 
-fn Vrage_GenerateMatThumbnails names = (
-	thumb_dir = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\"
-	try ( makeDir thumb_dir ) catch()
-	
-	start = timestamp()
-	
-	if classOf names == String do (
-		names = #( names )
-	)
-	progressStart "Generating Thumbnails"
-	MyVRageLog.silent = True
-	prog = 0.0
-	limit = names.count as float
 
-	cur_rdr = renderers.current
-	new_rdr = Quicksilver_Hardware_Renderer()
-	renderers.current = new_rdr
-
-	for n in names do (
-		local fname = thumb_dir + n + ".png"
-		MyMaterial = Vrage_getmatbyname n
-		MaterialSample = ( Vrage_GetMaterialSample MyMaterial fname 150 150 )
-		prog += 1.0
-		progressUpdate ( prog / limit * 100.0 )
-	)
-
-	renderers.current = cur_rdr
-	MyVRageLog.silent = false
-	progressEnd()	
-)
 
 
 fn VRage_Generate3dMaxMatLibrary Names Filepath=
@@ -1341,109 +1391,11 @@ fn VRage_Generate3dMaxMatLibrary Names Filepath=
 	thing  = loadMaterialLibrary  Filepath
 )
 
-/*
-fn Vrage_getMaterialThumbnails names= (
-	thumb_dir = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\"
-	try (makeDir thumb_dir) catch()
-	
-	start = timestamp()
-	
-	if classOf names == String do (
-		names = #(names)
-	)
-	
-	MatEditor.Close()
-	backup = IDisplayGamma.affectMEdit
-	IDisplayGamma.affectMEdit = true
-	local backupMat = meditMaterials[1]
-	MyVRageLog.silent = True
-	
-	IDisplayGamma.gamma = 2.2
-	cur_rdr = renderers.current
-	
-	new_rdr = Quicksilver_Hardware_Renderer()
-	
-	renderers.current = new_rdr
-	
-	local thumb = undefined
-	local iGlobal = (dotnetClass "Autodesk.Max.GlobalInterface").Instance
-	
-	progressStart "Generating Thumbnails"
-
-	if iGlobal != undefined then (
-		local IntPtr = dotnetClass "System.IntPtr"
-		local pStampSize = (dotnetclass "Autodesk.Max.PostageStampSize").Large
-		
-		prog = 0.0
-		limit = names.count as float
-		
-		for n in names do (
-			meditMaterials[1] = Vrage_getmatbyname n
-			
-			local fname = thumb_dir + n + ".jpg"
-		
-			local matRef = iGlobal.CoreInterface.GetMtlSlot 0
-
-			local pStamp = matRef.CreatePStamp pStampSize true
-			local bytes = pStamp.Image
-			local size = pStamp.Width
-			
-			try (
-				thumb = bitmap size size gamma:50 filename:fname
-				
-				local step = size * 3
-				for y = 1 to bytes.count by step do (
-					local row = for x = y to (y + step - 1) by 3 collect [bytes[x + 2], bytes[x + 1], bytes[x]]
-					setpixels thumb [0, size -= 1] row
-				)
-				
-				--format "%\n" thumb.filename
-				
-				try (
-					save thumb
-					try(
-						close thumb
-					)
-					catch()
-				)
-				catch(format "Thumbnail could not be saved! %\n" thumb.filename)
-			)
-			catch()
-			
-			prog += 1.0
-			progressUpdate (prog / limit * 100.0)
-			
-			pStamp.Dispose()
-			matRef.Dispose()
-		)
-		
-	)
-	
-	progressEnd()
-	
-	renderers.current = cur_rdr
-	IDisplayGamma.gamma = 2.2
-	meditMaterials[1] = backupMat
-	IDisplayGamma.affectMEdit = backup
-	
-	end = timestamp()
-	MyVRageLog.silent = False
-	--format "Time: % ms" (end - start)
-)
-*/
-
-
 if MyVRageMatLib == undefined do (
 	MyVRageMatLib = VRageMaterialLibrary()
 	MyVRageMatLib.main()
 )
 
-clearListener()
 /* Example Code to open Browser
 MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()
 */
---Vrage_GenerateMatThumbnails  MyVrageMatLib.mat_names
-
-
---Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
---MyVrageMatBrowser = (Vrage_MaterialBrowser()).getForm()
