@@ -634,7 +634,7 @@ struct Vrage_MaterialButton (
 		mButton.text = name
 		mButton.size = dotNetObject "System.Drawing.Size" bsize bsize
 		
-		mButton.ForeColor = getDnColor #trackbarCursor
+		mButton.ForeColor = getDnColor #text
 		
 		mButton.flatStyle = mButton.flatStyle.Popup
 	--	mButton.BackColor = Color.gray -- just for fun
@@ -660,8 +660,11 @@ struct Vrage_MaterialButton (
 
 struct Vrage_MaterialBrowser (
 	
-	Margin = dotNetObject "System.Windows.Forms.Padding" 10,
-	Padding = dotNetObject "System.Windows.Forms.Padding" 10,
+	padsize = 10,
+	marginsize = 10,
+	
+	Margin = dotNetObject "System.Windows.Forms.Padding" padsize,
+	Padding = dotNetObject "System.Windows.Forms.Padding" marginsize,
 	DockStyle = dotNetClass "System.Windows.Forms.DockStyle",
 	BorderStyle = dotNetClass "System.Windows.Forms.BorderStyle",
 	Color = dotNetClass "System.Drawing.Color",
@@ -688,23 +691,25 @@ struct Vrage_MaterialBrowser (
 	Source_ListView = dotNetObject "System.Windows.Forms.ListView",
 	Info_Group =  dotNetObject "System.Windows.Forms.Groupbox",
 	
-	filter_button_Painted = dotNetObject "System.Windows.Forms.button",
-	filter_button_Metal = dotNetObject "System.Windows.Forms.button",
-	filter_button_Rubber = dotNetObject "System.Windows.Forms.button",
-	filter_button_Emissive = dotNetObject "System.Windows.Forms.button",
-	filter_button_Glass = dotNetObject "System.Windows.Forms.button",
-	filter_button_Atlas = dotNetObject "System.Windows.Forms.button",
-	filter_button_Screen = dotNetObject "System.Windows.Forms.button",
+	prefilter_Layout = dotNetObject "System.Windows.Forms.FlowLayoutPanel",
+	
+	prefilter_button_Painted = dotNetObject "System.Windows.Forms.button",
+	prefilter_button_Metal = dotNetObject "System.Windows.Forms.button",
+	prefilter_button_Rubber = dotNetObject "System.Windows.Forms.button",
+	prefilter_button_Emissive = dotNetObject "System.Windows.Forms.button",
+	prefilter_button_Glass = dotNetObject "System.Windows.Forms.button",
+	prefilter_button_Atlas = dotNetObject "System.Windows.Forms.button",
+	prefilter_button_Screen = dotNetObject "System.Windows.Forms.button",
 	last_txt = "",
 	
 	fn populateSource =(
 
-		SourcE_Listview.clear()
+		Source_Listview.clear()
 		dir = (trimright MyVRageCfg.PathModSDK "\\") + "\\OriginalContent\\Materials\\"
 		files = getFiles (dir + "*.xml")
 
 		for f in files do (
-			fname = getFilenameFile f
+			fname = getFilenameFile f + ".xml"
 			item = dotNetObject "System.Windows.Forms.ListViewItem" fname 0
 			item.checked = True
 			--item.SubItems.Add("1");
@@ -851,40 +856,58 @@ struct Vrage_MaterialBrowser (
 			Vrage_getMaterialThumbnails MyVrageMatLib.mat_names
 		)
 		
+		/*Source Group*/
+		Source_Group.location = dotNetObject "System.Drawing.Point" marginsize marginsize
+		Source_Group.size = dotNetObject "System.Drawing.Size" (form_size.x * .30 - marginsize * 2) (form_size.y - marginsize * 2)
+		Source_Group.Margin = Margin
+		--Source_Group.padding = Padding
+		Source_Group.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left
+		Source_Group.text = "Filter:"
+		Source_Group.Dock = DockStyle.Left
+		Source_Group.forecolor = Color.white
+		Source_Group.flatStyle = Source_Group.flatStyle.System
+		Mat_Group.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left
+		
 		/*Filter_Group*/
-		Filter_Group.location = dotNetObject "System.Drawing.Point" 5 5
-		--	Filter_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - 10) ((form_size.y - 10) * 0.12)
-		Filter_Group.size = dotNetObject "System.Drawing.Size" form_size.x 110
+		Filter_Group.location = dotNetObject "System.Drawing.Point" (Source_Group.location.x + Source_Group.size.width + marginsize * 6) Source_Group.location.y
+		Filter_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - Source_Group.size.width - marginsize * 4) 55
 		Filter_Group.Margin = Margin
 		Filter_Group.padding = Padding
+		Filter_Group.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left
 		Filter_Group.flatStyle = Filter_Group.flatStyle.System
-		Filter_Group.text = "Filter:"
+		Filter_Group.text = "Search:"
 		Filter_Group.Dock = DockStyle.Top
 		Filter_Group.forecolor = Color.white
+		Mat_Group.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left
 		
 		/*Mat_Group*/
-		--Mat_Group.location = dotNetObject "System.Drawing.Point" 5 (10 + ((form_size.y - 30) * 0.15))
-		--Mat_Group.size = dotNetObject "System.Drawing.Size" (form_size.x - 30) ((form_size.y - 30) * 0.85 - 20)
+		Mat_Group.location = dotNetObject "System.Drawing.Point" Filter_Group.location.x (Source_Group.location.y + Filter_Group.size.height + marginsize * 2)
+		Mat_Group.size = dotNetObject "System.Drawing.Size" Filter_Group.size.width (form_size.y - marginsize * 4 - Filter_Group.size.height)
 		Mat_Group.Margin = Margin
-		Mat_Group.padding = Padding
-		--Mat_Group.text = "Materials:"
+		--Mat_Group.padding = Padding
+		Mat_Group.text = "Materials:"
 		Mat_Group.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left --AnchorStyles.Right AnchorStyles.Bottom
 		Mat_Group.Dock = DockStyle.Fill
 		Mat_Group.forecolor = Color.white
-		Mat_Group.flatStyle = Filter_Group.flatStyle.System
+		Mat_Group.flatStyle = Mat_Group.flatStyle.System
 		
 		/*Mat_Layout*/
-		Mat_Layout.location = dotNetObject "System.Drawing.Point" ( Mat_Group.location.x + 10 ) ( Mat_Group.location.y + 10 )
-		Mat_Layout.size = dotNetObject "System.Drawing.Size" ( Mat_Group.size.width - 100 ) ( Mat_Group.size.height - 100 )
+		
+		Mat_Layout.location = dotNetObject "System.Drawing.Point" 0 (marginsize * 2)
+		Mat_Layout.size = dotNetObject "System.Drawing.Size" (Mat_Group.size.width - marginsize * 2) (Mat_Group.size.height - marginsize * 2)
+		
 		Mat_Layout.AutoScroll = True
 		Mat_Layout.text = "Materials:"
 		Mat_Layout.Dock = DockStyle.Fill
 		Mat_Layout.Margin = Margin
 		Mat_Layout.padding = Padding
+		Mat_Layout.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left
+		
+		Mat_Group.controls.add Mat_Layout
 		
 		/*filter box*/
-		filter_box.size = dotNetObject "System.Drawing.Size" ( form_size.x - 200 ) 60
-		filter_box.location = dotNetObject "System.Drawing.Point" 15 30
+		filter_box.size = dotNetObject "System.Drawing.Size" ( Filter_Group.size.width * 0.8 ) 60
+		filter_box.location = dotNetObject "System.Drawing.Point" (marginsize) (marginsize * 2)
 		filter_box.Anchor = dotNet.combineEnums AnchorStyles.Left AnchorStyles.Top AnchorStyles.right
 		
 		filter_box.BackColor = getDnColor #background
@@ -892,79 +915,25 @@ struct Vrage_MaterialBrowser (
 		dotNet.addEventHandler filter_box "keyUp" filter_box_ku
 		filter_box.BorderStyle = filter_box.BorderStyle.FixedSingle
 		dotNet.addEventHandler filter_box "KeyDown" filter_box_ku
-		
+				
 		dotnet.setLifetimeControl filter_box #dotnet
 		
 		/*filter button*/
-		filter_button.size = dotNetObject "System.Drawing.Size" 170 30
-		filter_button.location = dotNetObject "System.Drawing.Point" ( form_size.x - filter_button.size.width - 5 ) 29
+		filter_button.size = dotNetObject "System.Drawing.Size" ( Filter_Group.size.width - filter_box.size.width - marginsize * 3) 30
+		filter_button.location = dotNetObject "System.Drawing.Point" ( filter_box.location.x + filter_box.size.width + marginsize) (filter_box.location.y - 5)
 		filter_button.Dock = DockStyle.right
-		filter_button.text = "Filter"
+		filter_button.text = "Search"
 		filter_button.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Right
 		filter_button.flatStyle = filter_button.flatStyle.System
+		filter_button.Margin = Margin
+		filter_button.padding = Padding
 		dotNet.addEventHandler filter_button "click" filter_box_click
 		dotnet.setLifetimeControl filter_button #dotnet
-
-		filter_button_Painted.size = dotNetObject "System.Drawing.Size" 90 40
-		filter_button_Painted.location = dotNetObject "System.Drawing.Point" 10 60
-		filter_button_Painted.text = "Painted"
-		filter_button_Painted.flatStyle = filter_button_Painted.flatStyle.System
-		dotNet.addEventHandler filter_button_Painted "click" filter_painted_click
-		dotnet.setLifetimeControl filter_button_Painted #dotnet
-
-		filter_button_Metal.size = dotNetObject "System.Drawing.Size" 90 40
-		filter_button_Metal.location = dotNetObject "System.Drawing.Point" 100 60
-		filter_button_Metal.text = "Metal"
-		filter_button_Metal.flatStyle = filter_button_Metal.flatStyle.System
-		dotNet.addEventHandler filter_button_Metal "click" filter_metal_click
-		dotnet.setLifetimeControl filter_button_Metal #dotnet
-
-		filter_button_Rubber.size = dotNetObject "System.Drawing.Size" 90 40
-		filter_button_Rubber.location = dotNetObject "System.Drawing.Point" 190 60
-		filter_button_Rubber.text = "Non Metal"
-		filter_button_Rubber.flatStyle = filter_button_Rubber.flatStyle.System
-		dotNet.addEventHandler filter_button_Rubber "click" filter_Rubber_click
-		dotnet.setLifetimeControl filter_button_Rubber #dotnet
-
-		filter_button_Emissive.size = dotNetObject "System.Drawing.Size" 90 40
-		filter_button_Emissive.location = dotNetObject "System.Drawing.Point" 280 60
-		filter_button_Emissive.text = "Emissive"
-		filter_button_Emissive.flatStyle = filter_button_Emissive.flatStyle.System
-		dotNet.addEventHandler filter_button_Emissive "click" filter_Emissive_click
-		dotnet.setLifetimeControl filter_button_Emissive #dotnet
-
-		filter_button_Glass.size = dotNetObject "System.Drawing.Size" 90 40
-		filter_button_Glass.location = dotNetObject "System.Drawing.Point" 370 60
-		filter_button_Glass.text = "Glass"
-		filter_button_Glass.flatStyle = filter_button_Glass.flatStyle.System
-		dotNet.addEventHandler filter_button_Glass "click" filter_Glass_click
-		dotnet.setLifetimeControl filter_button_Glass #dotnet
-
-		filter_button_Atlas.size = dotNetObject "System.Drawing.Size" 90 40
-		filter_button_Atlas.location = dotNetObject "System.Drawing.Point" 460 60
-		filter_button_Atlas.text = "Atlas"
-		filter_button_Atlas.flatStyle = filter_button_Atlas.flatStyle.System
-		dotNet.addEventHandler filter_button_Atlas "click" filter_Atlas_click
-		dotnet.setLifetimeControl filter_button_Atlas #dotnet
-
-		filter_button_Screen.size = dotNetObject "System.Drawing.Size" 90 40
-		filter_button_Screen.location = dotNetObject "System.Drawing.Point" 550 60
-		filter_button_Screen.text = "Screen"
-		filter_button_Screen.flatStyle = filter_button_Screen.flatStyle.System
-		dotNet.addEventHandler filter_button_Screen "click" filter_Screen_click
-		dotnet.setLifetimeControl filter_button_Screen #dotnet
-
-		
+			
 		Filter_Group.controls.add filter_button
 		Filter_Group.controls.add filter_box
 
 		/*Source File List*/
-
-		Source_Group.Margin = Margin
-		Source_Group.padding = Padding
-		Source_Group.text = "Filter:"
-		Source_Group.Dock = DockStyle.Left
-		Source_Group.forecolor = Color.white
 
 		
 		Source_ListView.View = View.List -- Set the view to show details.
@@ -975,14 +944,15 @@ struct Vrage_MaterialBrowser (
 		Source_ListView.GridLines = true -- Display grid lines.
 		Source_ListView.Sorting = SortOrder.Ascending -- Sort the items in the list in ascending order.
 		
-		Source_ListView.location = dotNetObject "System.Drawing.Point" (Source_Group.location.x + 10) (Source_Group.location.y + 20)
-		Source_ListView.size = dotNetObject "System.Drawing.Size" (Source_Group.size.width - 30) (Source_Group.size.height * 2)
+		--Source_ListView.location = dotNetObject "System.Drawing.Point" 10 20
+		Source_ListView.size = dotNetObject "System.Drawing.Size" (Source_Group.size.width - marginsize * 3) (Source_Group.size.height / 2 - marginsize * 3)
 		--Source_ListView.bounds = (dotNetClass "System.Shapes.Rectangle") (dotNetObject "System.Drawing.Point" (Source_Group.location.x + 10) (Source_Group.location.y + 20)) (dotNetObject "System.Drawing.Size" (Source_Group.size.width - 30) (Source_Group.size.height * 2))
-		Source_ListView.Dock = DockStyle.Fill
+		--Source_ListView.Dock = DockStyle.Top
+		
 		Source_ListView.padding = Padding
-		Source_ListView.margin = Margin
+		--Source_ListView.margin = Margin
 		Source_ListView.Scrollable = True
-		Source_ListView.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left --AnchorStyles.Right AnchorStyles.Bottom
+		Source_ListView.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left --AnchorStyles.Bottom --AnchorStyles.Right 
 		
 		Source_ListView.backcolor = getDnColor #background
 		Source_ListView.forecolor = getDnColor #text
@@ -991,18 +961,95 @@ struct Vrage_MaterialBrowser (
 		--Source_ListView.Columns.Add "Column 2" -2 HorizontalAlignment.Left
 		--Source_ListView.Columns.Add "Column 3" -2 HorizontalAlignment.Left
 		--Source_ListView.Columns.Add "Column 4" -2 HorizontalAlignment.Center
+		
+		/*prefilter_Layout*/
+		prefilter_Layout.location = dotNetObject "System.Drawing.Point" ( Source_Group.location.x ) ( Source_Group.location.y + marginsize)
+		prefilter_Layout.size = dotNetObject "System.Drawing.Size" (Source_Group.size.width - marginsize * 2) (Source_Group.size.height - marginsize * 4)
+		prefilter_Layout.AutoScroll = True
+		
+		--prefilter_Layout.Margin = Margin
+		--prefilter_Layout.padding = Padding
+		
+		prefilter_Layout.text = "Filters:"
+		prefilter_Layout.Anchor = dotNet.combineEnums AnchorStyles.Bottom AnchorStyles.Left AnchorStyles.Top
+		--prefilter_Layout.Dock = DockStyle.Bottom
 
+		prefilter_width = Source_ListView.size.width/2 - marginsize /2
+
+		prefilter_button_Painted.size = dotNetObject "System.Drawing.Size" prefilter_width 30
+
+		prefilter_button_Painted.text = "Painted"
+		prefilter_button_Painted.flatStyle = prefilter_button_Painted.flatStyle.System
+		dotNet.addEventHandler prefilter_button_Painted "click" filter_painted_click
+		dotnet.setLifetimeControl prefilter_button_Painted #dotnet
+
+		prefilter_button_Metal.size = dotNetObject "System.Drawing.Size" prefilter_width 30
+
+		prefilter_button_Metal.text = "Metal"
+		prefilter_button_Metal.flatStyle = prefilter_button_Metal.flatStyle.System
+		dotNet.addEventHandler prefilter_button_Metal "click" filter_metal_click
+		dotnet.setLifetimeControl prefilter_button_Metal #dotnet
+
+		prefilter_button_Rubber.size = dotNetObject "System.Drawing.Size" prefilter_width 30
+
+		prefilter_button_Rubber.text = "Non Metal"
+		prefilter_button_Rubber.flatStyle = prefilter_button_Rubber.flatStyle.System
+		dotNet.addEventHandler prefilter_button_Rubber "click" filter_Rubber_click
+		dotnet.setLifetimeControl prefilter_button_Rubber #dotnet
+
+		prefilter_button_Emissive.size = dotNetObject "System.Drawing.Size" prefilter_width 30
+
+		prefilter_button_Emissive.text = "Emissive"
+		prefilter_button_Emissive.flatStyle = prefilter_button_Emissive.flatStyle.System
+		dotNet.addEventHandler prefilter_button_Emissive "click" filter_Emissive_click
+		dotnet.setLifetimeControl prefilter_button_Emissive #dotnet
+
+		prefilter_button_Glass.size = dotNetObject "System.Drawing.Size" prefilter_width 30
+
+		prefilter_button_Glass.text = "Glass"
+		prefilter_button_Glass.flatStyle = prefilter_button_Glass.flatStyle.System
+		dotNet.addEventHandler prefilter_button_Glass "click" filter_Glass_click
+		dotnet.setLifetimeControl prefilter_button_Glass #dotnet
+
+		prefilter_button_Atlas.size = dotNetObject "System.Drawing.Size" prefilter_width 30
+
+		prefilter_button_Atlas.text = "Atlas"
+		prefilter_button_Atlas.flatStyle = prefilter_button_Atlas.flatStyle.System
+		dotNet.addEventHandler prefilter_button_Atlas "click" filter_Atlas_click
+		dotnet.setLifetimeControl prefilter_button_Atlas #dotnet
+
+		prefilter_button_Screen.size = dotNetObject "System.Drawing.Size" prefilter_width 30
+
+		prefilter_button_Screen.text = "Screen"
+		prefilter_button_Screen.flatStyle = prefilter_button_Screen.flatStyle.System
+		dotNet.addEventHandler prefilter_button_Screen "click" filter_Screen_click
+		dotnet.setLifetimeControl prefilter_button_Screen #dotnet
+
+		
+
+		prefilter_Layout.controls.add source_ListView
+		Source_Group.controls.add prefilter_Layout
+		
+		prefilter_Layout.controls.add prefilter_button_Painted
+		prefilter_Layout.controls.add prefilter_button_Metal
+		prefilter_Layout.controls.add prefilter_button_Rubber
+		prefilter_Layout.controls.add prefilter_button_Emissive
+		prefilter_Layout.controls.add prefilter_button_Glass
+		prefilter_Layout.controls.add prefilter_button_Atlas
+		prefilter_Layout.controls.add prefilter_button_Screen
+		
+		
+		/*
+		Source_Group.controls.add prefilter_button_Painted
+		Source_Group.controls.add prefilter_button_Metal
+		Source_Group.controls.add prefilter_button_Rubber
+		Source_Group.controls.add prefilter_button_Emissive
+		Source_Group.controls.add prefilter_button_Glass
+		Source_Group.controls.add prefilter_button_Atlas
+		Source_Group.controls.add prefilter_button_Screen
+		*/
+		
 		populateSource()
-
-		Source_Group.controls.add source_ListView
-
-		Filter_Group.controls.add filter_button_Painted
-		Filter_Group.controls.add filter_button_Metal
-		Filter_Group.controls.add filter_button_Rubber
-		Filter_Group.controls.add filter_button_Emissive
-		Filter_Group.controls.add filter_button_Glass
-		Filter_Group.controls.add filter_button_Atlas
-		Filter_Group.controls.add filter_button_Screen
 		
 		hForm.text = "Vrage Material Browser"
 		hForm.padding = Padding
@@ -1010,7 +1057,7 @@ struct Vrage_MaterialBrowser (
 		hForm.FormBorderStyle = hForm.FormBorderStyle.SizableToolWindow
 		--Mat_Group.controls.add 
 		
-		hForm.controls.add Mat_Layout
+		hForm.controls.add Mat_Group
 		hForm.controls.add Filter_Group
 		hForm.controls.add Source_Group
 
@@ -1140,7 +1187,7 @@ fn VRage_cleanMats obj_list = (
 		
 	)
 	else (
-		VRage_report_Error "Tools Folder does not exist/is not set!\nOpen settings and correct your configuration!"
+		MyVrageLog.error "Tools Folder does not exist/is not set!\nOpen settings and correct your configuration!"
 	)
 )
 

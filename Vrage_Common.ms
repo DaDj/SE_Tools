@@ -1,4 +1,4 @@
-function MXSColor_to_dotNetColor hColor = --New function
+function MXSColor_to_dotNetColor val = --New function
 (
 	--[brief] Converts a maxscript color to a .NET color
 	--[param] The maxscript color or registered #colorname to convert
@@ -6,17 +6,26 @@ function MXSColor_to_dotNetColor hColor = --New function
 
 	dnColor = dotNetClass "System.Drawing.Color"
 	
-	if isKindof val name then (
-		maxColor = colorMan.getColor val
+	try (
+		if isKindof val name then (
+			maxColor = colorMan.getColor val
+		)
+		else if isKindOf val Color then (
+			maxColor = val
+		)
+		else (
+			maxColor = undefined
+		)
+			
+		new_color = dnColor.fromArgb (maxColor[1] * 255.0f) (maxColor[2] * 255.0f) (maxColor[3] * 255.0f)
 	)
-	else if isKindOf val Color then (
-		maxColor = val
-	)
-	else (
-		maxColor = undefined
-	)
+	catch (
+		MyVrageLog.error ("Could not convert \"" + val as String + "\" to DotNet System.Drawing.Color!") critical:True
 		
-	dnColor.fromArgb (maxColor[1] * 255.0f) (maxColor[2] * 255.0f) (maxColor[3] * 255.0f)
+		new_color = dnColor.fromArgb (1 * 255.0f) 0 0
+	)
+	
+	new_color
 )
 
 fn Vrage_getFacesByMatId mesh = (
