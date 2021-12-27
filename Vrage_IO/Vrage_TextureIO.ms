@@ -17,7 +17,7 @@ fn VrageTextureIO_ConvertSEtoReadable =
 		MyVRageLog.Info ( "Starting textureconversion" ) Show: false
 		SETextureDir = "\"" + MyVRageCfg.PathGame + "\Content\Textures" + "\""
 		--Answer = Dos_Command.run Program arg_array:#(SETextureDir , MyVRageCfg.PathTextures , @"\Models", @"\BackgroundCube",@"\Particles" )
-		arg_array = #( SETextureDir , (MyVRageCfg.PathTextures + "\Textures") , @"\Models", @"\BackgroundCube", @"\Particles" )
+		arg_array = #( SETextureDir , ("\"" + MyVRageCfg.PathTextures + "\Textures" + "\"") , @"\Models", @"\BackgroundCube", @"\Particles" )
 		MyStartARg = ""
 		for arg in arg_array do ( MyStartARg += ( " " + arg as string ) )
 		ShellLaunch Program MyStartARg
