@@ -858,7 +858,7 @@ struct Vrage_MaterialBrowser (
 		
 		/*Source Group*/
 		Source_Group.location = dotNetObject "System.Drawing.Point" marginsize marginsize
-		Source_Group.size = dotNetObject "System.Drawing.Size" (form_size.x * .30 - marginsize * 2) (form_size.y - marginsize * 2)
+		Source_Group.size = dotNetObject "System.Drawing.Size" (form_size.x * .25 - marginsize * 2) (form_size.y - marginsize * 2)
 		Source_Group.Margin = Margin
 		--Source_Group.padding = Padding
 		Source_Group.Anchor = dotNet.combineEnums AnchorStyles.Top AnchorStyles.Left
