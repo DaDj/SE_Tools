@@ -174,8 +174,7 @@ struct VRage_Icon
 	fn SavetoCA Layer = 
 	(
 		--find the camera/omnis in the defined layer
-		( Layer.layerAsRefTarg ).nodes &theNodes
-		Layer = ( VRLayers.GetSelected()) ;
+		(Layer.layerAsRefTarg ).nodes &theNodes
 		MainAttr = custAttributes.get Layer VrageLayer_IconData
 		for tNode in theNodes do 
 		(

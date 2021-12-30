@@ -4,7 +4,7 @@ Handles texture I/O :
 - Converting .dds Materials as in ng,cm etc. dds files !!!todo!
 */
 
-fn VrageTextureIO_ConvertSEtoReadable =
+fn VrageTextureIO_ConvertSEtoReadable UpdateOnly:false =
 (-- Calls the Textureconverter consoleapp which converts the SE textures to tif for 3dsmax use.
 
 	Program = MyVRageCfg.VRageScriptsDir + "\\Vrage_Tools\\SETexconv\\TextureConverter.exe" 
@@ -18,10 +18,13 @@ fn VrageTextureIO_ConvertSEtoReadable =
 		SETextureDir = "\"" + MyVRageCfg.PathGame + "\Content\Textures" + "\""
 		Outputdir = "\"" + MyVRageCfg.PathTextures + "\Textures" + "\""
 
-		arg_array = #( SETextureDir , Outputdir, @"\Models", @"\BackgroundCube", @"\Particles" )
-		--	MyStartARg = ""
-		--	for arg in arg_array do ( MyStartARg += ( " " + arg as string ) )
-		--	ShellLaunch Program MyStartARg
+		if ( UpdateOnly == true ) then 
+		(
+			arg_array = #( SETextureDir , Outputdir, @"\Models", @"\BackgroundCube", @"\Particles", " -updateonly" )
+		) else 
+		(
+			arg_array = #( SETextureDir , Outputdir, @"\Models", @"\BackgroundCube", @"\Particles" )
+		)
 		
 		local process = dotNetObject "System.Diagnostics.Process"
 		process.StartInfo.FileName = Program
