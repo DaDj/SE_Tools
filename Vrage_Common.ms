@@ -179,11 +179,6 @@ fn Vrage_cleanLayers this_layer:undefined =
 		)
 		canDelete = ( this_layer.canDelete()) and not ( LayerManager.doesLayerHierarchyContainNodes this_layer.name ) 
 		layerRT = this_layer.layerAsRefTarg
-		print "Start____"
-		print this_layer.name
-		print (isProperty layerRT #VRType )
-		print canDelete
-		print "END____"
 		if canDelete and not (isProperty layerRT #VRType ) do LayerManager.deleteLayerByName this_layer.name
 	)
 	else 

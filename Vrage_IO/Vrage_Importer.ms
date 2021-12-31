@@ -198,7 +198,6 @@ struct VrageFBXImporter (
 		if doesFileExist filename then (
 			max create mode
 			--SetImportSettings()
-			print "haa"
 			with redraw off (
 				LastImport = importFBX filename
 				
