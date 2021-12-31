@@ -16,7 +16,7 @@ function MXSColor_to_dotNetColor val = --New function
 		else (
 			maxColor = undefined
 		)
-			
+		
 		new_color = dnColor.fromArgb (maxColor[1] * 255.0f) (maxColor[2] * 255.0f) (maxColor[3] * 255.0f)
 	)
 	catch (
@@ -166,18 +166,34 @@ fn Vrage_condenseMatIds obj non_destructive:true = (
 
 fn Vrage_cleanLayers this_layer:undefined =
 ( --Deletes empty layers after import
-	if this_layer == undefined then this_layer = (LayerManager.getLayer 0)
-
-	if this_layer.getNumChildren() > 0 then 
+	
+	if this_layer != undefined then 
 	(
-		for i = 1 to this_layer.getNumChildren() do 
+		if this_layer.getNumChildren() > 0 then 
 		(
-			Vrage_cleanLayers this_layer:(this_layer.getChild (i))
-		) 
+			for i in this_layer.getNumChildren() to 1 by -1  do 
+			(
+				Vrage_cleanLayers this_layer:(this_layer.getChild (i))
+				--	LayerManager.deleteLayerByName ((LayerHandle.getChild(i)).name) 
+			)
+		)
+		canDelete = ( this_layer.canDelete()) and not ( LayerManager.doesLayerHierarchyContainNodes this_layer.name ) 
+		layerRT = this_layer.layerAsRefTarg
+		print "Start____"
+		print this_layer.name
+		print (isProperty layerRT #VRType )
+		print canDelete
+		print "END____"
+		if canDelete and not (isProperty layerRT #VRType ) do LayerManager.deleteLayerByName this_layer.name
 	)
-	canDelete = ( this_layer.canDelete()) and not ( LayerManager.doesLayerHierarchyContainNodes this_layer.name ) 
-	layerRT = this_layer.layerAsRefTarg
-	if canDelete and not (isProperty layerRT #VRType ) do LayerManager.deleteLayerByName this_layer.name
+	else 
+	(
+		for i_Main in (LayerManager.count) to 1 by -1  do 
+		(
+			this_layer = (LayerManager.getLayer i_Main)
+			if this_layer != undefined then Vrage_cleanLayers this_layer:(this_layer)
+		)
+	)
 )
 
 fn Vrage_sumArray arr = (
@@ -277,3 +293,4 @@ function GetObjsMats objs =
 	)
 	MatList
 )
+print "Laoded Vrage_common"

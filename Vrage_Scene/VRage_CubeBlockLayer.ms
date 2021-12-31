@@ -65,19 +65,19 @@ struct VrageCubeBlock
 	(
 		layerRT = Layer.layerAsRefTarg
 		Attr = custAttributes.get layerRT VrageLayerData
-		if Attr.VRType == "CubeBlockDef" or 
-		Attr.VRType == "SubPartArray" or 
-		Attr.VRType == "VRageConstructstage" or
-		Attr.VRType == "CollisionDef" or 
-		Attr.VRType == "ConstructArrayDef" or 
-		Attr.VRType == "VRageLOD" or 
-		Attr.VRType == "DummiesDef" then 
+		if Attr.VRType == VRLayers.CubeBlock or 
+		Attr.VRType ==  VRLayers.SubPartArray or 
+		Attr.VRType == VRLayers.Construction or
+		Attr.VRType == VRLayers.Collision  or 
+		Attr.VRType == VRLayers.ConstructArray or 
+		Attr.VRType == VRLayers.LOD or 
+		Attr.VRType == VRLayers.Dummies then 
 		(	
 			Attr.SeName = NewName
 			Layer.setName ( ReplaceWords Layer.Name OldName NewName mIgnoreCase:true )
 		)
 
-		if Attr.VRType != "SubPartArray" then
+		if Attr.VRType != VRLayers.SubPartArray then
 		(
 			for i = 1 to Layer.getNumChildren() do
 			(
@@ -98,16 +98,12 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 		label lbl_Size "Block Size" across:2 align: #left
 		dropdownlist dropdnSize "" items:#( "Large", "Small" ) tooltip:"Size of the Block Grid (large =2.5m, Small: 0.25m)" labelOnTop: false Width:150 enabled: true align: #right
 
-		--label lbl_Type "Block Type" across:2 align: #left
-		--edittext FilterTypes "Filter" fieldWidth:100 labelOnTop:false align: #right
 		label lbl_ID "Type ID" across:2 align: #left
 		edittext editt_TypeID "" fieldWidth:120 labelOnTop:true align: #right \ 
 		toolTip:"Type of Block. If no valid is entered, a default Cubeblock will be assumed"
 		button btnSearch "..." width:25 height:20 pos:[72, 52] \
 		toolTip:"Open List of existing Types."	images: #( VRageIcons, VRageIcons, VRageIcoLeng, 25, 25, 25, 25 )
-		--label lbl_Filter "" across:2 align: #left
-		--listbox listboxtype "" items:VrageTempAllTypes tooltip:"Type of Block" Width:150 Height:4 enabled: true align: #center 
-
+		
 		label lbl_SubID "Subtype ID" across:2 align: #left
 		edittext editt_SubID "" fieldWidth:120 labelOnTop:true align: #right
 	)
@@ -122,11 +118,8 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 		edittext editt_Rename "" fieldWidth:100 labelOnTop:true offset:[0, 4] align: #right 
 		
 	)
-
-
 	--button 'Btn_Import' "Import" width:100 height:25 toolTip:"Imports an Fbx from the ModSDK" align:#center across:2
 	--on Prep_scene pressed do MySE.run "Scene_Setup.ms"	
-	
 	button Btn_export "Export" width:230 height:25 align:#center \
 	toolTip:"Export: Generates  MWM file/s from the selected Block/s" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 12, 12, 12, 12 )
 	

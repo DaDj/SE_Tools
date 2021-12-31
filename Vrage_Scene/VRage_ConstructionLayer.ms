@@ -52,6 +52,34 @@ struct VrageConstructionLayer
 		)
 		else MyVRageLog.Info ( "No Layer selected" ) Show:true
 
+	),
+
+	fn Delete Mainlayer:undefined  = 
+	(
+		If Mainlayer == undefined then Mainlayer = ( VRLayers.GetSelected()).getParent()
+
+		--find current Construction index
+		Idx_BuildStage = 0 ;
+		if Mainlayer != undefined then 
+		(
+			for i = 1 to Mainlayer.getNumChildren() do 
+			(
+				ChildLayer = Mainlayer.getChild i
+				layerRT = ChildLayer.layerAsRefTarg
+				Constrttr = custAttributes.get layerRT VrageLayerData
+				if Constrttr != undefined and Constrttr.VRType == VRLayers.Construction do Idx_BuildStage += 1
+			)
+		)
+
+		layerRT = ( VRLayers.GetSelected()).layerAsRefTarg
+		if layerRT.ConstructionID < Idx_BuildStage then 
+		(
+			MyVRageLog.Warn ( "Can't delete Construction Layer if a higher  ID exists" + "\n" + "Current:" + ( layerRT.ConstructionID as string ) + " < Highest:" + ( Idx_BuildStage as string ) )
+		)
+		else 
+		(
+			VRLayers.Delete ( VRLayers.GetSelected())
+		)
 	)
 )
 
@@ -117,32 +145,12 @@ rollout Vrage_ConstructionRollout "VrageLayer_ConstructData" width:250 height:20
 
 	on btnAddLod pressed do 
 	(
-		Layer = VrageLodLayer()
-		Layer.Add Mainlayer:( VRLayers.GetSelected())
+		VrageLodLayer.Add Mainlayer:( VRLayers.GetSelected())
 	)	
 
 	on btnValidate pressed do 
 	(
 		Mainlayer = ( VRLayers.GetSelected()).getParent()
-
-		--find current Construction index
-		Idx_BuildStage = 0 ;
-		for i = 1 to Mainlayer.getNumChildren() do 
-		(
-			ChildLayer = Mainlayer.getChild i
-			layerRT = ChildLayer.layerAsRefTarg
-			Constrttr = custAttributes.get layerRT VrageLayerData
-			if Constrttr != undefined and Constrttr.VRType == "VRageConstructstage" do Idx_BuildStage += 1
-		)
-		
-		layerRT = ( VRLayers.GetSelected()).layerAsRefTarg
-		if layerRT.ConstructionID < Idx_BuildStage then 
-		(
-			MyVRageLog.Warn ( "Can't delete Construction Layer if a higher  ID exists" + "\n" + "Current:" + ( layerRT.ConstructionID as string ) + " < Highest:" + ( Idx_BuildStage as string ) )
-		)
-		else 
-		(
-			VRLayers.Delete ( VRLayers.GetSelected())
-		)
+		VrageConstructionLayer.Delete Mainlayer:Mainlayer
 	)
 )

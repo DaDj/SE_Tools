@@ -1,16 +1,16 @@
 if MyVRageCfg == undefined do (
-    root = pathConfig.removePathLeaf (getSourceFileName());
-    
-    if matchpattern (toLower root) pattern:"*vragetoolbox*" then (
-        while toLower (a = filterString root "\\")[a.count] != "vragetoolbox" do (
-            root = getfilenamepath (trimright root "\\")
-        )
-    
-        fileIn (root + "Vrage_Startup.ms")
-    )
-    else (
-        MessageBox "Vrage Toolbox can not be initialised!"
-    )
+	root = pathConfig.removePathLeaf (getSourceFileName());
+	
+	if matchpattern (toLower root) pattern:"*vragetoolbox*" then (
+		while toLower (a = filterString root "\\")[a.count] != "vragetoolbox" do (
+			root = getfilenamepath (trimright root "\\")
+		)
+		
+		fileIn (root + "Vrage_Startup.ms")
+	)
+	else (
+		MessageBox "Vrage Toolbox can not be initialised!"
+	)
 )
 
 struct VrageFBXImporter (
@@ -57,7 +57,7 @@ struct VrageFBXImporter (
 	),
 
 	fn SetImportSettings =(
-			
+		
 		FbxImporterSetParam "Animation" true
 		FbxImporterSetParam "AxisConversion" true
 		FbxImporterSetParam "BakeAnimationLayers" true
@@ -87,11 +87,11 @@ struct VrageFBXImporter (
 		
 		local fname = filenameFromPath file --getFilenameFile
 		local name = getFilenameFile file
-			
+		
 		local old_objects = objects as array
 		
 		importfile file #noPrompt using:FBXIMP
-			
+		
 		local imported = for o in objects where findItem old_objects o == 0 collect o
 		
 		if parent_layer == undefined then (
@@ -101,7 +101,7 @@ struct VrageFBXImporter (
 			lod0_layer.setParent parent_layer
 			local dummy_layer = layermanager.newLayerFromName (name + " #Dummies")
 			dummy_layer.setParent parent_layer
-	
+			
 			for o in imported do (
 				case (superclassOf o) of (
 					GeometryClass: lod0_layer.addNode o
@@ -142,7 +142,7 @@ struct VrageFBXImporter (
 				local construction_files = getFiles (getFilenamePath file + getFilenameFile file + "Construction*.FBX") + getFiles (getFilenamePath file + getFilenameFile file + "_Construction*.FBX")
 				
 				construction_files = makeUniqueArray construction_files
-					
+				
 				if construction_files.count > 0 do (
 					local constr_layer = layermanager.newLayerFromName (name + " #Construction")
 					constr_layer.setParent parent_layer
@@ -160,7 +160,7 @@ struct VrageFBXImporter (
 					
 				)
 			)
-				
+			
 			if parent_node != undefined do (
 				for o in imported where o.parent == undefined do (
 					o.position = parent_node.position
@@ -189,7 +189,7 @@ struct VrageFBXImporter (
 				
 			)
 		)
-			
+		
 		imported
 	),
 
@@ -198,13 +198,15 @@ struct VrageFBXImporter (
 		if doesFileExist filename then (
 			max create mode
 			--SetImportSettings()
+			print "haa"
 			with redraw off (
 				LastImport = importFBX filename
 				
 				LastImport = for o in lastimport where not isdeleted o collect o
-				
-				Vrage_cleanLayers()
-				
+			)
+
+			Vrage_cleanLayers()
+			with redraw off (	
 				if Vrage_cleanMats == undefined do (
 					fileIn (MyVRageRoot + "\\Vrage_IO\\VRage_MaterialLibrary.ms")
 				)

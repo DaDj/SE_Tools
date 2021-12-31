@@ -70,7 +70,7 @@ struct VRageLayers
 	SubPart = "	SubpartDef",
 	ConstructArray = "ConstructArrayDef",--main layer under which the buildstages are.
 	Construction = "VRageConstructstage",
-	 
+	
 	
 	fn CreateOrRenameLayer MyName MyOldName parent_layer:undefined = (
 		if ( LayerManager.getLayerFromName ( MyOldName ) == undefined ) then (
@@ -374,9 +374,25 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:200 height:200
 	)
 )
 
+
+rollout Vrage_SceneRoll "VRage_Scene" width:200 height:200
+(
+	
+
+
+	button butt_Import3 "Import" width:30 height:30 align:#center across:1 \
+	toolTip:"Import an FBX" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 11, 11, 11, 11 )
+
+	label lbl_ID "Mod Dir:" across:2 align: #left
+	edittext editt_TypeID "" fieldWidth:120 labelOnTop:true align: #right \ 
+	toolTip:"Type of Block. If no valid is entered, a default Cubeblock will be assumed"
+	
+
+)
+
 rollout VrageModels "VrageToolbox" width:200 height:200
 (
-	button btn_Help "\x2699" width:20 height:20 align:#center pos:[120, 0] \
+	/*button btn_Help "\x2699" width:20 height:20 align:#center pos:[120, 0] \
 	toolTip:"Opens the Documentation/Help" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 17, 17, 17, 17 )
 
 	button btn_Settings "\x2699" width:20 height:20 align:#center pos:[150, 0] \
@@ -387,35 +403,33 @@ rollout VrageModels "VrageToolbox" width:200 height:200
 
 	button btn_ReloadVrage "\x21BA" width:20 height:20 align:#right pos:[210, 0] \
 	toolTip:"Reloads Vrage Utilies. Use if scripts may not work." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 3, 3, 3, 3 )
-	
+	*/
 	
 
-	button butt_Import "Import" width:30 height:30 align:#center pos:[5, 30] \
+	button butt_Import "Import" width:30 height:30 align:#center pos:[5, 0] \
 	toolTip:"Import an FBX" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 11, 11, 11, 11 )
 
-	button butt_CreatMod "Create Mod" width:30 height:30 align:#center pos:[40, 30] \
+	button butt_CreatMod "Create Mod" width:30 height:30 align:#center pos:[40, 0] \
 	toolTip:"Creates Layer Setup for Block/Character/Model" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 26, 26, 26, 26 )
 
-	button butt_MAtlib "Material Browser" width:30 height:30 align:#center pos:[85, 30] \ 
+	button butt_MAtlib "Material Browser" width:30 height:30 align:#center pos:[85, 0] \ 
 	toolTip:"Opens the Material Browser" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 4, 4, 4, 4 )
 	
 
-	groupBox group1 "" pos:[0, 20] width:75 height:45
-	groupBox group4 "" pos:[80, 20] width:75 height:45
-	groupBox group2 "" pos:[160, 20] width:75 height:45 
+	--	groupBox group1 "" pos:[0, -7] width:75 height:40
+	--	groupBox group4 "" pos:[80, -7] width:75 height:40
+	--	groupBox group2 "" pos:[160, -7] width:75 height:40
 
-	checkbutton btn_MAgicLayer "\x21BA" width:20 height:30 align:#right pos:[190, 30] \
+	checkbutton btn_MAgicLayer "\x21BA" width:20 height:30 align:#right pos:[190, 0] \
 	toolTip:"Only show Objects in selected Layer" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 23, 23, 23, 23 )
 	
-	checkbutton btn_SwitchLayer "\x21BA" width:20 height:30 align:#right pos:[165, 30] checked:true \
+	checkbutton btn_SwitchLayer "\x21BA" width:20 height:30 align:#right pos:[165, 0] checked:true \
 	toolTip:"Automatically switch to selected Layer" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 31, 31, 31, 31 )
 
 
 	on VrageModels open do ()
 
-	on btn_Help pressed do ( ShellLaunch "https://vragetoolbox.ratpool.de" "" )
 
-	on btn_ReloadVrage pressed do fileIn ( GetDir #userScripts + "\\VRageToolbox\\VRage_Startup.ms" )
 	
 	on butt_MAtlib pressed do
 	(
@@ -428,9 +442,6 @@ rollout VrageModels "VrageToolbox" width:200 height:200
 		)
 	) 
 
-	on btn_Settings pressed do OpenSettings()	
-	
-	on btn_LOg pressed do VrageLogSys.CreateMessageRollout()
 
 	on butt_CreatMod pressed do 
 	(
@@ -463,7 +474,9 @@ rollout VrageModels "VrageToolbox" width:200 height:200
 				if MainAttr.VRType == "CubeBlockDef" then 
 				(
 					addRollout Vrage_CubeBlockRollout VRAGE_ModelUI 
+					addRollout Vrage_SceneRoll VRAGE_ModelUI
 					addRollout Vrage_IconRollout VRAGE_ModelUI rolledUp:true
+					
 				)
 				else try 
 				( 
@@ -497,6 +510,9 @@ rollout VrageModels "VrageToolbox" width:200 height:200
 	)
 )
 
+
+
+
 fn VrageModelLayer_ShowUI = 
 (
 	try ( cui.UnRegisterDialogBar VRAGE_ModelUI ) catch () 
@@ -510,3 +526,32 @@ fn VrageModelLayer_ShowUI =
 
 --Tesxtthing.RenameAll  (LayerManager.getLayerFromName "NyNEwblock2") "NyNEwblock2"  "NyNEwblock3"
 VrageModelLayer_ShowUI();
+
+
+try ( cui.UnRegisterDialogBar VrageSidebar ) catch () 
+try ( DestroyDialog VrageSidebar) catch () 	
+
+rollout VrageSidebar "" width:20 height:20
+(
+	button btn_Help "\x2699" width:20 height:20 align:#center  \
+	toolTip:"Opens the Documentation/Help" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 17, 17, 17, 17 )
+
+	button btn_Settings "\x2699" width:20 height:20 align:#center  \
+	toolTip:"Opens the VrageToolbox Settings" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 5, 5, 5, 5 )
+
+	button btn_LOg "Open Notifications" width:20 height:20 align:#center  \ 
+	toolTip:"Opens the VrageToolbox Notifications" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 2, 2, 2, 2 )
+
+	button btn_ReloadVrage "\x21BA" width:20 height:20 align:#center  \
+	toolTip:"Reloads Vrage Utilies. Use if scripts may not work." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 3, 3, 3, 3 )
+
+
+	on btn_Help pressed do ( ShellLaunch "https://vragetoolbox.ratpool.de" "" )
+	on btn_ReloadVrage pressed do fileIn ( GetDir #userScripts + "\\VRageToolbox\\VRage_Startup.ms" )
+	on btn_Settings pressed do OpenSettings()	
+	on btn_LOg pressed do VrageLogSys.CreateMessageRollout()
+
+)
+CreateDialog VrageSidebar 
+cui.RegisterDialogBar VrageSidebar style:#( #cui_dock_all, #cui_dock_vert, #cui_floatable )
+cui.DockDialogBar VrageSidebar #cui_dock_left

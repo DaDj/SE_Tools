@@ -1176,6 +1176,19 @@ struct Vrage_MaterialThumbRenderer (
 			cur_rdr = renderers.current
 			new_rdr = Quicksilver_Hardware_Renderer()
 			renderers.current = new_rdr
+
+			new_rdr.AmbientOcclusionEnabled = true
+			new_rdr.AmbientOcclusionIntensity = 2.0
+			new_rdr.AmbientOcclusionRadius = 10.0
+			new_rdr.IndirectIlluminationEnabled = true
+			new_rdr.IndirectIlluminationMultiplier = 2.0
+			-- Do Bloom if version is above 2021. 
+			-- Bloom has beend implemented 2022
+			if ( ( maxversion())[8] ) > 2021 then 
+			(
+				new_rdr.BloomEnabled = true	
+			)
+
 			pngio.setAlpha true
 			
 			SceneSetup()

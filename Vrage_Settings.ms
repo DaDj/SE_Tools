@@ -1,8 +1,3 @@
-
-
-
-
-
 struct VRageConfig
 (
 
@@ -87,7 +82,7 @@ struct VRageConfig
 			UseGameTextures = ( getINISetting VRageConfigFile "Textures" "UseGameTextures" ) == "1"
 			UsePbrMats = ( getINISetting VRageConfigFile "Textures" "UsePbrMats" ) == "1"
 
-			TextureType = try ( getINISetting VRageConfigFile "Textures" "TextureType" as integer ) catch 1
+			TextureType = try ( getINISetting VRageConfigFile "Textures" "TextureType" as integer ) catch 5
 			PathGame = if ( tmp = getINISetting VRageConfigFile "Directories" "pathgame" ) != undefined then tmp else "" 
 
 			Exp_StartGameAfter = ( getINISetting VRageConfigFile "Export" "Exp_StartGameAfter" ) == "1"
@@ -104,7 +99,7 @@ struct VRageConfig
 			PathTextures = " "
 			PathModSDK = ""
 			UseGameTextures = False
-			TextureType = 1
+			TextureType = 5
 			PathGame = ""
 
 			Exp_StartGameAfter = False 
@@ -137,8 +132,7 @@ MyVRageCfg.load()
 -- intialize Materiallibrary if its lost...
 if Vrage_MaterialThumbRenderer == undefined then
 (
-	fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_MaterialLibrary.ms" )
-	
+	fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_MaterialLibrary.ms" )	
 ) 
 
 

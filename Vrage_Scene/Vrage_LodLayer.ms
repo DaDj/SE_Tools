@@ -25,7 +25,7 @@ struct VrageLodLayer
 				ChildLayer = Mainlayer.getChild i
 				layerRT = ChildLayer.layerAsRefTarg
 				LodAttr = custAttributes.get layerRT VrageLayerData
-				if LodAttr != undefined and LodAttr.VRType == "VRageLOD" do Idx_Lod += 1
+				if LodAttr != undefined and LodAttr.VRType == VRLayers.LOD do Idx_Lod += 1
 			)
 			
 			if Attr != undefined then 
@@ -38,7 +38,7 @@ struct VrageLodLayer
 					layerRT = layer.layerAsRefTarg
 					custAttributes.add layerRT VrageLayerData
 					custAttributes.add layerRT VrageLayer_LODData
-					layerRT.VRType = "VRageLOD"
+					layerRT.VRType = VRLayers.LOD
 					layerRT.LODID = Idx_Lod as Integer
 					layerRT.DrawDistance = LodDistanceMultiplier * ( Idx_Lod as Integer ) - 5 * ( Idx_Lod as Integer ) ^ 2 + 5 * ( Idx_Lod as Integer ) ^ 3
 				)
@@ -46,6 +46,34 @@ struct VrageLodLayer
 		)
 		else MyVRageLog.Info ( "No Layer selected" ) Show:true
 
+	),
+
+	fn Delete  Mainlayer:undefined = 
+	(
+		If Mainlayer == undefined then	Mainlayer = ( VRLayers.GetSelected()).getParent()
+		Idx_Lod = 0 ;
+
+		if Mainlayer != undefined then 
+		(
+			for i = 1 to Mainlayer.getNumChildren() do 
+			(
+				ChildLayer = Mainlayer.getChild i
+				layerRT = ChildLayer.layerAsRefTarg
+				LodAttr = custAttributes.get layerRT VrageLayerData
+				if LodAttr != undefined and LodAttr.VRType == VRLayers.LOD do Idx_Lod += 1
+			)
+		)
+
+		layerRT = ( VRLayers.GetSelected()).layerAsRefTarg
+		Idx_Lod -= 1
+		if ( layerRT.LODID ) < Idx_Lod then 
+		(
+			MyVRageLog.Warn ( "Can't delete Lod Layer if a higher Lod ID exists" + "\n" + "Current LOD:" + ( layerRT.LODID as string ) + " < Highest LOD:" + ( Idx_Lod as string ) )
+		)
+		else 
+		(
+			VRLayers.Delete ( VRLayers.GetSelected())
+		)
 	)
 )
 
@@ -102,25 +130,7 @@ rollout Vrage_LODRollout "VrageLayer_LODData" width:200 height:200
 
 	on btnDelete pressed do 
 	(
-		Mainlayer = ( VRLayers.GetSelected()).getParent()
-		Idx_Lod = 0 ;
-		for i = 1 to Mainlayer.getNumChildren() do 
-		(
-			ChildLayer = Mainlayer.getChild i
-			layerRT = ChildLayer.layerAsRefTarg
-			LodAttr = custAttributes.get layerRT VrageLayerData
-			if LodAttr != undefined and LodAttr.VRType == "VRageLOD" do Idx_Lod += 1
-		)
-		layerRT = ( VRLayers.GetSelected()).layerAsRefTarg
-
-		Idx_Lod -= 1
-		if ( layerRT.LODID ) < Idx_Lod then 
-		(
-			MyVRageLog.Warn ( "Can't delete Lod Layer if a higher Lod ID exists" + "\n" + "Current LOD:" + ( layerRT.LODID as string ) + " < Highest LOD:" + ( Idx_Lod as string ) )
-		)
-		else 
-		(
-			VRLayers.Delete ( VRLayers.GetSelected())
-		)
+		Mainlayer = (VRLayers.GetSelected()).getParent()
+		VrageLodLayer.Delete  Mainlayer:Mainlayer
 	)
 )
