@@ -267,18 +267,18 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:200 height:200
 	toolTip:"Icon Mode on/off" --images: #( VRageIcons, VRageIcons, VRageIcoLeng, 27, 27,27, 27 )
 
 
-
-	imgTag the_bmp width:100 height:100 align:#left across:2
+	groupBox group1 "" pos:[5, 35] width:100 height:100 
+	imgtag the_bmp width:100 height:100 align:#left across:2 pos:[5, 35]
 
 	button btn_Setup "Reset" width:40 height:25 align:#right pos:[192, 70] \
 	toolTip:"recreate the Camera Setup if its lost or if it needs to be reset." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 3, 3, 3, 3 )
 
 	colorpicker theColor "Tint Color:" color:[132, 170, 251905] modal:false align:#right pos:[135, 40] 
 
-	button btn_Preview "Preview" width:25 height:25 toolTip:"Generates a preview of the Icon" align:#righ pos:[3, 125] \
+	button btn_Preview "Preview" width:25 height:25 toolTip:"Generates a preview of the Icon" align:#righ pos:[3, 140] \
 	toolTip:"Icon Mode on/off" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 32, 32, 32, 32 )
 
-	button btn_CreateIcon "Create Icon" width:199 height:25 toolTip:"Box" align:#right pos:[33, 125]
+	button btn_CreateIcon "Create Icon" width:199 height:25 toolTip:"Box" align:#right pos:[33, 140]
 	toolTip:"Creates the Icon" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 12, 12, 12, 12 )
 
 	on Vrage_IconRollout open do
@@ -327,7 +327,7 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:200 height:200
 			Layer = ( VRLayers.GetSelected()) ;
 			MainAttr = custAttributes.get Layer VrageLayer_IconData
 			MainAttr.IconTintColor = theColor.color
-			theBmp = VRage_Icon.RenderIcon 300 300 Layer:Layer TintColor:( theColor.color )
+			theBmp = VRage_Icon.RenderIcon 200 200 Layer:Layer TintColor:( theColor.color )
 			the_bmp.bitmap = theBmp
 		)
 		catch (	MyVRageLog.Warn ( "Failed to render Icon Preview" ) )
