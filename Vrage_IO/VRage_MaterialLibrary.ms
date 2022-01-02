@@ -299,37 +299,36 @@ struct VrageMaterial (
 			add_osl_map = OSLMap Name:( getFilenameFile add_map.innertext ) OSLPath:OSLBitmap filename:( get_path add_map.innertext )
 			ao_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:2
 			p_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:4
-			col_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:5
+			Out_AddAlpha = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:5
 			material.ao_map = ao_interface
-
+			 
 
 			
 			if cm_map != undefined and doesFileexist ( get_path cm_map.innertext ) then 
 			(
-				--TEMPORARY ColorNode
+				--///Paintability - lloks good BUT: currently the mixing results in NOT whiter than the cm texture.
+				--ColorNode
 				PaintColorNode = VrageScene.getPaintNode()
-				--PaintColorNode.color = color 128 128 128
+				Out_PaintColorNode = MultiOutputChannelTexmapToTexmap sourceMap:PaintColorNode outputChannelIndex:1
+				c_interface = MultiOutputChannelTexmapToTexmap sourceMap:cm_osl_map outputChannelIndex:1 
 
+				--1. Disable Auto-gamma of Srgb
+				if cm_osl_map !=undefined then cm_osl_map.autogamma = 0
 
-				
-				CMtoPaint_interface = MultiOutputChannelTexmapToTexmap sourceMap:cm_osl_map outputChannelIndex:1 
-				--OSLNode_Colorspace = osl_ColorSpace()
-				--OSLNode_Colorspace.In_map = CMtoPaint_interface
-				--OSLNode_Colorspace.FromSpace = "rgb"
+				--2. Mix Add alpha with our Paintcolor
+				OSL_Mix_ColorAdd =  osl_MixColor()
+				OSL_Mix_ColorAdd.A = color 255 255 255 255
+				OSL_Mix_ColorAdd.B_map = Out_PaintColorNode
+				OSL_Mix_ColorAdd.Mix_map = Out_AddAlpha
 
+				Out_Mix_ColorAdd =  MultiOutputChannelTexmapToTexmap sourceMap:OSL_Mix_ColorAdd outputChannelIndex:1
 
-				-- Paintability by osl_ColorAdd
-				ColortoPaint_interface = MultiOutputChannelTexmapToTexmap sourceMap:PaintColorNode outputChannelIndex:1
-				AddtoPaint_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:5
-				ColorSpacetoPaint_interface = MultiOutputChannelTexmapToTexmap sourceMap:OSLNode_Colorspace outputChannelIndex:1 
-				PaintColorAdd = osl_ColorAdd()
-				PaintColorAdd.B_map = CMtoPaint_interface --colorspace Map RGB
-				PaintColorAdd.A_Amount_map = AddtoPaint_interface --Add Alpha
-				PaintColorAdd.A_map = ColortoPaint_interface --COlor of Paint
-				PaintColorAdd.B_Amount = (0.4545/2) --Srgb to linear approx.
-				PainttoBasemap_interface = MultiOutputChannelTexmapToTexmap sourceMap:PaintColorAdd outputChannelIndex:1 
-				material.base_color_map = PainttoBasemap_interface
-
+				--2.Multiply Painted add with CM
+				OSL_Mul_PaintCM  = osl_ColorMul()
+				OSL_Mul_PaintCM.A_map = Out_Mix_ColorAdd
+				OSL_Mul_PaintCM.B_map = c_interface
+				Out_Mul_PaintCM = MultiOutputChannelTexmapToTexmap sourceMap:OSL_Mul_PaintCM outputChannelIndex:1
+				material.base_color_map = Out_Mul_PaintCM
 
 				-- Emisive by using osl_ColorMulitply.
 				-- Input B_amp is the normal cm map and input A_map is the emissive map (green channel of add)
@@ -337,7 +336,7 @@ struct VrageMaterial (
 				em_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:3 
 				cm_EM_interface = MultiOutputChannelTexmapToTexmap sourceMap:PaintColorAdd outputChannelIndex:1 
 				EmissiveColorMul = osl_ColorMul()
-				EmissiveColorMul.B_map = CMtoPaint_interface
+				EmissiveColorMul.B_map = Out_Mul_PaintCM
 				EmissiveColorMul.A_map = em_interface
 				em_Basecolor_interface = MultiOutputChannelTexmapToTexmap sourceMap:EmissiveColorMul outputChannelIndex:1
 				material.emit_color_map = em_Basecolor_interface
@@ -354,7 +353,7 @@ struct VrageMaterial (
 			mask_interface = MultiOutputChannelTexmapToTexmap sourceMap:mask_osl_map outputChannelIndex:1
 			material.opacity_map = mask_interface
 		)
-		if cm_osl_map !=undefined then cm_osl_map.autogamma = 1
+		--if cm_osl_map !=undefined then cm_osl_map.autogamma = 1
 		
 		--material.base_color_map.sourcemap.autogamma = 1
 		material
