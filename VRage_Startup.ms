@@ -14,7 +14,6 @@ fn Vrage_LoadToolbox = (
 	fileIn ( MyVRageRoot + "\\Vrage_scene\\Vrage_SceneData.ms" )
 	format "loaded script '%'\n"  "\\Vrage_scene\\Vrage_SceneData.ms"
 
-
 	fileIn ( MyVRageRoot + "\\Vrage_Logging.ms" )
 	format "loaded script '%'\n" "\\Vrage_Logging.ms"
 
@@ -26,6 +25,9 @@ fn Vrage_LoadToolbox = (
 
 	fileIn ( MyVRageRoot + "\\VRage_Layers.ms" )
 	format "loaded script '%'\n" "\\VRage_Layers.ms"
+
+	fileIn ( MyVRageRoot + "\\VRage_UI.ms" )
+	format "loaded script '%'\n" "\\VRage_UI.ms"
 	
 	--Copy the No Thumbnail to the Thumbnails folder
 	noThumbSrc = MyVRageRoot + "\\Vrage_resources\\" + "NoThumbnail.jpg"
