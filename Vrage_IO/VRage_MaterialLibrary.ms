@@ -279,6 +279,7 @@ struct VrageMaterial (
 			m_interface = MultiOutputChannelTexmapToTexmap sourceMap:cm_osl_map outputChannelIndex:5 
 			material.base_color_map = c_interface
 			material.metalness_map = m_interface
+			cm_osl_map.autogamma = 1
 		) else (
 			nt_osl_map = OSLMap Name:"NOTEXTURE" OSLPath:OSLBitmap filename:MyVrageNoTex autogamma: 1
 			nt_osl_map.autogamma = 1
@@ -302,29 +303,50 @@ struct VrageMaterial (
 			material.ao_map = ao_interface
 
 
-			-- adding better emisive by using osl_Composite.
-			-- Input BottomRGB_map is the normal cm map and input TopRGB_map is the emissive map (green channel of add)
-			-- This does make the rightparts glow AND the color of the textures are still there.
+			
 			if cm_map != undefined and doesFileexist ( get_path cm_map.innertext ) then 
 			(
-				em_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:3
-				c_EM_interface = MultiOutputChannelTexmapToTexmap sourceMap:cm_osl_map outputChannelIndex:1 
-				EmissiveMultimixColor = osl_Composite()
-				EmissiveMultimixColor.BottomRGB_map = c_EM_interface
-				EmissiveMultimixColor.TopRGB_map = em_interface
-				EmissiveMultimixColor.Blendmode = "Darken"
-				em_interface2 = MultiOutputChannelTexmapToTexmap sourceMap:EmissiveMultimixColor outputChannelIndex:1
-				material.emit_color_map = em_interface2
+				--TEMPORARY ColorNode
+				PaintColorNode = VrageScene.getPaintNode()
+				--PaintColorNode.color = color 128 128 128
+
+
+				
+				CMtoPaint_interface = MultiOutputChannelTexmapToTexmap sourceMap:cm_osl_map outputChannelIndex:1 
+				--OSLNode_Colorspace = osl_ColorSpace()
+				--OSLNode_Colorspace.In_map = CMtoPaint_interface
+				--OSLNode_Colorspace.FromSpace = "rgb"
+
+
+				-- Paintability by osl_ColorAdd
+				ColortoPaint_interface = MultiOutputChannelTexmapToTexmap sourceMap:PaintColorNode outputChannelIndex:1
+				AddtoPaint_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:5
+				ColorSpacetoPaint_interface = MultiOutputChannelTexmapToTexmap sourceMap:OSLNode_Colorspace outputChannelIndex:1 
+				PaintColorAdd = osl_ColorAdd()
+				PaintColorAdd.B_map = CMtoPaint_interface --colorspace Map RGB
+				PaintColorAdd.A_Amount_map = AddtoPaint_interface --Add Alpha
+				PaintColorAdd.A_map = ColortoPaint_interface --COlor of Paint
+				PaintColorAdd.B_Amount = (0.4545/2) --Srgb to linear approx.
+				PainttoBasemap_interface = MultiOutputChannelTexmapToTexmap sourceMap:PaintColorAdd outputChannelIndex:1 
+				material.base_color_map = PainttoBasemap_interface
+
+
+				-- Emisive by using osl_ColorMulitply.
+				-- Input B_amp is the normal cm map and input A_map is the emissive map (green channel of add)
+				-- This does make the rightparts glow AND the color of the textures are still there. 
+				em_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:3 
+				cm_EM_interface = MultiOutputChannelTexmapToTexmap sourceMap:PaintColorAdd outputChannelIndex:1 
+				EmissiveColorMul = osl_ColorMul()
+				EmissiveColorMul.B_map = CMtoPaint_interface
+				EmissiveColorMul.A_map = em_interface
+				em_Basecolor_interface = MultiOutputChannelTexmapToTexmap sourceMap:EmissiveColorMul outputChannelIndex:1
+				material.emit_color_map = em_Basecolor_interface
 			)
 			else 
 			(
 				em_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:3
 				material.emit_color_map = em_interface
 			)
-
-			
-
-
 		)
 
 		if op_map != undefined and doesFileexist ( get_path op_map.innertext ) then (
@@ -332,8 +354,9 @@ struct VrageMaterial (
 			mask_interface = MultiOutputChannelTexmapToTexmap sourceMap:mask_osl_map outputChannelIndex:1
 			material.opacity_map = mask_interface
 		)
-
-		material.base_color_map.sourcemap.autogamma = 1
+		if cm_osl_map !=undefined then cm_osl_map.autogamma = 1
+		
+		--material.base_color_map.sourcemap.autogamma = 1
 		material
 	),
 

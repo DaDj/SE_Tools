@@ -1,6 +1,6 @@
 global MyVRageRoot 
 global VRageIcons = GetDir #userScripts + "\\VRageToolbox\\Vrage_resources\\VrageIcons.bmp"
-global VRageIcoLeng = 35
+global VRageIcoLeng = 37
 MyVRageRoot = pathConfig.removePathLeaf ( getSourceFileName()) ;
 
 fn Vrage_LoadToolbox = (
@@ -10,6 +10,10 @@ fn Vrage_LoadToolbox = (
 
 	fileIn ( MyVRageRoot + "\\Vrage_Settings.ms" )
 	format "loaded script '%'\n" "\\Vrage_Settings.ms"
+
+	fileIn ( MyVRageRoot + "\\Vrage_scene\\Vrage_SceneData.ms" )
+	format "loaded script '%'\n"  "\\Vrage_scene\\Vrage_SceneData.ms"
+
 
 	fileIn ( MyVRageRoot + "\\Vrage_Logging.ms" )
 	format "loaded script '%'\n" "\\Vrage_Logging.ms"
