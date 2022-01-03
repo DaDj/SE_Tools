@@ -75,8 +75,14 @@ struct VRageConfig
 				)
 			)
 
+
 			PathHavokContentTools = if ( tmp = getINISetting VRageConfigFile "Directories" "HavokContentTools" ) != undefined then tmp else "" 
 			--PathHavokContentTools =   if (tmp = getFiles (PathHavokContentTools + "\\hctStandAloneFilterManager.exe")) != undefined then PathHavokContentTools  else ""
+			--registry get HavoK:
+			--regPath = @"SOFTWARE\Havok\hkFilters_x64"
+			--evalKey = ((dotnetclass "Microsoft.Win32.Registry").CurrentUser).OpenSubKey regPath	
+			--docFolder = evalKey.GetValue "FilterPath"
+
 
 			PathModSDK = if ( tmp = getINISetting VRageConfigFile "Directories" "ModSDK" ) != undefined then tmp else "" 
 			UseGameTextures = ( getINISetting VRageConfigFile "Textures" "UseGameTextures" ) == "1"
@@ -172,7 +178,7 @@ fn OpenSettings = (
 		toolTip:"Opens the Documentation/Help" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 17, 17, 17, 17 )
 
 		on btn_CFgHelp pressed  do (ShellLaunch "https://vragetoolbox.ratpool.de/doku.php?id=vrt:settings" "")
-	
+		
 	)
 
 	rollout VrageUtils_CfgTools "Tools/Paths" width:210 height:400
@@ -227,26 +233,6 @@ fn OpenSettings = (
 	
 	rollout VrageUtils_CfgTextures "Textures" width:210 height:400	
 	(
-		/*label lbl_textureType "Texture Format:"   across:4 enabled:false
-		dropdownlist ddl_TexType "" items:VrageTexTypes selection:MyVRageCfg.TextureType width:60 enabled:false -- enabled:(not MyVRageCfg.UseGameTextures)
-			on ddl_TexType selected sel do (
-				MyVRageCfg.TextureType = ddl_TexType.selection
-				MyVRageCfg.save()
-			)
-			
-		checkbutton cbn_UseGameTextures "Use Game Textures"  width:120 height:25 checked:MyVRageCfg.UseGameTextures
-			tooltip:"Check if you want to use DDS Textures straight from the Game files"  enabled:false
-			on cbn_UseGameTextures changed state do (
-				if not (doesDirectoryExist MyVRageCfg.PathGame) then (
-					state = False
-				)
-				
-				for c in #(ddl_TexType) do c.enabled = not state
-				MyVRageCfg.UseGameTextures = state
-				MyVRageCfg.save()
-			)*/
-		
-
 		button btn_ConvertTxt "Convert Textures" width:150 height:25 toolTip:"Run the Bulk Texture Converter to convert the Game textures to the 3dsmax readable format." across:3
 		on btn_ConvertTxt pressed do 
 		(

@@ -1,8 +1,8 @@
 struct Vrage_UI 
-(
+(-- UI Struct for general/main UI
 	fn PaintUI = 
 	(
-		rollout VRageEnvColorRollout "Paint / Environment" width:150 height:200  
+		rollout VRageEnvColorRollout "Paint / Environment" width:160 height:80  
 		(
 			colorpicker theColor "Paint:" color:[128, 128, 128]  align:#left  offset:[0,5] \
 			toolTip:"Choose Paintcolor"  
@@ -58,6 +58,13 @@ struct Vrage_UI
 			toolTip:"Reloads Vrage Utilies. Use if scripts may not work." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 3, 3, 3, 3 )
 
 			label mySplitter1 "\x2500\x2500\x2500\x2500\x2500" 
+
+			
+			button butt_ModSettings "ModSettings" width:30 height:30 align:#center  \
+			toolTip:"Open Mod/Scene Settings" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 36, 36, 36, 36 )
+			label mySplitterddd2 "\x2500\x2500\x2500\x2500\x2500" 
+
+
 			checkbutton btn_ShowLayerUI "\x21BA" width:30 height:30 align:#center  \
 			toolTip:"Expand LAyer UI" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 31, 31, 31, 31 )
 
@@ -83,18 +90,9 @@ struct Vrage_UI
 				
 				if btn_MAgicLayer.checked == true then VRLayers.AutoHideLAyer = true else VRLayers.AutoHideLAyer = false
 				if btn_SwitchLayer.checked == true then VRLayers.AutoSwitchLayer = true else VRLayers.AutoSwitchLayer = false
+
+				VRLayers.GetSelected() --call to update the layer switches.
 			)
-
-
-			label mySplitter2 "\x2500\x2500\x2500\x2500\x2500" 
-			button butt_CreatMod "Create Mod" width:30 height:30 align:#center  \
-			toolTip:"Creates Layer Setup for Block/Character/Model" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 26, 26, 26, 26 )
-
-			button butt_Import "Import" width:30 height:30 align:#center  \
-			toolTip:"Import an FBX" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 11, 11, 11, 11 )
-
-			button butt_Export "Export" width:30 height:30 align:#center  \
-			toolTip:"Export" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 12, 12, 12, 12 )
 
 			label mySplitter3 "\x2500\x2500\x2500\x2500\x2500" 
 			button butt_MAtlib "Material Browser" width:30 height:30 align:#center  \ 
@@ -115,6 +113,21 @@ struct Vrage_UI
 					catch ( messagebox "Failed to open MaterialBrwoser" title:"Error!" )
 				)
 			) 
+			
+			label mySplitter5 "\x2500\x2500\x2500\x2500\x2500" 
+
+			button butt_CreatMod "Create Mod" width:30 height:30 align:#center  \
+			toolTip:"Creates Layer Setup for Block/Character/Model" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 26, 26, 26, 26 )
+
+			button butt_Import "Import" width:30 height:30 align:#center  \
+			toolTip:"Import an FBX" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 11, 11, 11, 11 )
+
+			button butt_Export "Export" width:30 height:30 align:#center  \
+			toolTip:"Export" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 12, 12, 12, 12 )
+
+			on butt_Export pressed do VRageExporter.ShowUI()
+
+			
 
 
 			on butt_CreatMod pressed do 

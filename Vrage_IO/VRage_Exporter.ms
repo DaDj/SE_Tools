@@ -199,92 +199,81 @@ struct VRageExporter (
 		Error = Generate_MWM TmpFileDir2 Filepath
 		if Error == 1 then MyVRageLog.Info ("Successfully build Model "  + Filepath) Show: true else MyVRageLog.Error ("Failed Model Build "  + Filepath)
 
-	)
+	),
 
-)
+	
+	fn ShowUI = (
 
-fn OpenVrageExport = (
-
-	rollout rollExpUI "VRage Export Scene" width:450 height:200
-	(
-		group "Main"(
-			label lbl_PathExp  "Export Folder:"align:#left across:2 offset:[00,5]
-
-			button btn_PathExp MyVRageCfg.Exp_DestPath width:350 height:25 tooltip:MyVRageCfg.Exp_DestPath align:#right 
-			on btn_PathExp pressed do 
-			(
-				FilePath = getSavePath caption:"Test path..."
-				if(FilePath != undefined ) do 
+		rollout rollExpUI "VRage Export Scene" width:450 height:200
+		(
+			group "Main"(
+				label lbl_PathExp  "Export Folder:"align:#left across:2 offset:[00,5]
+	
+				button btn_PathExp MyVRageCfg.Exp_DestPath width:350 height:25 tooltip:MyVRageCfg.Exp_DestPath align:#right 
+				on btn_PathExp pressed do 
 				(
-					btn_PathExp.text = MyVRageCfg.Exp_DestPath = FilePath
-					btn_PathExp.tooltip = MyVRageCfg.Exp_DestPath
+					FilePath = getSavePath caption:"Test path..."
+					if(FilePath != undefined ) do 
+					(
+						btn_PathExp.text = MyVRageCfg.Exp_DestPath = FilePath
+						btn_PathExp.tooltip = MyVRageCfg.Exp_DestPath
+						MyVRageCfg.save()
+					)
+				)
+	
+				on btn_PathExp rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.Exp_DestPath) "") catch()
+	
+				label lblmdlname "Mod Name:" across: 3 align: #left
+				edittext EditBlockName "" fieldWidth:205 labelOnTop:false text: "MyAwesomeMod" tooltip:"Name of the Mod, also gonna be the Modfolder Name" align:#right bold: true height:20
+				button btnApplyname "Apply" width:80 height:22 toolTip:"Apply new name" align:#right across:3
+			)
+	
+			group "Toggles"(
+				checkbutton ChkExp_GenerateBlockDef "Generate Block Def." checked:MyVRageCfg.Exp_GenerateBlockDef width:130  height:25\
+							tooltip:"Generate as Blockdefintion File (.sbc)"  across:3 align:#right
+				on ChkExp_GenerateBlockDef changed state do (
+					MyVRageCfg.Exp_GenerateBlockDef = state   
+					MyVRageCfg.save()
+				)
+	
+				checkbutton ChkExpotoModFolder "Export to Mod Folder" checked:MyVRageCfg.Exp_ToModFolder width:130  height:25\
+							tooltip:"Export directly to a mod folder in the appdata of Spaceengineers"   align:#right
+				on ChkExpotoModFolder changed state do (
+					MyVRageCfg.Exp_ToModFolder = state   
+					if MyVRageCfg.Exp_ToModFolder == true then btn_PathExp.enabled = false else btn_PathExp.enabled = true
+					MyVRageCfg.save()
+				)
+	
+				checkbutton ChkExp_StartGameAfter "Start Game after export"  checked:MyVRageCfg.Exp_StartGameAfter width:130  height:25 \
+							tooltip:"Start Game after export?"   align:#right
+				on ChkExp_StartGameAfter changed state do (
+					MyVRageCfg.Exp_StartGameAfter = state   
 					MyVRageCfg.save()
 				)
 			)
+	
+			button 'Btn_export' "Export" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
+			--	on Btn_export pressed do OpenVrageExport()
+	
+			on rollExpUI open do 
+			(
 
-			on btn_PathExp rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.Exp_DestPath) "") catch()
-
-			label lblmdlname "Mod Name:" across: 3 align: #left
-			edittext EditBlockName "" fieldWidth:205 labelOnTop:false text: "MyAwesomeMod" tooltip:"Name of the Mod, also gonna be the Modfolder Name" align:#right bold: true height:20
-			button btnApplyname "Apply" width:80 height:22 toolTip:"Apply new name" align:#right across:3
-		)
-
-		group "Toggles"(
-			checkbutton ChkExp_GenerateBlockDef "Generate Block Def." checked:MyVRageCfg.Exp_GenerateBlockDef width:130  height:25\
-						tooltip:"Generate as Blockdefintion File (.sbc)"  across:3 align:#right
-			on ChkExp_GenerateBlockDef changed state do (
-				MyVRageCfg.Exp_GenerateBlockDef = state   
-				MyVRageCfg.save()
-			)
-
-			checkbutton ChkExpotoModFolder "Export to Mod Folder" checked:MyVRageCfg.Exp_ToModFolder width:130  height:25\
-						tooltip:"Export directly to a mod folder in the appdata of Spaceengineers"   align:#right
-			on ChkExpotoModFolder changed state do (
-				MyVRageCfg.Exp_ToModFolder = state   
 				if MyVRageCfg.Exp_ToModFolder == true then btn_PathExp.enabled = false else btn_PathExp.enabled = true
-				MyVRageCfg.save()
-			)
-
-			checkbutton ChkExp_StartGameAfter "Start Game after export"  checked:MyVRageCfg.Exp_StartGameAfter width:130  height:25 \
-						tooltip:"Start Game after export?"   align:#right
-			on ChkExp_StartGameAfter changed state do (
-				MyVRageCfg.Exp_StartGameAfter = state   
-				MyVRageCfg.save()
 			)
 		)
-
-		
-		
-		button 'Btn_export' "Export" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
-		--	on Btn_export pressed do OpenVrageExport()
-		
-
-
-		on rollExpUI open do 	(
-			if MyVRageCfg.Exp_ToModFolder == true then btn_PathExp.enabled = false else btn_PathExp.enabled = true
-		)
-
-
-
+	
+	
+		try (cui.UnRegisterDialogBar rollExpUI) catch () 
+		try (DestroyDialog  rollExpUI) catch ()
+	
+		createDialog rollExpUI   
+		cui.RegisterDialogBar rollExpUI   style:#(#cui_floatable)
+	
+	
 	)
-
-
-	-- Exp_StartGameAfter = False, --start game after export for testing for example
-	-- Exp_ToModFolder = false, -- export block directly to mod folder? if no extra path?
-	-- Exp_GenerateBlockDef = false, -- Flag is blockdef .sbc sall be generated
-	-- Exp_DestPath = "", -- Path if ExptoModfolder == false
-	-- Exp_ModName = "", -- current Modname for folder generation (may maxscene as default?)
-	-- try (closeRolloutFloater MyVRageEXPFloater) catch ()
-	-- MyVRageEXPFloater = newRolloutFloater  "VRage Export Scene" 600 500 20 130 
-	-- addRollout rollExpUI MyVRageEXPFloater
-	try (cui.UnRegisterDialogBar rollExpUI) catch () 
-	try (DestroyDialog  rollExpUI) catch ()
-
-	createDialog rollExpUI   
-	cui.RegisterDialogBar rollExpUI   style:#(#cui_floatable)
-
-
+	
 )
+
 
 
 

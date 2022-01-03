@@ -26,6 +26,9 @@ fn Vrage_LoadToolbox = (
 	fileIn ( MyVRageRoot + "\\VRage_Layers.ms" )
 	format "loaded script '%'\n" "\\VRage_Layers.ms"
 
+	fileIn ( MyVRageRoot + "\\Vrage_IO\\VRage_Exporter.ms" )
+	format "loaded script '%'\n" "\\Vrage_IO\\VRage_Exporter.ms"
+
 	fileIn ( MyVRageRoot + "\\VRage_UI.ms" )
 	format "loaded script '%'\n" "\\VRage_UI.ms"
 	
