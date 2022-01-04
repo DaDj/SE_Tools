@@ -71,7 +71,6 @@ struct VRageLayers
 	ConstructArray = "ConstructArrayDef",--main layer under which the buildstages are.
 	Construction = "VRageConstructstage",
 	
-	
 	fn CreateOrRenameLayer MyName MyOldName parent_layer:undefined = (
 		if ( LayerManager.getLayerFromName ( MyOldName ) == undefined ) then (
 			if ( LayerManager.getLayerFromName ( MyName ) == undefined ) then (
@@ -179,7 +178,6 @@ fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_Scene\\VRage_CubeBlockLaye
 
 
 
-
 struct VrageSubpartLayer
 (
 	fn Add Mainlayer:undefined Name:undefined =
@@ -208,7 +206,6 @@ struct VrageSubpartLayer
 		)
 	)
 )
---test = VrageSubpartLayer()
 
 --  Rollouts for Layer Types
 
@@ -374,63 +371,10 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:200 height:200
 	)
 )
 
-
-rollout Vrage_SceneRoll "VRage_Scene" width:200 height:200
-(
-	
-
-
-	button butt_Import3 "Import" width:30 height:30 align:#center across:1 \
-	toolTip:"Import an FBX" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 11, 11, 11, 11 )
-
-	label lbl_ID "Mod Dir:" across:2 align: #left
-	edittext editt_TypeID "" fieldWidth:120 labelOnTop:true align: #right \ 
-	toolTip:"Type of Block. If no valid is entered, a default Cubeblock will be assumed"
-	
-
-)
-
 rollout VrageModels "VrageToolbox" width:200 height:200
 (
-	/*button btn_Help "\x2699" width:20 height:20 align:#center pos:[120, 0] \
-	toolTip:"Opens the Documentation/Help" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 17, 17, 17, 17 )
-
-	button btn_Settings "\x2699" width:20 height:20 align:#center pos:[150, 0] \
-	toolTip:"Opens the VrageToolbox Settings" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 5, 5, 5, 5 )
-
-	button btn_LOg "Open Notifications" width:20 height:20 align:#center pos:[180, 0] \ 
-	toolTip:"Opens the VrageToolbox Notifications" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 2, 2, 2, 2 )
-
-	button btn_ReloadVrage "\x21BA" width:20 height:20 align:#right pos:[210, 0] \
-	toolTip:"Reloads Vrage Utilies. Use if scripts may not work." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 3, 3, 3, 3 )
-	*/
-	/*	
-
-	button butt_Import "Import" width:30 height:30 align:#center pos:[5, 0] \
-	toolTip:"Import an FBX" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 11, 11, 11, 11 )
-
-	button butt_CreatMod "Create Mod" width:30 height:30 align:#center pos:[40, 0] \
-	toolTip:"Creates Layer Setup for Block/Character/Model" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 26, 26, 26, 26 )
-
-	button butt_MAtlib "Material Browser" width:30 height:30 align:#center pos:[85, 0] \ 
-	toolTip:"Opens the Material Browser" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 4, 4, 4, 4 )
-	
-
-	--	groupBox group1 "" pos:[0, -7] width:75 height:40
-	--	groupBox group4 "" pos:[80, -7] width:75 height:40
-	--	groupBox group2 "" pos:[160, -7] width:75 height:40
-
-	checkbutton btn_MAgicLayer "\x21BA" width:20 height:30 align:#right pos:[190, 0] \
-	toolTip:"Only show Objects in selected Layer" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 23, 23, 23, 23 )
-	
-	checkbutton btn_SwitchLayer "\x21BA" width:20 height:30 align:#right pos:[165, 0] checked:true \
-	toolTip:"Automatically switch to selected Layer" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 31, 31, 31, 31 )
-	*/
-
 	on VrageModels open do ()
 
-
-	
 	on butt_MAtlib pressed do
 	(
 		try ( MyVrageMatBrowser = ( Vrage_MaterialBrowser()).getForm() ) 
@@ -441,7 +385,6 @@ rollout VrageModels "VrageToolbox" width:200 height:200
 			catch ( messagebox "Failed to open MaterialBrwoser" title:"Error!" )
 		)
 	) 
-
 
 	on butt_CreatMod pressed do 
 	(
@@ -514,9 +457,9 @@ fn VrageModelLayer_ShowUI =
 (
 	try ( cui.UnRegisterDialogBar VRAGE_ModelUI ) catch () 
 	try ( closeRolloutFloater VRAGE_ModelUI ) catch () 
-	VRAGE_ModelUI = newRolloutFloater "VRage Utilies" 250 700 500 150 
+	VRAGE_ModelUI = newRolloutFloater "VRage Utilies" 250 500 500 250 
 	addRollout VrageModels VRAGE_ModelUI border:true
-	cui.RegisterDialogBar VRAGE_ModelUI style:#( #cui_dock_all, #cui_dock_vert, #cui_floatable )
+	cui.RegisterDialogBar VRAGE_ModelUI style:#(  #cui_dock_vert, #cui_floatable )
 	--cui.DockDialogBar VRAGE_ModelUI #cui_dock_left
 )
 

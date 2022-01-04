@@ -1,7 +1,6 @@
-global MyVRageRoot 
+global MyVRageRoot = pathConfig.removePathLeaf ( getSourceFileName()) ;
 global VRageIcons = GetDir #userScripts + "\\VRageToolbox\\Vrage_resources\\VrageIcons.bmp"
 global VRageIcoLeng = 37
-MyVRageRoot = pathConfig.removePathLeaf ( getSourceFileName()) ;
 
 fn Vrage_LoadToolbox = (
 

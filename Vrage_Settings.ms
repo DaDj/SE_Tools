@@ -18,13 +18,6 @@ struct VRageConfig
 	UsePbrMats = True, --Needs GUI
 	DefaultThumbnail = VrageConfigDir + "\\MaterialThumbnails\\" + "NoThumbnail.jpg",
 
-	/*Export Settings */
-	Exp_StartGameAfter = False, --start game after export for testing for example
-	Exp_ToModFolder = false, -- export block directly to mod folder? if no extra path?
-	Exp_GenerateBlockDef = false, -- Flag is blockdef .sbc sall be generated
-	Exp_DestPath = "", -- Path if ExptoModfolder == false
-	Exp_ModName = "", -- current Modname for folder generation (may maxscene as default?)
-	
 
 	fn save = (
 		try (
@@ -52,14 +45,6 @@ struct VRageConfig
 		setINISetting VRageConfigFile "Directories" "pathgame" PathGame
 		setINISetting VRageConfigFile "Textures" "UseGameTextures" ( if UseGameTextures then "1" else "0" )
 		setINISetting VRageConfigFile "Textures" "UsePbrMats" ( if UsePbrMats then "1" else "0" )
-
-		setINISetting VRageConfigFile "Export" "Exp_StartGameAfter" ( if Exp_StartGameAfter then "1" else "0" )
-		setINISetting VRageConfigFile "Export" "Exp_ToModFolder" ( if Exp_ToModFolder then "1" else "0" )
-		setINISetting VRageConfigFile "Export" "Exp_GenerateBlockDef" ( if Exp_GenerateBlockDef then "1" else "0" )
-		setINISetting VRageConfigFile "Export" "Exp_DestPath" Exp_DestPath
-		setINISetting VRageConfigFile "Export" "Exp_ModName" Exp_ModName
-
-		
 	),
 
 	fn load = (
@@ -90,12 +75,6 @@ struct VRageConfig
 
 			TextureType = try ( getINISetting VRageConfigFile "Textures" "TextureType" as integer ) catch 5
 			PathGame = if ( tmp = getINISetting VRageConfigFile "Directories" "pathgame" ) != undefined then tmp else "" 
-
-			Exp_StartGameAfter = ( getINISetting VRageConfigFile "Export" "Exp_StartGameAfter" ) == "1"
-			Exp_ToModFolder = ( getINISetting VRageConfigFile "Export" "Exp_ToModFolder" ) == "1"
-			Exp_GenerateBlockDef = ( getINISetting VRageConfigFile "Export" "Exp_GenerateBlockDef" ) == "1"
-			Exp_DestPath = if ( tmp = getINISetting VRageConfigFile "Export" "Exp_DestPath" ) != undefined then tmp else ""
-			Exp_ModName = if ( tmp = getINISetting VRageConfigFile "Export" "Exp_ModName" ) != undefined then tmp else ""
 		)
 		else (
 			PathToolsFolder = ""
@@ -107,12 +86,6 @@ struct VRageConfig
 			UseGameTextures = False
 			TextureType = 5
 			PathGame = ""
-
-			Exp_StartGameAfter = False 
-			Exp_ToModFolder = false 
-			Exp_GenerateBlockDef = false 
-			Exp_DestPath = "" 
-			Exp_ModName = "" 
 		)
 	),
 

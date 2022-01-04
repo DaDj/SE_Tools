@@ -12,7 +12,7 @@ struct Vrage_UI
 			toolTip:"Apply Paint" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 13, 13, 13, 13 )
 
 			checkbutton Buttautoupdate "Apply" width:20 height:20 align:#right  pos:[90,10]\ 
-			toolTip:"Autoupdate  Paint" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 3, 3, 3, 3 )
+			toolTip:"Autoupdate  Paint" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 37, 37, 37, 37 )
 
 			on VRageEnvColorRollout open do theColor.color = (VrageScene.getPaintNode()).color
 			on ButtApplyPaint pressed do 
@@ -38,6 +38,32 @@ struct Vrage_UI
 		cui.RegisterDialogBar VRageEnvColorRollout style:#( #cui_dock_all, #cui_dock_vert, #cui_floatable )
 	),
 
+	
+	fn CreateaMain = 
+	(
+		rollout CreateMainRollout "Create New Main Object" width:250 height:260
+		(
+			combobox Type "Type:" items:#("Cubeblock")   height:8 align:center
+			--items:#("Cubeblock", "Character", "PhysicalItem","Just Lods")
+			edittext prefix_txt "Name:" fieldWidth:220 labelOnTop:true text:"MyNewBlock"   
+			button Butt_Create "Create" width:220 height:30 align:center
+
+			on Butt_Create pressed do
+			(
+				--implement other models at some time
+				(VrageCubeBlock()).CreateSkel prefix_txt.text ;
+				try (cui.UnRegisterDialogBar CreateMainRollout) catch () 
+				try (DestroyDialog  CreateMainRollout) catch ()
+			) 
+		)
+		
+		try (cui.UnRegisterDialogBar CreateMainRollout) catch () 
+		try (DestroyDialog  CreateMainRollout) catch ()
+		CreateDialog CreateMainRollout
+		cui.RegisterDialogBar CreateMainRollout  style:#(#cui_floatable)
+	),
+
+
 	fn ShowSidebar = 
 	(
 		try ( cui.UnRegisterDialogBar VrageSidebar ) catch () 
@@ -61,10 +87,14 @@ struct Vrage_UI
 
 			
 			button butt_ModSettings "ModSettings" width:30 height:30 align:#center  \
-			toolTip:"Open Mod/Scene Settings" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 36, 36, 36, 36 )
+			toolTip:"Open Mod&Scene Settings" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 36, 36, 36, 36 )
+
+			on butt_ModSettings pressed do 	VrageScene.ShowUI()
+			
+
 			label mySplitterddd2 "\x2500\x2500\x2500\x2500\x2500" 
-
-
+			
+			
 			checkbutton btn_ShowLayerUI "\x21BA" width:30 height:30 align:#center  \
 			toolTip:"Expand LAyer UI" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 31, 31, 31, 31 )
 
@@ -132,7 +162,7 @@ struct Vrage_UI
 
 			on butt_CreatMod pressed do 
 			(
-				(VrageCubeBlock()).CreateSkel "MyNewBlock" ;
+				CreateaMain();
 			)
 
 		)
