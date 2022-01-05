@@ -71,7 +71,8 @@ struct VRageLayers
 	ConstructArray = "ConstructArrayDef",--main layer under which the buildstages are.
 	Construction = "VRageConstructstage",
 	
-	fn CreateOrRenameLayer MyName MyOldName parent_layer:undefined = (
+	fn CreateOrRenameLayer MyName MyOldName parent_layer:undefined = 
+	(
 		if ( LayerManager.getLayerFromName ( MyOldName ) == undefined ) then (
 			if ( LayerManager.getLayerFromName ( MyName ) == undefined ) then (
 				layer = LayerManager.newLayer()
@@ -88,7 +89,8 @@ struct VRageLayers
 		layer
 	),
 	
-	fn GetSelected = (
+	fn GetSelected = 
+	(
 		-- Tries to get the selected Layer and also sets it active.
 		-- If no Layer is selected it will get the  Layer of the first obj in the selection.
 		layerExplorer = SceneExplorerManager.GetActiveExplorer()
@@ -140,7 +142,8 @@ struct VRageLayers
 		Layer
 	),
 
-	fn Delete LayerHandle = (
+	fn Delete LayerHandle = 
+	(
 		try 
 		(
 			canDelete = ( LayerHandle.canDelete()) and not ( LayerManager.doesLayerHierarchyContainNodes LayerHandle.name )
@@ -165,6 +168,56 @@ struct VRageLayers
 			) 
 		)
 		catch ( MyVRageLog.Info ( "Something went wrong while trying to delete Layer/s" ) Show:true )
+	),
+
+	fn GetObjsOfLayer TheLayer = 
+	(
+		TheLayer.nodes &Objs
+		/*
+		TheLayer.select true
+		Objs = selection as array
+		deselect selection
+		TheLayer.select false
+		*/
+		Objs 
+	),
+
+	fn IsTypeof TheLayer Type= 
+	(
+		if TheLayer != undefined then 
+		( 	State = false
+			
+			Currentlayer = TheLayer.layerAsRefTarg
+			MainAttr = custAttributes.get Currentlayer VrageLayerData
+			if MainAttr != undefined then 
+			(
+				if Currentlayer.VrageLayerData.VRType == Type then State = true 
+			)
+			
+		)
+		State
+	),
+
+	fn GetChildofType TheLayer Type = 
+	(
+		TheChilds = #()
+		TheLayer = TheLayer.layerAsRefTarg
+		for i=1 to TheLayer.getNumChildren() do 
+		(
+			if (IsTypeof (TheLayer.getChild i) Type) then append TheChilds (TheLayer.getChild i)
+		)
+		TheChilds
+	),
+
+	fn FindMainTypes = 
+	(--Returns all Maintypes in Children of "Default" Layer ...like CubeBlock for example
+		DefaultLayer = (LayerManager.getLayerFromName "0"); --should ALWAYS exist
+		TheMainObjs = #()
+		for i=1 to DefaultLayer.getNumChildren() do 
+		(
+			if (IsTypeof (DefaultLayer.getChild  i) CubeBlock) then append TheMainObjs (DefaultLayer.getChild  i)
+		)
+		TheMainObjs
 	)
 )
 VRLayers = VRageLayers()
@@ -178,34 +231,6 @@ fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_Scene\\VRage_CubeBlockLaye
 
 
 
-struct VrageSubpartLayer
-(
-	fn Add Mainlayer:undefined Name:undefined =
-	(
-		Attr = undefined
-		ParentLayerDummies = undefined 
-		ParentLayer = undefined
-
-		if Mainlayer == undefined then Mainlayer = VRLayers.GetSelected()
-		if Mainlayer != undefined then ( Attr = custAttributes.get Mainlayer VrageLayerData )
-		if Attr != undefined and Attr.VRType == "SubPartArray" then 
-		(
-			ParentLayer = Mainlayer.getParent() --Cubeblock or a Subpartdef
-			if ParentLayer != undefined then 
-			( -- trying to find the Dummie layer in which the dummy for the subpart has to be placed
-				layerRT = ParentLayer.layerAsRefTarg
-				layerRT.SeName
-				ParentLayerDummies = ( LayerManager.getLayerFromName ( layerRT.SeName + " #Dummies" ) ).layerAsRefTarg
-				if ParentLayerDummies.VRType != "DummiesDef" then ( ParentLayerDummies = undefined )
-			) 
-			if ParentLayerDummies != undefined then 
-			(
-				--1. Place the Dummy
-				--2. Create the Subpart Layer
-			)
-		)
-	)
-)
 
 --  Rollouts for Layer Types
 
@@ -374,25 +399,6 @@ rollout Vrage_IconRollout "CubeBlock Icon" width:200 height:200
 rollout VrageModels "VrageToolbox" width:200 height:200
 (
 	on VrageModels open do ()
-
-	on butt_MAtlib pressed do
-	(
-		try ( MyVrageMatBrowser = ( Vrage_MaterialBrowser()).getForm() ) 
-		catch 
-		(
-			fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_MaterialLibrary.ms" )
-			try ( MyVrageMatBrowser = ( Vrage_MaterialBrowser()).getForm() ) 
-			catch ( messagebox "Failed to open MaterialBrwoser" title:"Error!" )
-		)
-	) 
-
-	on butt_CreatMod pressed do 
-	(
-		Testthing = VrageCubeBlock();
-		Testthing.CreateSkel "MyNewBlock" ;
-
-	)
-
 	timer clock "testClock" interval:10 --tick  every 2 sec
 	on clock tick do
 	( 

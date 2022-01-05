@@ -16,6 +16,9 @@ fn Vrage_LoadToolbox = (
 	fileIn ( MyVRageRoot + "\\Vrage_Logging.ms" )
 	format "loaded script '%'\n" "\\Vrage_Logging.ms"
 
+	fileIn ( MyVRageRoot + "\\Vrage_Havok\\Vrage_CollisionPlugins.ms" )
+	format "loaded script '%'\n" "\\Vrage_Havok\\Vrage_CollisionPlugins.ms"
+
 	fileIn ( MyVRageRoot + "\\VRage_Icon.ms" )
 	format "loaded script '%'\n" "\\VRage_Icon.ms"
 

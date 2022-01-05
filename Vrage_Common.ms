@@ -267,25 +267,36 @@ fn ReplaceWords mString mFromStr mToStr mIgnoreCase:false =
 
 function GetObjsMats objs = 
 ( 
-	--Get a unique Material list of Objs
 	local MatList = #( )
-	for obj in objs do 
+	if objs != undefined and (objs.count > 0) then 
 	(
-		if Obj.Material != undefined then 
+		--Get a unique Material list of Objs
+		for Obj in objs do 
 		(
-			if ( ( ClassOf Obj.Material ) as string ) != "Multimaterial" then 
+			if Obj.Material != undefined then 
 			(
-				appendIfUnique MatList Obj.Material.Name
-			) 
-			else 
-			(
-				for MtlID = 1 to obj.Material.MaterialList.Count do 
+				if ( ( ClassOf Obj.Material ) as string ) != "Multimaterial" then 
 				(
-					appendIfUnique MatList Obj.Material.MaterialList[MtlID].Name
+					appendIfUnique MatList Obj.Material.Name
+				) 
+				else 
+				(
+					for MtlID = 1 to obj.Material.MaterialList.Count do 
+					(
+						appendIfUnique MatList Obj.Material.MaterialList[MtlID].Name
+					)
 				)
 			)
 		)
 	)
 	MatList
+)
+
+fn existFile fname = (getfiles fname).count != 0
+
+function CopyandOverwriteFile ExistingFilepath DestFilepath = 
+(
+	if (existFile DestFilepath) then deleteFile DestFilepath
+	copyFile ExistingFilepath DestFilepath
 )
 print "Laoded Vrage_common"
