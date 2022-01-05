@@ -27,12 +27,12 @@ struct VrageCubeBlock
 		custAttributes.add layerRT VrageLayerData
 		layerRT.VRType = VRLayers.Collision
 		layerRT.SeName = BlockName
-		-- Dummies Layer
+		/*-- Dummies Layer
 		layer = VRLayers.CreateOrRenameLayer ( BlockName + " #Dummies" ) ( BlockName + " #Dummies" ) parent_layer:Mainlayer
 		layerRT = layer.layerAsRefTarg
 		custAttributes.add layerRT VrageLayerData
 		layerRT.VRType = VRLayers.Dummies
-		layerRT.SeName = BlockName
+		layerRT.SeName = BlockName */
 
 		-- Construction Layer
 		layer = VRLayers.CreateOrRenameLayer ( BlockName + " #Construction" ) ( BlockName + " #Construction" ) parent_layer:Mainlayer

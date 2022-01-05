@@ -55,7 +55,7 @@ struct VRageConfig
 			if ( PathToolsFolder ) != "" then (
 				if getDirectories ( PathToolsFolder ) != undefined then (	
 					PathFBXImporter = if ( tmp = getFiles ( VRageScriptsDir + "\\Vrage_Tools\\FbxImporter.exe" ) ).count != 0 then tmp[1] else ""
-					PathMwmBuilder = if ( tmp = getFiles ( VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) ).count != 0 then ( PathToolsFolder + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
+					PathMwmBuilder = if ( tmp = getFiles ( VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) ).count != 0 then ( VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
 					PathTextures = if ( tmp = getDirectories ( PathToolsFolder + "\\Textures" ) ).count != 0 then PathToolsFolder else ""
 				)
 			)
