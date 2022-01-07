@@ -68,7 +68,7 @@ struct VRageExporter (
 				newRef.SetAttribute "Distance" (LodData[i] as string)
 				root.appendChild newRef
 				ModelRef = 	xmlDoc.createElement "Model"
-				ModelRef.InnerText = @"Models\Cubes\" + ModelName + "_LOD" + (i as string)
+				ModelRef.InnerText = @"Models\Cubes\" + ModelName + "_LOD" + ((i-1) as string)
 				newRef.appendChild ModelRef
 			)
 			
@@ -254,7 +254,7 @@ struct VRageExporter (
 	fn Export_LODs TheMainLayer  = 
 	(
 		TheMainName = TheMainLayer.Name
-		TheLods = VRLayers.GetChildofType TheMainLayer (VRLayers.LOD) 
+		TheLods = VRLayers.GetChildofType TheMainLayer (VRLayers.LOD) 	
 		if (TheLods.count == 0) then (MyVRageLog.Warn ("Export: No Lods found. Nothing will be exported") ) 
 		if (TheLods.count > 0) then 
 		(
@@ -262,14 +262,15 @@ struct VRageExporter (
 			TheLodDistances = #()
 			TheLodDistances.count = TheLods.count
 			for OneLod in TheLods do 
-			(
+			(	
 				tmplod = OneLod.layerAsRefTarg
 				TheLodDistances[tmplod.VrageLayer_LODData.LODID +1] = tmplod.VrageLayer_LODData.DrawDistance
 			)
 
 			-- Get the objs in Lod and export to fbx
 			for OneLod in TheLods do 
-			(
+			(	
+				OneLod.ishidden = false
 				OneLodObjs = VRLayers.GetObjsOfLayer OneLod
 				-- Lod 0 is special. No Lod in name and dummies and collision included
 				if (OneLod.layerAsRefTarg).VrageLayer_LODData.LODID == 0 then 
@@ -282,28 +283,37 @@ struct VRageExporter (
 					TheName = TheMainName +"_LOD" + ((OneLod.layerAsRefTarg).VrageLayer_LODData.LODID as string) 
 					Create_MWM_XML TheName (GetObjsMats OneLodObjs) TempDirModels			
 				)
-				print OneLodObjs
+				print ( OneLod.name + "::" +  (OneLodObjs.count as string) )
+				
 				ExportModel OneLodObjs (TempDirModels + "\\" + TheName)
 			)
 		)
 	),
 
-	fn Export_Constructions TheMainLayer = 
+	fn Export_Constructions TheArrayLayer TheMainName CollisionPath:undefined = 
 	(
-		TheMainName = TheMainLayer.Name
-		TheName = ""
+		TheConstructions = VRLayers.GetChildofType TheArrayLayer (VRLayers.Construction) 
+
+		for CurrentConst in TheConstructions do 
+		(
+			if (CollisionPath != undefined) then 
+			(--try copying the collision from main Model to construction.
+				try(copyFile (CollisionPath + ".hkt") (TempDirModels +  "\\" + CurrentConst.name + ".hkt") ) catch()
+			) 
+			Export_LODs CurrentConst
+		)
 	),
 
-	fn Export_MainType TheMainLayer =
+	fn Export_MainType TheMainLayer  =
 	(--must be recursive for subparts later!!
 		/*
 		3. Find Construction stages. --> Also save that info for xml
-		4. Find Lods in ConstructionLayer  --> as lods above.
+	
 		5. Find the subparts --> call itself.
 		*/
 		TheMainName = TheMainLayer.Name
 		TheName = ""
-
+		CollisionFilePath = undefined
 		--1. Get Collision Layer and set as current Collision
 		CurrentCollision = VRLayers.GetChildofType TheMainLayer (VRLayers.Collision) 
 		if (CurrentCollision.count == 0) then (MyVRageLog.Warn ("Export: No Collision found. Standard Cube will be set.") ) 
@@ -312,12 +322,15 @@ struct VRageExporter (
 			CollisionObjs =  VRLayers.GetObjsOfLayer CurrentCollision[1]
 			Error = ExportCollision CollisionObjs  (TempDirModels +  "\\" + TheMainName)
 			if Error == 1 then MyVRageLog.Info ("Successfully Exported Collision "  + TheMainName) Show: false else MyVRageLog.Error ("Failed Collsion export "  + TheMainName)
-
+			if Error == 1 then CollisionFilePath = (TempDirModels +  "\\" + TheMainName)
 		)
 		--2. Find all LOD layers --> also write the distances etc for xmls 
 		Export_LODs TheMainLayer
 
-
+		--4. Find Lods in ConstructionLayer  --> as lods above.
+		CurrentConstructionArray = VRLayers.GetChildofType TheMainLayer (VRLayers.ConstructArray)
+		if (CurrentConstructionArray.count == 0) then (MyVRageLog.Info ("Export: No Construction found.") ) 
+		if (CurrentConstructionArray.count > 0) then Export_Constructions CurrentConstructionArray[1] TheMainName  CollisionPath:CollisionFilePath
 
 	),
 
@@ -333,7 +346,9 @@ struct VRageExporter (
 		(
 			TheObjectArray = VRLayers.FindMainTypes()	-- find valid layers
 		)
-		if TheObjectArray.count == 0 then 	MyVRageLog.Error ("Export: No Valid MainType found") 
+		try(deselect $selection) catch()
+
+		if TheObjectArray.count == 0 then MyVRageLog.Error ("Export: No Valid MainType found") 
 
 		for TheMain in TheObjectArray do 
 		(
