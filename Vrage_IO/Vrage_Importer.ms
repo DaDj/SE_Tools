@@ -99,13 +99,13 @@ struct VrageFBXImporter (
 			parent_layer.setParent root_layer
 			local lod0_layer = layermanager.newLayerFromName (name + " #LOD0")
 			lod0_layer.setParent parent_layer
-			local dummy_layer = layermanager.newLayerFromName (name + " #Dummies")
-			dummy_layer.setParent parent_layer
+			--local dummy_layer = layermanager.newLayerFromName (name + " #Dummies")
+			--dummy_layer.setParent parent_layer
 			
 			for o in imported do (
 				case (superclassOf o) of (
 					GeometryClass: lod0_layer.addNode o
-					helper: dummy_layer.addNode o
+					helper: lod0_layer.addNode o--dummy_layer.addNode o
 				)
 				
 				o.name += "#" + lod0_layer.name
