@@ -2,9 +2,10 @@ VrageLayer_CubeBlockData = attributes "VrageLayer_CubeBlockData" attribID:#( 0x2
 (
 	parameters main
 	(
-		Size type:#string default:"Large" ;
+		GridSize type:#string default:"Large" ;
 		TypeId type:#string	default:"CubeBlock" ;
 		SubtypeID type:#string	default:"MyBlock" ;
+		BBSize type:#point3 default:[1, 1, 1] ;
 	)
 )
 
@@ -116,15 +117,8 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 		label lbl_fake1 "" align: #left
 		button btnrenameBlock "Rename:" width:100 height:25 align: #center across:2
 		edittext editt_Rename "" fieldWidth:100 labelOnTop:true offset:[0, 4] align: #right 
-		
 	)
-	--button 'Btn_Import' "Import" width:100 height:25 toolTip:"Imports an Fbx from the ModSDK" align:#center across:2
-	--on Prep_scene pressed do MySE.run "Scene_Setup.ms"	
-	button Btn_export "Export" width:230 height:25 align:#center \
-	toolTip:"Export: Generates  MWM file/s from the selected Block/s" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 12, 12, 12, 12 )
-	
 
-	on Btn_export pressed do OpenVrageExport()
 
 	on btnAddLod pressed do 
 	(
@@ -157,7 +151,7 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 		if MainAttr != undefined do 
 		(
 			-- Size of Block
-			if MainAttr.Size == "Large" then dropdnSize.selection = 1 else dropdnSize.selection = 2
+			if MainAttr.GridSize == "Large" then dropdnSize.selection = 1 else dropdnSize.selection = 2
 
 			-- Type of Block
 			if MainAttr.TypeId != undefined then
@@ -177,7 +171,7 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 	(
 		Layer = VRLayers.GetSelected();
 		MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
-		MainAttr.Size = dropdnSize.items[i]
+		MainAttr.GridSize = dropdnSize.items[i]
 	)
 
 	-- Type of Block

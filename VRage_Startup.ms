@@ -19,14 +19,14 @@ fn Vrage_LoadToolbox = (
 	fileIn ( MyVRageRoot + "\\Vrage_Havok\\Vrage_CollisionPlugins.ms" )
 	format "loaded script '%'\n" "\\Vrage_Havok\\Vrage_CollisionPlugins.ms"
 
-	fileIn ( MyVRageRoot + "\\VRage_Icon.ms" )
-	format "loaded script '%'\n" "\\VRage_Icon.ms"
-
 	fileIn ( MyVRageRoot + "\\Vrage_IO\\Vrage_MaterialLibrary.ms" )
 	format "loaded script '%'\n" "\\Vrage_IO\\Vrage_MaterialLibrary.ms"
 
 	fileIn ( MyVRageRoot + "\\VRage_Layers.ms" )
 	format "loaded script '%'\n" "\\VRage_Layers.ms"
+
+	--fileIn ( MyVRageRoot + "\\VRage_Icon.ms" )
+	--format "loaded script '%'\n" "\\VRage_Icon.ms"
 
 	fileIn ( MyVRageRoot + "\\Vrage_IO\\VRage_Exporter.ms" )
 	format "loaded script '%'\n" "\\Vrage_IO\\VRage_Exporter.ms"

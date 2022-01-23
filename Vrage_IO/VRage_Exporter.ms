@@ -306,11 +306,6 @@ struct VRageExporter (
 
 	fn Export_MainType TheMainLayer  =
 	(--must be recursive for subparts later!!
-		/*
-		3. Find Construction stages. --> Also save that info for xml
-	
-		5. Find the subparts --> call itself.
-		*/
 		TheMainName = TheMainLayer.Name
 		TheName = ""
 		CollisionFilePath = undefined
@@ -331,6 +326,8 @@ struct VRageExporter (
 		CurrentConstructionArray = VRLayers.GetChildofType TheMainLayer (VRLayers.ConstructArray)
 		if (CurrentConstructionArray.count == 0) then (MyVRageLog.Info ("Export: No Construction found.") ) 
 		if (CurrentConstructionArray.count > 0) then Export_Constructions CurrentConstructionArray[1] TheMainName  CollisionPath:CollisionFilePath
+
+		--5. Find the subparts --> call itself.
 
 	),
 

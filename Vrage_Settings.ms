@@ -17,6 +17,10 @@ struct VRageConfig
 	PathGame = " ",
 	UsePbrMats = True, --Needs GUI
 	DefaultThumbnail = VrageConfigDir + "\\MaterialThumbnails\\" + "NoThumbnail.jpg",
+	/*UI Layout  stuff */
+	MatBrowserSizeX = 1150,
+	MatBrowserSizeY = 720,
+
 
 
 	fn save = (
@@ -45,6 +49,9 @@ struct VRageConfig
 		setINISetting VRageConfigFile "Directories" "pathgame" PathGame
 		setINISetting VRageConfigFile "Textures" "UseGameTextures" ( if UseGameTextures then "1" else "0" )
 		setINISetting VRageConfigFile "Textures" "UsePbrMats" ( if UsePbrMats then "1" else "0" )
+
+	setINISetting VRageConfigFile "UI" "MatBrowserSizex"  (MatBrowserSizeX as string)
+setINISetting VRageConfigFile "UI" "MatBrowserSizeY" (MatBrowserSizeY as string)
 	),
 
 	fn load = (
@@ -75,6 +82,10 @@ struct VRageConfig
 
 			TextureType = try ( getINISetting VRageConfigFile "Textures" "TextureType" as integer ) catch 5
 			PathGame = if ( tmp = getINISetting VRageConfigFile "Directories" "pathgame" ) != undefined then tmp else "" 
+
+			
+			MatBrowserSizeX = if ( tmp = getINISetting VRageConfigFile "UI" "MatBrowserSizeX" ) != "" then (tmp as integer) else MatBrowserSizeX
+			MatBrowserSizeY = if ( tmp = getINISetting VRageConfigFile "UI" "MatBrowserSizeY" ) != "" then (tmp as integer) else MatBrowserSizeY
 		)
 		else (
 			PathToolsFolder = ""

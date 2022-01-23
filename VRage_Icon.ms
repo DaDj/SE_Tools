@@ -273,5 +273,118 @@ struct VRage_Icon
 	)
 )
 
+rollout Vrage_IconRollout "CubeBlock Icon" width:200 height:200 
+( -- UI for the Icon rendering.
+	checkbutton btn_IconMode "Icon Mode" width:230 height:25 align:#center \
+	toolTip:"Icon Mode on/off" --images: #( VRageIcons, VRageIcons, VRageIcoLeng, 27, 27,27, 27 )
+
+
+	groupBox group1 "" pos:[5, 35] width:100 height:100 
+	imgtag the_bmp width:100 height:100 align:#left across:2 pos:[5, 35]
+
+	button btn_Setup "Reset" width:40 height:25 align:#right pos:[192, 70] \
+	toolTip:"recreate the Camera Setup if its lost or if it needs to be reset." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 3, 3, 3, 3 )
+
+	colorpicker theColor "Tint Color:" color:[132, 170, 251905] modal:false align:#right pos:[135, 40] 
+
+	button btn_Preview "Preview" width:25 height:25 toolTip:"Generates a preview of the Icon" align:#righ pos:[3, 140] \
+	toolTip:"Icon Mode on/off" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 32, 32, 32, 32 )
+
+	button btn_CreateIcon "Create Icon" width:199 height:25 toolTip:"Box" align:#right pos:[33, 140]
+	toolTip:"Creates the Icon" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 12, 12, 12, 12 )
+
+	on Vrage_IconRollout open do
+	(
+		Layer = ( VRLayers.GetSelected()) ;
+		MainAttr = custAttributes.get Layer VrageLayer_IconData
+		if Layer != undefined do 
+		(
+			try
+			(
+				theColor.color = MainAttr.IconTintColor 
+			)
+			catch (	MyVRageLog.Warn ( "Failed to re/create Camera Objs" ) )
+		)
+	)
+
+	on Vrage_IconRollout close do 
+	(
+		Layer = ( VRLayers.GetSelected()) ;
+		if Layer != undefined do 
+		(
+			VRage_Icon.CloseDownObjects Layer
+		)
+	)
+
+	on btn_IconMode changed state do 
+	(
+		Layer = ( VRLayers.GetSelected()) ;
+		if Layer != undefined do 
+		(
+			if state == on then 
+			(
+				VRage_Icon.SetupObjects Layer activate:true
+			)
+			else 
+			(
+				VRage_Icon.CloseDownObjects Layer 
+			)
+		)
+	)
+
+	on btn_Preview pressed do 
+	(
+		try
+		(
+			Layer = ( VRLayers.GetSelected()) ;
+			MainAttr = custAttributes.get Layer VrageLayer_IconData
+			MainAttr.IconTintColor = theColor.color
+			theBmp = VRage_Icon.RenderIcon 200 200 Layer:Layer TintColor:( theColor.color )
+			the_bmp.bitmap = theBmp
+		)
+		catch (	MyVRageLog.Warn ( "Failed to render Icon Preview" ) )
+	) 
+
+	on btn_Setup pressed do 
+	(
+		try
+		(
+			Layer = ( VRLayers.GetSelected()) ;
+			MainAttr = custAttributes.get Layer VrageLayer_IconData
+			MyIcon = VRage_Icon.SetupObjects Layer reset:true	
+			theColor.color = MainAttr.IconTintColor 
+			btn_IconMode.checked = true
+		)
+		catch (	MyVRageLog.Warn ( "Failed to Reset Icon Setup" ) )
+	) 
+
+	on btn_CreateIcon pressed do 
+	(
+		try
+		(
+			Layer = ( VRLayers.GetSelected()) ;
+			MainAttr = custAttributes.get Layer VrageLayer_IconData
+			MainAttr.IconTintColor = theColor.color
+			theBmp = VRage_Icon.RenderIcon 128 128 Layer:Layer TintColor:( theColor.color )
+			the_bmp.bitmap = theBmp
+		)
+		catch (	MyVRageLog.Warn ( "Failed to render Icon " ) )
+		try 
+		(
+			FileName = SelectSaveBitmap caption:"Select a file"
+			if FileName != undefined then theBmp.filename = FileName
+			if ( theBmp.filename != undefined ) do save theBmp
+		) 
+		catch (	MyVRageLog.Warn ( "Failed to save Icon" ) )
+	) 
+
+	on theColor changed new_col do
+	(
+		Layer = ( VRLayers.GetSelected()) ;
+		MainAttr = custAttributes.get Layer VrageLayer_IconData
+		MainAttr.IconTintColor = theColor.color
+	)
+)
+
 --MyIcon = VRage_Icon()
 --MyIcon.RenderIcon "C:\Users\patgr\Desktop\myicon.png" 256 256

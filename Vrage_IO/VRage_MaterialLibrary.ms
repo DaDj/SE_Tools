@@ -301,7 +301,7 @@ struct VrageMaterial (
 			p_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:4
 			Out_AddAlpha = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:5
 			material.ao_map = ao_interface
-			 
+			
 
 			
 			if cm_map != undefined and doesFileexist ( get_path cm_map.innertext ) then 
@@ -724,7 +724,8 @@ struct Vrage_MaterialBrowser (
 	dnSize = dotNetClass "System.Drawing.Size",
 	dnRectangle = dotNetClass "System.Drawing.Rectangle",
 	
-	form_size = [815, 480],
+
+	form_size = [MyVRageCfg.MatBrowserSizeX, MyVRageCfg.MatBrowserSizeY],
 	Mat_Layout = dotNetObject "System.Windows.Forms.FlowLayoutPanel",
 	Mat_Group = dotNetObject "System.Windows.Forms.Groupbox",
 	Filter_Group = dotNetObject "System.Windows.Forms.Groupbox",
@@ -881,6 +882,12 @@ struct Vrage_MaterialBrowser (
 	),
 
 
+	fn ResizeForm = 
+	(
+		MyVRageCfg.MatBrowserSizeX = hForm.Width 
+		MyVRageCfg.MatBrowserSizeY = hForm.Height
+		MyVRageCfg.save()
+	),
 
 
 	fn closeForm = (
@@ -1119,8 +1126,9 @@ struct Vrage_MaterialBrowser (
 		hForm.backcolor = getDnColor #background
 		
 		dotNet.addEventHandler hForm "Closed" closeForm
-		
+		dotNet.addEventHandler hForm "SizeChanged" ResizeForm
 		hForm.size = dotNetObject "System.Drawing.Size" form_size.x form_size.y
+		--print hForm.size
 		hForm.show ( nw )
 		nw.releaseHandle()
 		--hForm.topmost = true
