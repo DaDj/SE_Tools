@@ -517,7 +517,7 @@ struct Vrage_MaterialButton (
 	bsize = 180,
 	bpadding = 0,
 	bsize_image = bsize - bpadding * 2,
-	bmargin = 2,
+	bmargin = 8,
 	imageList = undefined,
 	mButton = dotNetObject "System.Windows.Forms.Button",
 
@@ -681,8 +681,10 @@ struct Vrage_MaterialButton (
 		
 		mButton.ForeColor = getDnColor #text
 		
-		mButton.flatStyle = mButton.flatStyle.Popup
-		--	mButton.BackColor = Color.gray -- just for fun
+		mButton.flatStyle = mButton.flatStyle.Flat
+		mButton.FlatAppearance.BorderSize = 0
+		
+		mButton.BackColor = getDnColor #background
 		mButton.ImageList = imageList
 		mButton.ImageIndex = 0
 

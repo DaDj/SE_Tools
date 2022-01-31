@@ -223,5 +223,51 @@ struct VrageFBXImporter (
 			msg = "File \"" + filename + "\" does not exist and can not be imported"
 			messageBox 
 		)
+	),
+
+	fn ShowUI = 
+	(
+		rollout rollIMUI "VRage Import Scene" width:400 height:200
+		(
+			button Btn_import "Import" width:200 height:40 toolTip:"Import .Fbx Block/s" align:#center  across:1
+			--button Btn_exportsel "Export Selected only" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
+			
+
+			checkbutton Chkb_ImpSubparts "Import Subparts."   checked:true  width:130  height:25\
+			tooltip:" "  across:3 align:#center 
+
+			checkbutton ChkExp_IMPConst "Import Constructions"   checked:false  width:130  height:25\
+			tooltip:" "  align:#center 
+
+			checkbutton ChkExp_IMPLODs "Import LODS"   checked:false  width:130  height:25\
+			tooltip:""  align:#center 
+
+			on Btn_import pressed do 
+			(
+
+				f = getOpenFileName caption:"Open A Test File:" filename: MyVRageCfg.PathModSDK
+				if f != undefined then 
+				(
+					Test = VrageFBXImporter filename:f
+		
+					Test.import_LODs = ChkExp_IMPLODs.checked
+					Test.import_subparts = Chkb_ImpSubparts.checked
+					Test.import_construction = ChkExp_IMPConst.checked
+					Test.import()
+				)
+			)
+
+		--	on rollExpUI open do ()
+		)
+
+		try (cui.UnRegisterDialogBar IMP_UI) catch () 
+		try (DestroyDialog  IMP_UI) catch ()
+
+		IMP_UI = newRolloutFloater "VRAGE Import" 500 200
+		addRollout rollIMUI IMP_UI
+	
+
+		cui.RegisterDialogBar IMP_UI  style:#(#cui_floatable)
+
 	)
 )

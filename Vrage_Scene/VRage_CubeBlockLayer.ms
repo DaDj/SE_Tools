@@ -104,19 +104,21 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 		toolTip:"Type of Block. If no valid is entered, a default Cubeblock will be assumed"
 		button btnSearch "..." width:25 height:20 pos:[72, 52] \
 		toolTip:"Open List of existing Types."	images: #( VRageIcons, VRageIcons, VRageIcoLeng, 25, 25, 25, 25 )
-		
+
 		label lbl_SubID "Subtype ID" across:2 align: #left
 		edittext editt_SubID "" fieldWidth:120 labelOnTop:true align: #right
 	)
 
 	group "Actions"
 	(
+		button btnrenameBlock "Rename:" width:100 height:25 align: #center across:2
+		edittext editt_Rename "" fieldWidth:100 labelOnTop:true offset:[0, 4] align: #right 
+
 		button btnAddLod "Add a Lod" width:100 height:25 align: #center across:2 \
 		toolTip:"Add Lod"	images: #( VRageIcons, VRageIcons, VRageIcoLeng, 28, 28, 28, 28 )
 
 		label lbl_fake1 "" align: #left
-		button btnrenameBlock "Rename:" width:100 height:25 align: #center across:2
-		edittext editt_Rename "" fieldWidth:100 labelOnTop:true offset:[0, 4] align: #right 
+		
 	)
 
 
@@ -205,5 +207,59 @@ rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
 		Layer = VRLayers.GetSelected();
 		MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
 		MainAttr.SubtypeID = editt_SubID.text
+	)
+)
+
+rollout Vrage_CubeBlock_BBBoxRollout "BoundingBox"  width:300 height:200
+(
+	spinner spin_x "X:" range:[1,100,1] type:#integer across:3
+	spinner spin_Y "Y:" range:[1,100,1] type:#integer
+	spinner spin_Z "Z:" range:[1,100,1] type:#integer
+	checkbutton btn_BBBox "Toggle Boundingbox" width:150 height:25 align: #center across:1
+	
+	on spin_x changed val do 
+	(
+		Layer = VRLayers.GetSelected();
+		MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+		MainAttr.BBSize = [ spin_x.value, spin_y.value, spin_z.value ]
+	)
+	on spin_y changed val do 
+	(
+		Layer = VRLayers.GetSelected();
+		MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+		MainAttr.BBSize = [ spin_x.value, spin_y.value, spin_z.value ]
+	)
+	on spin_z changed val do 
+	(
+		Layer = VRLayers.GetSelected();
+		MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+		MainAttr.BBSize = [ spin_x.value, spin_y.value, spin_z.value ]
+	)
+
+	on Vrage_CubeBlock_BBBoxRollout open do 
+	(
+		obj = getnodebyname "VRageBB"
+		if obj != undefined then(btn_BBBox.checked = true )
+		
+		Layer = VRLayers.GetSelected();
+		MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+		spin_x.value = MainAttr.BBSize[1]
+		spin_y.value = MainAttr.BBSize[2]
+		spin_z.value = MainAttr.BBSize[3]
+	) 
+	
+	on btn_BBBox changed state do 
+	(
+		if state == on then
+		(
+			Layer = VRLayers.GetSelected();
+			MainAttr = custAttributes.get Layer VrageLayer_CubeBlockData
+			VRageBBox.show  spin_x.value spin_y.value spin_z.value MainAttr.GridSize
+		)
+		else  
+		(
+			VRageBBox.hide()
+		)
+		
 	)
 )

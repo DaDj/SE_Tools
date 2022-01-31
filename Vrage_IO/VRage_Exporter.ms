@@ -346,14 +346,18 @@ struct VRageExporter (
 		try(deselect $selection) catch()
 
 		if TheObjectArray.count == 0 then MyVRageLog.Error ("Export: No Valid MainType found") 
-
-		for TheMain in TheObjectArray do 
+		else
 		(
-			Export_MainType TheMain
+
+			for TheMain in TheObjectArray do 
+			(
+				Export_MainType TheMain
+			)
+	
+			Error = Generate_MWM TempDirModels Filepath
+			if Error == 1 then MyVRageLog.Info ("Successfully build Model "  + Filepath) Show: true else MyVRageLog.Error ("Failed Model Build "  + Filepath)
 		)
 
-		Error = Generate_MWM TempDirModels Filepath
-		if Error == 1 then MyVRageLog.Info ("Successfully build Model "  + Filepath) Show: true else MyVRageLog.Error ("Failed Model Build "  + Filepath)
 	),
 
 	fn ShowUI = 
@@ -361,14 +365,15 @@ struct VRageExporter (
 
 		rollout rollExpUI "VRage Export Scene" width:400 height:200
 		(
-			button 'Btn_export' "Export" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center  across:2
-			--	on Btn_export pressed do OpenVrageExport()
-			button 'Btn_exportsel' "Export Selected only" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
-			on rollExpUI open do 
+			button Btn_export "Export" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center  across:2
+			--button Btn_exportsel "Export Selected only" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
+			
+			on Btn_export pressed do 
 			(
-
-				
+				Expo = VRageExporter Filepath:((VrageScene.get()).ModDir) 
+				Expo.Export()
 			)
+		--	on rollExpUI open do ()
 		)
 
 		try (cui.UnRegisterDialogBar ExportUI) catch () 

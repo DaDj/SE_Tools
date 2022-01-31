@@ -152,6 +152,8 @@ struct Vrage_UI
 			button butt_Import "Import" width:30 height:30 align:#center  \
 			toolTip:"Import an FBX" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 11, 11, 11, 11 )
 
+			on butt_Import pressed do VrageFBXImporter.ShowUI()
+
 			button butt_Export "Export" width:30 height:30 align:#center  \
 			toolTip:"Export" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 12, 12, 12, 12 )
 

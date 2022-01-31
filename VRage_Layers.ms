@@ -227,7 +227,7 @@ fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_Scene\\Vrage_LodLayer.ms" 
 fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_Scene\\VRage_ConstructionLayer.ms" )
 fileIn ( GetDir #userScripts + "\\VRageToolbox\\VRage_Icon.ms" )
 fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_Scene\\VRage_CubeBlockLayer.ms" )
-
+fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_Scene\\VRage_SubpartLayer.ms" )
 
 --  Rollouts for Layer Types
 
@@ -309,11 +309,14 @@ rollout VrageModels "VrageToolbox" width:200 height:200
 				(
 					addRollout Vrage_CubeBlockRollout VRAGE_ModelUI 
 					--addRollout Vrage_SceneRoll VRAGE_ModelUI
+					addRollout Vrage_CubeBlock_BBBoxRollout VRAGE_ModelUI 
 					addRollout Vrage_IconRollout VRAGE_ModelUI rolledUp:true
+
 					
 				)
 				else try 
 				( 
+					removeRollout Vrage_CubeBlock_BBBoxRollout VRAGE_ModelUI 
 					removeRollout Vrage_CubeBlockRollout VRAGE_ModelUI 
 					removeRollout Vrage_IconRollout VRAGE_ModelUI 
 				) catch () 
@@ -329,16 +332,23 @@ rollout VrageModels "VrageToolbox" width:200 height:200
 				if MainAttr.VRType == "CollisionDef" then 
 				addRollout Vrage_CollisonRollout VRAGE_ModelUI 
 				else try ( removeRollout Vrage_CollisonRollout VRAGE_ModelUI ) catch () 
+
+				if MainAttr.VRType == VRLayers.SubPartArray then 
+				addRollout Vrage_SubpartsArrayRollout VRAGE_ModelUI 
+				else try ( removeRollout Vrage_SubpartsArrayRollout VRAGE_ModelUI ) catch () 
+				
 			)
 		)
 		else 
 		(
 			try ( removeRollout Vrage_ConstructionRollout VRAGE_ModelUI ) catch () 
+			try ( 	removeRollout Vrage_CubeBlock_BBBoxRollout VRAGE_ModelUI  ) catch ()
 			try ( removeRollout Vrage_CubeBlockRollout VRAGE_ModelUI ) catch () 
 			try ( removeRollout Vrage_LODRollout VRAGE_ModelUI ) catch () 
 			try ( removeRollout Vrage_ConstructionArrayRollout VRAGE_ModelUI ) catch () 
 			try ( removeRollout Vrage_CollisonRollout VRAGE_ModelUI ) catch () 
 			try ( removeRollout Vrage_IconRollout VRAGE_ModelUI ) catch () 
+			try ( removeRollout Vrage_SubpartsArrayRollout VRAGE_ModelUI ) catch () 
 		)
 
 	)

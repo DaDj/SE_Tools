@@ -108,7 +108,7 @@ struct VrageScene
 			label lbl_PathModir "Mod Directory:" align:#left across:2 offset:[0,5]
 			button btn_PathModir  "" width:350 height:25 align:#right tooltip:"Path to the mods directory"
 			on btn_PathModir pressed do (
-				FilePath = getSavePath caption:"Test path..."
+				FilePath = getSavePath caption:"Mod path..."  initialDir:(systemTools.getEnvVariable "USERPROFILE" + "\AppData\Roaming\SpaceEngineers\Mods"  )
 				if ( FilePath != undefined ) do ( 
 					btn_PathModir.text =  (VrageScene.get()).ModDir = 	FilePath
 				)
