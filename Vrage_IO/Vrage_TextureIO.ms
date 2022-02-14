@@ -19,7 +19,7 @@ fn VrageTextureIO_ConvertSEtoReadable =
 		Outputdir =  "\"" + MyVRageCfg.PathTextures + "\Textures" + "\""
 
 		
-		--Answer = Dos_Command.run Program arg_array:#(SETextureDir , MyVRageCfg.PathTextures , @"\Models", @"\BackgroundCube",@"\Particles" )
+		--Answer = Dos_Command.run Program arg_array:#(SETextureDir , MyVRageCfg.PathTextures , @"\Models", @"\BackgroundCube", @"\Particles" )
 		arg_array = #( SETextureDir ,Outputdir, @"\Models", @"\BackgroundCube", @"\Particles" )
 		MyStartARg = ""
 		for arg in arg_array do ( MyStartARg += ( " " + arg as string ) )
