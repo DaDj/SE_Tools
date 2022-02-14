@@ -273,6 +273,7 @@ struct VrageMaterial (
 			m_interface = MultiOutputChannelTexmapToTexmap sourceMap:cm_osl_map outputChannelIndex:5 
 			material.base_color_map = c_interface
 			material.metalness_map = m_interface
+			cm_osl_map.autogamma = 1
 		) else (
 			nt_osl_map = OSLMap Name:"NOTEXTURE" OSLPath:OSLBitmap filename:MyVrageNoTex autogamma: 1
 			nt_osl_map.autogamma = 1
@@ -291,11 +292,54 @@ struct VrageMaterial (
 		if add_map != undefined and doesFileexist ( get_path add_map.innertext ) then (
 			add_osl_map = OSLMap Name:( getFilenameFile add_map.innertext ) OSLPath:OSLBitmap filename:( get_path add_map.innertext )
 			ao_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:2
-			em_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:3
 			p_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:4
-			col_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:5
+			Out_AddAlpha = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:5
 			material.ao_map = ao_interface
-			material.emit_color_map = em_interface
+			
+
+			
+			if cm_map != undefined and doesFileexist ( get_path cm_map.innertext ) then 
+			(
+				--///Paintability - lloks good BUT: currently the mixing results in NOT whiter than the cm texture.
+				--ColorNode
+				PaintColorNode = VrageScene.getPaintNode()
+				Out_PaintColorNode = MultiOutputChannelTexmapToTexmap sourceMap:PaintColorNode outputChannelIndex:1
+				c_interface = MultiOutputChannelTexmapToTexmap sourceMap:cm_osl_map outputChannelIndex:1 
+
+				--1. Disable Auto-gamma of Srgb
+				if cm_osl_map !=undefined then cm_osl_map.autogamma = 0
+
+				--2. Mix Add alpha with our Paintcolor
+				OSL_Mix_ColorAdd =  osl_MixColor()
+				OSL_Mix_ColorAdd.A = color 255 255 255 255
+				OSL_Mix_ColorAdd.B_map = Out_PaintColorNode
+				OSL_Mix_ColorAdd.Mix_map = Out_AddAlpha
+
+				Out_Mix_ColorAdd =  MultiOutputChannelTexmapToTexmap sourceMap:OSL_Mix_ColorAdd outputChannelIndex:1
+
+				--2.Multiply Painted add with CM
+				OSL_Mul_PaintCM  = osl_ColorMul()
+				OSL_Mul_PaintCM.A_map = Out_Mix_ColorAdd
+				OSL_Mul_PaintCM.B_map = c_interface
+				Out_Mul_PaintCM = MultiOutputChannelTexmapToTexmap sourceMap:OSL_Mul_PaintCM outputChannelIndex:1
+				material.base_color_map = Out_Mul_PaintCM
+
+				-- Emisive by using osl_ColorMulitply.
+				-- Input B_amp is the normal cm map and input A_map is the emissive map (green channel of add)
+				-- This does make the rightparts glow AND the color of the textures are still there. 
+				em_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:3 
+				cm_EM_interface = MultiOutputChannelTexmapToTexmap sourceMap:PaintColorAdd outputChannelIndex:1 
+				EmissiveColorMul = osl_ColorMul()
+				EmissiveColorMul.B_map = Out_Mul_PaintCM
+				EmissiveColorMul.A_map = em_interface
+				em_Basecolor_interface = MultiOutputChannelTexmapToTexmap sourceMap:EmissiveColorMul outputChannelIndex:1
+				material.emit_color_map = em_Basecolor_interface
+			)
+			else 
+			(
+				em_interface = MultiOutputChannelTexmapToTexmap sourceMap:add_osl_map outputChannelIndex:3
+				material.emit_color_map = em_interface
+			)
 		)
 
 		if op_map != undefined and doesFileexist ( get_path op_map.innertext ) then (
@@ -303,8 +347,9 @@ struct VrageMaterial (
 			mask_interface = MultiOutputChannelTexmapToTexmap sourceMap:mask_osl_map outputChannelIndex:1
 			material.opacity_map = mask_interface
 		)
-
-		material.base_color_map.sourcemap.autogamma = 1
+		--if cm_osl_map !=undefined then cm_osl_map.autogamma = 1
+		
+		--material.base_color_map.sourcemap.autogamma = 1
 		material
 	),
 
@@ -466,7 +511,7 @@ struct Vrage_MaterialButton (
 	bsize = 180,
 	bpadding = 0,
 	bsize_image = bsize - bpadding * 2,
-	bmargin = 2,
+	bmargin = 8,
 	imageList = undefined,
 	mButton = dotNetObject "System.Windows.Forms.Button",
 
@@ -605,7 +650,7 @@ struct Vrage_MaterialButton (
 		imageList = dotNetObject "System.Windows.Forms.ImageList"
 		imageList.ImageSize = dotNetObject "System.Drawing.Size" bsize_image bsize_image
 		imageList.ColorDepth = ( dotNetClass "System.Windows.Forms.ColorDepth" ).Depth32bit
-	
+		
 		thumb_path = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\" + name + ".png"
 		img_path = MyVrageCfg.DefaultThumbnail
 
@@ -630,8 +675,10 @@ struct Vrage_MaterialButton (
 		
 		mButton.ForeColor = getDnColor #text
 		
-		mButton.flatStyle = mButton.flatStyle.Popup
-	--	mButton.BackColor = Color.gray -- just for fun
+		mButton.flatStyle = mButton.flatStyle.Flat
+		mButton.FlatAppearance.BorderSize = 0
+		
+		mButton.BackColor = getDnColor #background
 		mButton.ImageList = imageList
 		mButton.ImageIndex = 0
 
@@ -641,11 +688,11 @@ struct Vrage_MaterialButton (
 
 		mButton.Font = bfont
 		mButton.Margin = dotNetObject "System.Windows.Forms.Padding" bmargin
-				
+		
 		dotNet.addEventHandler mButton "click" click_event
-	--	dotNet.addEventHandler mButton "MouseHover" hover_event
+		--	dotNet.addEventHandler mButton "MouseHover" hover_event
 		--dotNet.addEventHandler mButton "MouseLeave" hoverEnd_event
-		 
+		
 		dotnet.setLifetimeControl mButton #dotnet
 		
 		mButton
@@ -672,8 +719,9 @@ struct Vrage_MaterialBrowser (
 	dnPoint = dotNetClass "System.Drawing.Point",
 	dnSize = dotNetClass "System.Drawing.Size",
 	dnRectangle = dotNetClass "System.Drawing.Rectangle",
-		
-	form_size = [1280, 720],
+	
+
+	form_size = [MyVRageCfg.MatBrowserSizeX, MyVRageCfg.MatBrowserSizeY],
 	Mat_Layout = dotNetObject "System.Windows.Forms.FlowLayoutPanel",
 	Mat_Group = dotNetObject "System.Windows.Forms.Groupbox",
 	Filter_Group = dotNetObject "System.Windows.Forms.Groupbox",
@@ -830,6 +878,12 @@ struct Vrage_MaterialBrowser (
 	),
 
 
+	fn ResizeForm = 
+	(
+		MyVRageCfg.MatBrowserSizeX = hForm.Width 
+		MyVRageCfg.MatBrowserSizeY = hForm.Height
+		MyVRageCfg.save()
+	),
 
 
 	fn closeForm = (
@@ -909,7 +963,7 @@ struct Vrage_MaterialBrowser (
 		dotNet.addEventHandler filter_box "keyUp" filter_box_ku
 		filter_box.BorderStyle = filter_box.BorderStyle.FixedSingle
 		dotNet.addEventHandler filter_box "KeyDown" filter_box_ku
-				
+		
 		dotnet.setLifetimeControl filter_box #dotnet
 		
 		/*filter button*/
@@ -923,7 +977,7 @@ struct Vrage_MaterialBrowser (
 		filter_button.padding = Padding
 		dotNet.addEventHandler filter_button "click" filter_box_click
 		dotnet.setLifetimeControl filter_button #dotnet
-			
+		
 		Filter_Group.controls.add filter_button
 		Filter_Group.controls.add filter_box
 
@@ -1064,12 +1118,13 @@ struct Vrage_MaterialBrowser (
 		
 		nw = DotNetObject "System.Windows.Forms.NativeWindow"
 		nw.AssignHandle (DotNetObject "System.IntPtr" (Windows.GetMaxHWND()))
-			
-		hForm.backcolor = getDnColor #background
-			
-		dotNet.addEventHandler hForm "Closed" closeForm
 		
+		hForm.backcolor = getDnColor #background
+		
+		dotNet.addEventHandler hForm "Closed" closeForm
+		dotNet.addEventHandler hForm "SizeChanged" ResizeForm
 		hForm.size = dotNetObject "System.Drawing.Size" form_size.x form_size.y
+		--print hForm.size
 		hForm.show ( nw )
 		nw.releaseHandle()
 		--hForm.topmost = true
@@ -1107,7 +1162,7 @@ struct Vrage_MaterialThumbRenderer (
 	
 	fn setupPrimitive =(
 		tsSegs = 12
-			
+		
 		thumbPrimitive = box pos:[0,0,-12] width:24 length:24 height:24 mapcoords:on widthsegs:tsSegs lengthsegs:tsSegs heightsegs:tsSegs wirecolor:gray mpassEnabled:off mpassRenderPerPass:off 
 		addModifier thumbPrimitive (Relax Relax_Value: 1 Keep_Boundary_Pts_Fixed:0) 
 		addModifier thumbPrimitive (Spherify percent:100)
@@ -1125,7 +1180,7 @@ struct Vrage_MaterialThumbRenderer (
 		
 		sceneObjects = for o in objects where not o.isdeleted and not o.ishidden collect o
 		sceneLights = for l in lights where o != undefined and not o.isdeleted collect l
-			
+		
 		setupPrimitive()
 		setupLights()
 		setupCamera()
@@ -1153,7 +1208,7 @@ struct Vrage_MaterialThumbRenderer (
 		with redraw off
 		with undo off
 		(
-		
+			
 			thumb_dir = MyVrageCfg.VrageConfigDir + "\\MaterialThumbnails\\"
 			try ( makeDir thumb_dir ) catch()
 			
@@ -1170,6 +1225,19 @@ struct Vrage_MaterialThumbRenderer (
 			cur_rdr = renderers.current
 			new_rdr = Quicksilver_Hardware_Renderer()
 			renderers.current = new_rdr
+
+			new_rdr.AmbientOcclusionEnabled = true
+			new_rdr.AmbientOcclusionIntensity = 2.0
+			new_rdr.AmbientOcclusionRadius = 10.0
+			new_rdr.IndirectIlluminationEnabled = true
+			new_rdr.IndirectIlluminationMultiplier = 2.0
+			-- Do Bloom if version is above 2021. 
+			-- Bloom has beend implemented 2022
+			if ( ( maxversion())[8] ) > 2021 then 
+			(
+				new_rdr.BloomEnabled = true	
+			)
+
 			pngio.setAlpha true
 			
 			SceneSetup()
@@ -1378,7 +1446,7 @@ fn VRage_Generate3dMaxMatLibrary Names Filepath=
 
 	for n in Names do 
 	(
-	append MyLibrary (Vrage_getmatbyname n)
+		append MyLibrary (Vrage_getmatbyname n)
 
 	)
 	saveTempMaterialLibrary  MyLibrary Filepath

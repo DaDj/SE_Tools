@@ -4,7 +4,7 @@ Handles texture I/O :
 - Converting .dds Materials as in ng,cm etc. dds files !!!todo!
 */
 
-fn VrageTextureIO_ConvertSEtoReadable =
+fn VrageTextureIO_ConvertSEtoReadable UpdateOnly:false =
 (-- Calls the Textureconverter consoleapp which converts the SE textures to tif for 3dsmax use.
 
 	Program = MyVRageCfg.VRageScriptsDir + "\\Vrage_Tools\\SETexconv\\TextureConverter.exe" 
@@ -16,13 +16,43 @@ fn VrageTextureIO_ConvertSEtoReadable =
 	(
 		MyVRageLog.Info ( "Starting textureconversion" ) Show: false
 		SETextureDir = "\"" + MyVRageCfg.PathGame + "\Content\Textures" + "\""
-		Outputdir =  "\"" + MyVRageCfg.PathTextures + "\Textures" + "\""
+		Outputdir = "\"" + MyVRageCfg.PathTextures + "\Textures" + "\""
 
+		if ( UpdateOnly == true ) then 
+		(
+			arg_array = #( SETextureDir , Outputdir, @"\Models", @"\BackgroundCube", @"\Particles", " -updateonly" )
+		) else 
+		(
+			arg_array = #( SETextureDir , Outputdir, @"\Models", @"\BackgroundCube", @"\Particles" )
+		)
 		
-		--Answer = Dos_Command.run Program arg_array:#(SETextureDir , MyVRageCfg.PathTextures , @"\Models", @"\BackgroundCube", @"\Particles" )
-		arg_array = #( SETextureDir ,Outputdir, @"\Models", @"\BackgroundCube", @"\Particles" )
-		MyStartARg = ""
-		for arg in arg_array do ( MyStartARg += ( " " + arg as string ) )
-		ShellLaunch Program MyStartARg
+		local process = dotNetObject "System.Diagnostics.Process"
+		process.StartInfo.FileName = Program
+		process.StartInfo.Arguments = ""
+		
+		if arg_array != undefined then
+		(
+			for arg in arg_array do ( process.StartInfo.Arguments += ( " " + arg as string ) )
+		)
+		process.Start()
+		process.WaitForExit()
+		answer = process.ExitCode
+		process.Close()
+		process.Dispose()
+
+		if answer == 2 then 
+		(
+			MyVRageLog.Info ( "Texture conversion successfully finished" ) Show: false
+		)
+		else if answer == 4 then
+		(
+			MyVRageLog.Error ( "Texture conversion couldn't find command paths." ) Show: true
+		)
+		else 
+		(
+			MyVRageLog.Warn ( "Texture conversion didn't finish properly!" ) Show: true
+		)
+		
+		answer
 	)
 )

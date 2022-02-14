@@ -22,10 +22,15 @@ VrageSubpartDef = attributes "VrageSubpartDummy"
 )
 
 -- Add a subpartdummy 
-
-fn VrageDummySubpartAdd DummyName File Layer = 
+fn VrageDummy_SubpartAdd DummyName File Layer = 
 (
-
+	TheDummy = dummy() ;
+	TheDummy.Boxsize = [1,1,1]
+	TheDummy.name = DummyName;	
+	CustAttributes.add TheDummy VrageSubpartDef #unique
+	TheDummy.file = File
+	Layer.addnode TheDummy
+	TheDummy
 )
 
 
@@ -49,5 +54,5 @@ VrageHighlightDef = attributes "VrageHighlightDummy"
 -- Add a Highlightdummy 
 fn VrageDummyHighlightAdd DummyName Objs Layer = 
 (
-   
+	
 )

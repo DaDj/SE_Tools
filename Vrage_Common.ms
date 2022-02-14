@@ -16,7 +16,7 @@ function MXSColor_to_dotNetColor val = --New function
 		else (
 			maxColor = undefined
 		)
-			
+		
 		new_color = dnColor.fromArgb (maxColor[1] * 255.0f) (maxColor[2] * 255.0f) (maxColor[3] * 255.0f)
 	)
 	catch (
@@ -166,18 +166,29 @@ fn Vrage_condenseMatIds obj non_destructive:true = (
 
 fn Vrage_cleanLayers this_layer:undefined =
 ( --Deletes empty layers after import
-	if this_layer == undefined then this_layer = (LayerManager.getLayer 0)
-
-	if this_layer.getNumChildren() > 0 then 
+	
+	if this_layer != undefined then 
 	(
-		for i = 1 to this_layer.getNumChildren() do 
+		if this_layer.getNumChildren() > 0 then 
 		(
-			Vrage_cleanLayers this_layer:(this_layer.getChild (i))
-		) 
+			for i in this_layer.getNumChildren() to 1 by -1  do 
+			(
+				Vrage_cleanLayers this_layer:(this_layer.getChild (i))
+				--	LayerManager.deleteLayerByName ((LayerHandle.getChild(i)).name) 
+			)
+		)
+		canDelete = ( this_layer.canDelete()) and not ( LayerManager.doesLayerHierarchyContainNodes this_layer.name ) 
+		layerRT = this_layer.layerAsRefTarg
+		if canDelete and not (isProperty layerRT #VRType ) do LayerManager.deleteLayerByName this_layer.name
 	)
-	canDelete = ( this_layer.canDelete()) and not ( LayerManager.doesLayerHierarchyContainNodes this_layer.name ) 
-	layerRT = this_layer.layerAsRefTarg
-	if canDelete and not (isProperty layerRT #VRType ) do LayerManager.deleteLayerByName this_layer.name
+	else 
+	(
+		for i_Main in (LayerManager.count) to 1 by -1  do 
+		(
+			this_layer = (LayerManager.getLayer i_Main)
+			if this_layer != undefined then Vrage_cleanLayers this_layer:(this_layer)
+		)
+	)
 )
 
 fn Vrage_sumArray arr = (
@@ -256,24 +267,36 @@ fn ReplaceWords mString mFromStr mToStr mIgnoreCase:false =
 
 function GetObjsMats objs = 
 ( 
-	--Get a unique Material list of Objs
 	local MatList = #( )
-	for obj in objs do 
+	if objs != undefined and (objs.count > 0) then 
 	(
-		if Obj.Material != undefined then 
+		--Get a unique Material list of Objs
+		for Obj in objs do 
 		(
-			if ( ( ClassOf Obj.Material ) as string ) != "Multimaterial" then 
+			if Obj.Material != undefined then 
 			(
-				appendIfUnique MatList Obj.Material.Name
-			) 
-			else 
-			(
-				for MtlID = 1 to obj.Material.MaterialList.Count do 
+				if ( ( ClassOf Obj.Material ) as string ) != "Multimaterial" then 
 				(
-					appendIfUnique MatList Obj.Material.MaterialList[MtlID].Name
+					appendIfUnique MatList Obj.Material.Name
+				) 
+				else 
+				(
+					for MtlID = 1 to obj.Material.MaterialList.Count do 
+					(
+						appendIfUnique MatList Obj.Material.MaterialList[MtlID].Name
+					)
 				)
 			)
 		)
 	)
 	MatList
 )
+
+fn existFile fname = (getfiles fname).count != 0
+
+function CopyandOverwriteFile ExistingFilepath DestFilepath = 
+(
+	if (existFile DestFilepath) then deleteFile DestFilepath
+	copyFile ExistingFilepath DestFilepath
+)
+print "Laoded Vrage_common"

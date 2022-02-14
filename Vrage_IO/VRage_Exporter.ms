@@ -2,6 +2,8 @@ struct VRageExporter (
 
 	Filepath = undefined,
 	Filename = undefined,
+	TempDirHKT = "",
+	TempDirModels = "",
 
 	fn FBXSettings = (
 		--Geometry------------------------------------------------------------------------
@@ -35,8 +37,52 @@ struct VRageExporter (
 		FBXExporterSetParam "FileVersion" "FBX201300"
 	),
 
-	fn Create_MWM_XML MyModelName DestPath =
+	fn Create_MWM_XML ModelName material_names OutPath LodData:undefined=
 	(
+		xmlDoc = dotNetObject "system.xml.xmlDocument"
+
+		/* create header */
+		header = xmlDoc.CreateXmlDeclaration "1.0" "" ""
+		xmlDoc.AppendChild header
+		
+		root = xmlDoc.createElement "Model"
+		root.SetAttribute "Name" "Default"
+		xmlDoc.appendChild root
+		
+		newRef = xmlDoc.createElement "Parameter"
+		newRef.SetAttribute "Name" "RescaleFactor"
+		newRef.InnerText = "1.0"
+		root.appendChild newRef
+		for n in material_names do (
+			
+			newRef = xmlDoc.createElement "MaterialRef"
+			newRef.SetAttribute "Name" n
+			root.appendChild newRef
+		)
+
+		if (LodData != undefined) and (LodData.count > 1) then 
+		( 
+			for i=2 to LodData.count do 
+			(
+				newRef = xmlDoc.createElement "LOD"
+				newRef.SetAttribute "Distance" (LodData[i] as string)
+				root.appendChild newRef
+				ModelRef = 	xmlDoc.createElement "Model"
+				ModelRef.InnerText = @"Models\Cubes\" + ModelName + "_LOD" + ((i-1) as string)
+				newRef.appendChild ModelRef
+			)
+			
+		)
+		
+		xmlDoc.save ( OutPath + "\\" + ModelName + ".xml" )
+	),
+
+	fn SetTempDirs = 
+	(
+		TempDirHKT = MyVRageCfg.PathToolsFolder + @"\Temp" --Tempfolder for hkt creation
+		TempDirModels = MyVRageCfg.PathToolsFolder + @"\Temp\Expo\Content\Models"  -- Basically folder for mwmbuilder
+		try ( makedir TempDirHKT )	catch (	MyVRageLog.Error ("Permission Error while trying to create: " + TempDirHKT) )
+		try ( makedir TempDirModels ) catch (MyVRageLog.Error ("Permission Error while trying to create: " + TempDirModels) )
 
 	),
 
@@ -51,11 +97,13 @@ struct VRageExporter (
 
 	fn ExportModel MyObjects Path =
 	(
-		--Path = Path + ".fbx"
+		fileType = getFilenameType Path
+		if fileType != ".fbx" then Path = (getFilenamePath Path)+ (getFilenameFile Path)+ ".fbx"
 		ExportFBX MyObjects Path
 	),
 
-	fn Generate_HKT SrcPath DestPath = ( 
+	fn Generate_HKT SrcPath DestPath = 
+	( 
 		-- 1. generate an readable HKT from exprted .fbx	
 		MyVRageLog.Info "Starting Fbximport.exe " 
 		TmpHktPath =" \"" + MyVRageCfg.PathToolsFolder +  "\\Temp\\Tmp.hkt" + "\""
@@ -99,7 +147,8 @@ struct VRageExporter (
 		return 1
 	),
 	
-	fn ExportCollision MyObjects TmpFilePath DestPath = (		
+	fn ExportCollision MyObjects  DestPath = 
+	(		
 
 		-- here we also want to check if all selected objects are indeed rigid bodies
 		for obj in MyObjects do (
@@ -115,19 +164,19 @@ struct VRageExporter (
 		MyObjects.pivot = [0,0,0]
 
 		--1. Export an FBX with the Collision Data
-		ExportFBX MyObjects TmpFilePath
+		ExportFBX MyObjects (TempDirHKT + @"\Tmp_HKT.fbx")
 
 		-- set pivot of objs to their own center, kinda reverting the step from before.
 		for obj in MyObjects do obj.pivot = obj.center
 
 		--2. Generate Havok .hkt file from the Fbx
-		Error =  Generate_HKT TmpFilePath DestPath 
+		Error =  Generate_HKT (TempDirHKT + @"\Tmp_HKT.fbx") (DestPath +  ".hkt")
 		MyVRageLog.Info ("VRageExp_Generate_HKT exited with Code: " +  Error as string  + "   (1 = success, -1= fail)")
 		return Error
 	),
 	
-
-	fn Generate_MWM SrcPath Destpath = (
+	fn Generate_MWM SrcPath Destpath = 
+	(
 
 		--MwmBuilder  /o:".\out" /l:".\out\log.log" /x:"E:\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\Materials" /showWarnings /e /f 
 
@@ -152,7 +201,8 @@ struct VRageExporter (
 		return 1
 	),
 
-	fn Export = (
+	fn Export_ALayer = 
+	( -- deprecated
 		TmpFileDir = MyVRageCfg.PathToolsFolder + @"\Temp" --Tempfolder for hkt creation
 		TmpFileDir2 = MyVRageCfg.PathToolsFolder + @"\Temp\Expo\Content\Models"  -- Basically folder for mwmbuilder
 		try ( makedir TmpFileDir )	catch (	 MyVRageLog.Error ("Permission Error while trying to create: " + TmpFileDir) )
@@ -199,92 +249,145 @@ struct VRageExporter (
 		Error = Generate_MWM TmpFileDir2 Filepath
 		if Error == 1 then MyVRageLog.Info ("Successfully build Model "  + Filepath) Show: true else MyVRageLog.Error ("Failed Model Build "  + Filepath)
 
-	)
+	),
 
-)
-
-fn OpenVrageExport = (
-
-	rollout rollExpUI "VRage Export Scene" width:450 height:200
+	fn Export_LODs TheMainLayer  = 
 	(
-		group "Main"(
-			label lbl_PathExp  "Export Folder:"align:#left across:2 offset:[00,5]
+		TheMainName = TheMainLayer.Name
+		TheLods = VRLayers.GetChildofType TheMainLayer (VRLayers.LOD) 	
+		if (TheLods.count == 0) then (MyVRageLog.Warn ("Export: No Lods found. Nothing will be exported") ) 
+		if (TheLods.count > 0) then 
+		(
+			-- Get the Lod Distances
+			TheLodDistances = #()
+			TheLodDistances.count = TheLods.count
+			for OneLod in TheLods do 
+			(	
+				tmplod = OneLod.layerAsRefTarg
+				TheLodDistances[tmplod.VrageLayer_LODData.LODID +1] = tmplod.VrageLayer_LODData.DrawDistance
+			)
 
-			button btn_PathExp MyVRageCfg.Exp_DestPath width:350 height:25 tooltip:MyVRageCfg.Exp_DestPath align:#right 
-			on btn_PathExp pressed do 
-			(
-				FilePath = getSavePath caption:"Test path..."
-				if(FilePath != undefined ) do 
-				(
-					btn_PathExp.text = MyVRageCfg.Exp_DestPath = FilePath
-					btn_PathExp.tooltip = MyVRageCfg.Exp_DestPath
-					MyVRageCfg.save()
+			-- Get the objs in Lod and export to fbx
+			for OneLod in TheLods do 
+			(	
+				OneLod.ishidden = false
+				OneLodObjs = VRLayers.GetObjsOfLayer OneLod
+				-- Lod 0 is special. No Lod in name and dummies and collision included
+				if (OneLod.layerAsRefTarg).VrageLayer_LODData.LODID == 0 then 
+				(	
+					TheName = TheMainName
+					Create_MWM_XML TheName (GetObjsMats OneLodObjs) TempDirModels LodData:TheLodDistances
 				)
-			)
-
-			on btn_PathExp rightclick do try (shellLaunch (getFilenamePath MyVRageCfg.Exp_DestPath) "") catch()
-
-			label lblmdlname "Mod Name:" across: 3 align: #left
-			edittext EditBlockName "" fieldWidth:205 labelOnTop:false text: "MyAwesomeMod" tooltip:"Name of the Mod, also gonna be the Modfolder Name" align:#right bold: true height:20
-			button btnApplyname "Apply" width:80 height:22 toolTip:"Apply new name" align:#right across:3
-		)
-
-		group "Toggles"(
-			checkbutton ChkExp_GenerateBlockDef "Generate Block Def." checked:MyVRageCfg.Exp_GenerateBlockDef width:130  height:25\
-						tooltip:"Generate as Blockdefintion File (.sbc)"  across:3 align:#right
-			on ChkExp_GenerateBlockDef changed state do (
-				MyVRageCfg.Exp_GenerateBlockDef = state   
-				MyVRageCfg.save()
-			)
-
-			checkbutton ChkExpotoModFolder "Export to Mod Folder" checked:MyVRageCfg.Exp_ToModFolder width:130  height:25\
-						tooltip:"Export directly to a mod folder in the appdata of Spaceengineers"   align:#right
-			on ChkExpotoModFolder changed state do (
-				MyVRageCfg.Exp_ToModFolder = state   
-				if MyVRageCfg.Exp_ToModFolder == true then btn_PathExp.enabled = false else btn_PathExp.enabled = true
-				MyVRageCfg.save()
-			)
-
-			checkbutton ChkExp_StartGameAfter "Start Game after export"  checked:MyVRageCfg.Exp_StartGameAfter width:130  height:25 \
-						tooltip:"Start Game after export?"   align:#right
-			on ChkExp_StartGameAfter changed state do (
-				MyVRageCfg.Exp_StartGameAfter = state   
-				MyVRageCfg.save()
+				else 
+				(
+					TheName = TheMainName +"_LOD" + ((OneLod.layerAsRefTarg).VrageLayer_LODData.LODID as string) 
+					Create_MWM_XML TheName (GetObjsMats OneLodObjs) TempDirModels			
+				)
+				print ( OneLod.name + "::" +  (OneLodObjs.count as string) )
+				
+				ExportModel OneLodObjs (TempDirModels + "\\" + TheName)
 			)
 		)
+	),
 
-		
-		
-		button 'Btn_export' "Export" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
-		--	on Btn_export pressed do OpenVrageExport()
-		
+	fn Export_Constructions TheArrayLayer TheMainName CollisionPath:undefined = 
+	(
+		TheConstructions = VRLayers.GetChildofType TheArrayLayer (VRLayers.Construction) 
 
+		for CurrentConst in TheConstructions do 
+		(
+			if (CollisionPath != undefined) then 
+			(--try copying the collision from main Model to construction.
+				try(copyFile (CollisionPath + ".hkt") (TempDirModels +  "\\" + CurrentConst.name + ".hkt") ) catch()
+			) 
+			Export_LODs CurrentConst
+		)
+	),
 
-		on rollExpUI open do 	(
-			if MyVRageCfg.Exp_ToModFolder == true then btn_PathExp.enabled = false else btn_PathExp.enabled = true
+	fn Export_MainType TheMainLayer  =
+	(--must be recursive for subparts later!!
+		TheMainName = TheMainLayer.Name
+		TheName = ""
+		CollisionFilePath = undefined
+		--1. Get Collision Layer and set as current Collision
+		CurrentCollision = VRLayers.GetChildofType TheMainLayer (VRLayers.Collision) 
+		if (CurrentCollision.count == 0) then (MyVRageLog.Warn ("Export: No Collision found. Standard Cube will be set.") ) 
+		if (CurrentCollision.count > 0) then 
+		(
+			CollisionObjs =  VRLayers.GetObjsOfLayer CurrentCollision[1]
+			Error = ExportCollision CollisionObjs  (TempDirModels +  "\\" + TheMainName)
+			if Error == 1 then MyVRageLog.Info ("Successfully Exported Collision "  + TheMainName) Show: false else MyVRageLog.Error ("Failed Collsion export "  + TheMainName)
+			if Error == 1 then CollisionFilePath = (TempDirModels +  "\\" + TheMainName)
+		)
+		--2. Find all LOD layers --> also write the distances etc for xmls 
+		Export_LODs TheMainLayer
+
+		--4. Find Lods in ConstructionLayer  --> as lods above.
+		CurrentConstructionArray = VRLayers.GetChildofType TheMainLayer (VRLayers.ConstructArray)
+		if (CurrentConstructionArray.count == 0) then (MyVRageLog.Info ("Export: No Construction found.") ) 
+		if (CurrentConstructionArray.count > 0) then Export_Constructions CurrentConstructionArray[1] TheMainName  CollisionPath:CollisionFilePath
+
+		--5. Find the subparts --> call itself.
+
+	),
+
+	fn Export Selection:undefined = 
+	(
+		SetTempDirs()
+		TheObjectArray = #()
+		if Selection != undefined then 
+		(
+			if IsMainType Selection then  TheObjectArray = Selection	-- check if its a block or stuff
+		)
+		else 
+		(
+			TheObjectArray = VRLayers.FindMainTypes()	-- find valid layers
+		)
+		try(deselect $selection) catch()
+
+		if TheObjectArray.count == 0 then MyVRageLog.Error ("Export: No Valid MainType found") 
+		else
+		(
+
+			for TheMain in TheObjectArray do 
+			(
+				Export_MainType TheMain
+			)
+	
+			Error = Generate_MWM TempDirModels Filepath
+			if Error == 1 then MyVRageLog.Info ("Successfully build Model "  + Filepath) Show: true else MyVRageLog.Error ("Failed Model Build "  + Filepath)
 		)
 
+	),
 
+	fn ShowUI = 
+	(
+
+		rollout rollExpUI "VRage Export Scene" width:400 height:200
+		(
+			button Btn_export "Export" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center  across:2
+			--button Btn_exportsel "Export Selected only" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center 
+			
+			on Btn_export pressed do 
+			(
+				Expo = VRageExporter Filepath:((VrageScene.get()).ModDir) 
+				Expo.Export()
+			)
+		--	on rollExpUI open do ()
+		)
+
+		try (cui.UnRegisterDialogBar ExportUI) catch () 
+		try (DestroyDialog  ExportUI) catch ()
+
+		ExportUI = newRolloutFloater "VRAGE Scene Settings" 500 200
+		addRollout rollExpUI ExportUI
+		addRollout (VrageScene.GetExportRollout()) ExportUI
+
+		cui.RegisterDialogBar ExportUI  style:#(#cui_floatable)
 
 	)
-
-
-	-- Exp_StartGameAfter = False, --start game after export for testing for example
-	-- Exp_ToModFolder = false, -- export block directly to mod folder? if no extra path?
-	-- Exp_GenerateBlockDef = false, -- Flag is blockdef .sbc sall be generated
-	-- Exp_DestPath = "", -- Path if ExptoModfolder == false
-	-- Exp_ModName = "", -- current Modname for folder generation (may maxscene as default?)
-	-- try (closeRolloutFloater MyVRageEXPFloater) catch ()
-	-- MyVRageEXPFloater = newRolloutFloater  "VRage Export Scene" 600 500 20 130 
-	-- addRollout rollExpUI MyVRageEXPFloater
-	try (cui.UnRegisterDialogBar rollExpUI) catch () 
-	try (DestroyDialog  rollExpUI) catch ()
-
-	createDialog rollExpUI   
-	cui.RegisterDialogBar rollExpUI   style:#(#cui_floatable)
-
-
 )
+
 
 
 

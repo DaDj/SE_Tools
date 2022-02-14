@@ -1,8 +1,3 @@
-
-
-
-
-
 struct VRageConfig
 (
 
@@ -22,14 +17,11 @@ struct VRageConfig
 	PathGame = " ",
 	UsePbrMats = True, --Needs GUI
 	DefaultThumbnail = VrageConfigDir + "\\MaterialThumbnails\\" + "NoThumbnail.jpg",
+	/*UI Layout  stuff */
+	MatBrowserSizeX = 1150,
+	MatBrowserSizeY = 720,
 
-	/*Export Settings */
-	Exp_StartGameAfter = False, --start game after export for testing for example
-	Exp_ToModFolder = false, -- export block directly to mod folder? if no extra path?
-	Exp_GenerateBlockDef = false, -- Flag is blockdef .sbc sall be generated
-	Exp_DestPath = "", -- Path if ExptoModfolder == false
-	Exp_ModName = "", -- current Modname for folder generation (may maxscene as default?)
-	
+
 
 	fn save = (
 		try (
@@ -58,13 +50,8 @@ struct VRageConfig
 		setINISetting VRageConfigFile "Textures" "UseGameTextures" ( if UseGameTextures then "1" else "0" )
 		setINISetting VRageConfigFile "Textures" "UsePbrMats" ( if UsePbrMats then "1" else "0" )
 
-		setINISetting VRageConfigFile "Export" "Exp_StartGameAfter" ( if Exp_StartGameAfter then "1" else "0" )
-		setINISetting VRageConfigFile "Export" "Exp_ToModFolder" ( if Exp_ToModFolder then "1" else "0" )
-		setINISetting VRageConfigFile "Export" "Exp_GenerateBlockDef" ( if Exp_GenerateBlockDef then "1" else "0" )
-		setINISetting VRageConfigFile "Export" "Exp_DestPath" Exp_DestPath
-		setINISetting VRageConfigFile "Export" "Exp_ModName" Exp_ModName
-
-		
+	setINISetting VRageConfigFile "UI" "MatBrowserSizex"  (MatBrowserSizeX as string)
+setINISetting VRageConfigFile "UI" "MatBrowserSizeY" (MatBrowserSizeY as string)
 	),
 
 	fn load = (
@@ -75,26 +62,30 @@ struct VRageConfig
 			if ( PathToolsFolder ) != "" then (
 				if getDirectories ( PathToolsFolder ) != undefined then (	
 					PathFBXImporter = if ( tmp = getFiles ( VRageScriptsDir + "\\Vrage_Tools\\FbxImporter.exe" ) ).count != 0 then tmp[1] else ""
-					PathMwmBuilder = if ( tmp = getFiles ( VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) ).count != 0 then ( PathToolsFolder + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
+					PathMwmBuilder = if ( tmp = getFiles ( VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) ).count != 0 then ( VRageScriptsDir + "\\Vrage_Tools\\MWMBuilder\\MwmBuilder.exe" ) else ""
 					PathTextures = if ( tmp = getDirectories ( PathToolsFolder + "\\Textures" ) ).count != 0 then PathToolsFolder else ""
 				)
 			)
 
+
 			PathHavokContentTools = if ( tmp = getINISetting VRageConfigFile "Directories" "HavokContentTools" ) != undefined then tmp else "" 
 			--PathHavokContentTools =   if (tmp = getFiles (PathHavokContentTools + "\\hctStandAloneFilterManager.exe")) != undefined then PathHavokContentTools  else ""
+			--registry get HavoK:
+			--regPath = @"SOFTWARE\Havok\hkFilters_x64"
+			--evalKey = ((dotnetclass "Microsoft.Win32.Registry").CurrentUser).OpenSubKey regPath	
+			--docFolder = evalKey.GetValue "FilterPath"
+
 
 			PathModSDK = if ( tmp = getINISetting VRageConfigFile "Directories" "ModSDK" ) != undefined then tmp else "" 
 			UseGameTextures = ( getINISetting VRageConfigFile "Textures" "UseGameTextures" ) == "1"
 			UsePbrMats = ( getINISetting VRageConfigFile "Textures" "UsePbrMats" ) == "1"
 
-			TextureType = try ( getINISetting VRageConfigFile "Textures" "TextureType" as integer ) catch 1
+			TextureType = try ( getINISetting VRageConfigFile "Textures" "TextureType" as integer ) catch 5
 			PathGame = if ( tmp = getINISetting VRageConfigFile "Directories" "pathgame" ) != undefined then tmp else "" 
 
-			Exp_StartGameAfter = ( getINISetting VRageConfigFile "Export" "Exp_StartGameAfter" ) == "1"
-			Exp_ToModFolder = ( getINISetting VRageConfigFile "Export" "Exp_ToModFolder" ) == "1"
-			Exp_GenerateBlockDef = ( getINISetting VRageConfigFile "Export" "Exp_GenerateBlockDef" ) == "1"
-			Exp_DestPath = if ( tmp = getINISetting VRageConfigFile "Export" "Exp_DestPath" ) != undefined then tmp else ""
-			Exp_ModName = if ( tmp = getINISetting VRageConfigFile "Export" "Exp_ModName" ) != undefined then tmp else ""
+			
+			MatBrowserSizeX = if ( tmp = getINISetting VRageConfigFile "UI" "MatBrowserSizeX" ) != "" then (tmp as integer) else MatBrowserSizeX
+			MatBrowserSizeY = if ( tmp = getINISetting VRageConfigFile "UI" "MatBrowserSizeY" ) != "" then (tmp as integer) else MatBrowserSizeY
 		)
 		else (
 			PathToolsFolder = ""
@@ -104,14 +95,8 @@ struct VRageConfig
 			PathTextures = " "
 			PathModSDK = ""
 			UseGameTextures = False
-			TextureType = 1
+			TextureType = 5
 			PathGame = ""
-
-			Exp_StartGameAfter = False 
-			Exp_ToModFolder = false 
-			Exp_GenerateBlockDef = false 
-			Exp_DestPath = "" 
-			Exp_ModName = "" 
 		)
 	),
 
@@ -137,8 +122,7 @@ MyVRageCfg.load()
 -- intialize Materiallibrary if its lost...
 if Vrage_MaterialThumbRenderer == undefined then
 (
-	fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_MaterialLibrary.ms" )
-	
+	fileIn ( GetDir #userScripts + "\\VRageToolbox\\Vrage_IO\\Vrage_MaterialLibrary.ms" )	
 ) 
 
 
@@ -178,7 +162,7 @@ fn OpenSettings = (
 		toolTip:"Opens the Documentation/Help" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 17, 17, 17, 17 )
 
 		on btn_CFgHelp pressed  do (ShellLaunch "https://vragetoolbox.ratpool.de/doku.php?id=vrt:settings" "")
-	
+		
 	)
 
 	rollout VrageUtils_CfgTools "Tools/Paths" width:210 height:400
@@ -233,26 +217,6 @@ fn OpenSettings = (
 	
 	rollout VrageUtils_CfgTextures "Textures" width:210 height:400	
 	(
-		/*label lbl_textureType "Texture Format:"   across:4 enabled:false
-		dropdownlist ddl_TexType "" items:VrageTexTypes selection:MyVRageCfg.TextureType width:60 enabled:false -- enabled:(not MyVRageCfg.UseGameTextures)
-			on ddl_TexType selected sel do (
-				MyVRageCfg.TextureType = ddl_TexType.selection
-				MyVRageCfg.save()
-			)
-			
-		checkbutton cbn_UseGameTextures "Use Game Textures"  width:120 height:25 checked:MyVRageCfg.UseGameTextures
-			tooltip:"Check if you want to use DDS Textures straight from the Game files"  enabled:false
-			on cbn_UseGameTextures changed state do (
-				if not (doesDirectoryExist MyVRageCfg.PathGame) then (
-					state = False
-				)
-				
-				for c in #(ddl_TexType) do c.enabled = not state
-				MyVRageCfg.UseGameTextures = state
-				MyVRageCfg.save()
-			)*/
-		
-
 		button btn_ConvertTxt "Convert Textures" width:150 height:25 toolTip:"Run the Bulk Texture Converter to convert the Game textures to the 3dsmax readable format." across:3
 		on btn_ConvertTxt pressed do 
 		(
