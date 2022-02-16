@@ -384,7 +384,6 @@ struct VRageExporter (
 		addRollout (VrageScene.GetExportRollout()) ExportUI
 
 		cui.RegisterDialogBar ExportUI  style:#(#cui_floatable)
-
 	)
 )
 
