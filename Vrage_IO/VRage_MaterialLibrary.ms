@@ -22,18 +22,12 @@ global MyVrageMatBrowser
 MyVrageNoTex = GetDir #userScripts + "\\VRageToolbox\\Vrage_resources\\NoTex.tif"
 try MyVrageMatBrowser.close() catch()
 
-
-fn VRage_report_Error msg = (
-
-	print ( msg as string )
-	
-)
-
 VrageMaterial_CA = attributes VrageMaterial attribID:#( 0x162d47c4, 0x6a278b17 )
 (
 	parameters main rollout:params (
 		is_se_material Type:#boolean Default:True
-		timeGen type:#integer Default:( timestamp())
+		timeGen type:#integer Default:(timestamp())
+		is_decal Type:#boolean Default:False
 	)
 	Rollout params "Space Engineers Material" (
 		label lb_info "Space Engineers Material"
