@@ -245,11 +245,10 @@ struct VrageFBXImporter (
 			on Btn_import pressed do 
 			(
 
-				f = getOpenFileName caption:"Open A Test File:" filename: MyVRageCfg.PathModSDK
+			f = getOpenFileName caption:"Open A Test File:" filename: (MyVRageCfg.PathModSDK + "\\") types:"Fbx(*.fbx)|*.fbx"
 				if f != undefined then 
 				(
 					Test = VrageFBXImporter filename:f
-		
 					Test.import_LODs = ChkExp_IMPLODs.checked
 					Test.import_subparts = Chkb_ImpSubparts.checked
 					Test.import_construction = ChkExp_IMPConst.checked
