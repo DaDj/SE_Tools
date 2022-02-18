@@ -83,7 +83,6 @@ struct VRageExporter (
 		TempDirModels = MyVRageCfg.PathToolsFolder + @"\Temp\Expo\Content\Models"  -- Basically folder for mwmbuilder
 		try ( makedir TempDirHKT )	catch (	MyVRageLog.Error ("Permission Error while trying to create: " + TempDirHKT) )
 		try ( makedir TempDirModels ) catch (MyVRageLog.Error ("Permission Error while trying to create: " + TempDirModels) )
-
 	),
 
 	fn ExportFBX MyObjects DestPath =
@@ -92,7 +91,7 @@ struct VRageExporter (
 		FBXSettings()
 
 		select MyObjects
-		exportFile (DestPath) #noprompt selectedOnly:on using:FBXEXPORTER  
+		exportFile (DestPath) #noprompt selectedOnly:true using:FBXEXPORTER  
 	),
 
 	fn ExportModel MyObjects Path =
@@ -149,7 +148,6 @@ struct VRageExporter (
 	
 	fn ExportCollision MyObjects  DestPath = 
 	(		
-
 		-- here we also want to check if all selected objects are indeed rigid bodies
 		for obj in MyObjects do (
 
@@ -177,14 +175,12 @@ struct VRageExporter (
 	
 	fn Generate_MWM SrcPath Destpath = 
 	(
-
 		--MwmBuilder  /o:".\out" /l:".\out\log.log" /x:"E:\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\Materials" /showWarnings /e /f 
-
 		MyVRageLog.Info "Starting MwmBuilder.exe" 
 		Materialspath =  MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials" 
 		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#(" \""  +  "/s:" + SrcPath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e","/gss")
 		
-		Tool_Success = 1
+		Tool_Success = 0
 		for i = 1 to Logdata.count do 
 		(
 			MyVRageLog.Info Logdata[i]
