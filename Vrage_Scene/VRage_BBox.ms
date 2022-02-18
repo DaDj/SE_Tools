@@ -22,7 +22,7 @@ struct VRageBBox
 	),
 
 	fn Hide = 
-	( 
+	(  
 		obj = getnodebyname "VRageBB"
         print obj
 		if obj != undefined then( delete obj)
