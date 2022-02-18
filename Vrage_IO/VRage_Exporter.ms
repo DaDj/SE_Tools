@@ -177,8 +177,8 @@ struct VRageExporter (
 	(
 		--MwmBuilder  /o:".\out" /l:".\out\log.log" /x:"E:\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\Materials" /showWarnings /e /f 
 		MyVRageLog.Info "Starting MwmBuilder.exe" 
-		Materialspath =  MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials" 
-		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#(" \""  +  "/s:" + SrcPath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e","/gss")
+		Materialspath =  "\"" + MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials" + "\""
+		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#("/s:\"" + SrcPath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e","/gss")
 		
 		Tool_Success = 0
 		for i = 1 to Logdata.count do 
