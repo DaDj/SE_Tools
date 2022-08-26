@@ -52,6 +52,13 @@ struct VrageScene
 		rootnode.VrageSceneData.PaintColorNode
 	),
 
+	fn SetEnvmap iMap = 
+	(
+		environmentMap =   osl_HDRIenv()
+		if iMap == 1 then environmentMap.hdri = MyVRageRoot + "\\Vrage_resources\\mySpace.hdr"
+		if iMap == 2 then environmentMap.hdri = MyVRageRoot + "\\Vrage_resources\\myearth.hdr"
+	),
+
 	fn GetExportRollout = 
 	(
 		rollout rollExpUI "VRage Export Settings" width:400 height:200

@@ -20,9 +20,17 @@ struct VrageSubpartLayer
 			) 
 			if ParentLayerDummies != undefined then 
 			(
-				VrageDummy_SubpartAdd "Subpart" "Dummyatm" ParentLayerDummies
 				--1. Place the Dummy
+				VrageDummy_SubpartAdd "Subpart" "Dummyatm" ParentLayerDummies
+		
 				--2. Create the Subpart Layer
+				if Mainlayer != undefined then 
+				(
+					layer = VRLayers.CreateOrRenameLayer ("Subparttst") ("Subparttst") parent_layer:( Mainlayer.LayerProperties )
+					layerRT = layer.layerAsRefTarg
+					custAttributes.add layerRT VrageLayerData
+					layerRT.VRType = VRLayers.SubPart	
+				)	
 			)
 		)
 	)
@@ -33,7 +41,7 @@ rollout Vrage_SubpartsArrayRollout "VrageLayer_SubpartsArray" width:250 height:2
 	group "Actions"
 	(
 		button btnAdd "Add SubPart" width:100 height:25 align:#center across:2 \
-		tooltip:"Add a Subpart." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 29, 29, 29, 29 )
+		tooltip:"Add a Subpart." images: #( VRageIcons, VRageIcons, VRageIcoLeng, 30, 30, 30, 30 )
 	)
 	on btnAdd pressed do 
 	(

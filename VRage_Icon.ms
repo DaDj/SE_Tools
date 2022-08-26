@@ -221,6 +221,7 @@ struct VRage_Icon
 
 	fn RenderIcon inputWidth inputHeight Layer:undefined Filename:undefined TintColor:( color 200 248 255 ) = 
 	(
+		useEnvironmentMap = false
 		result = undefined
 		--save current render and set render to quicksilver
 		cur_rdr = renderers.current
@@ -264,6 +265,7 @@ struct VRage_Icon
 		SetupObjects Layer activate:false
 		-- reset of Render to previous one
 		renderers.current = cur_rdr
+		useEnvironmentMap = true
 		result
 	),
 

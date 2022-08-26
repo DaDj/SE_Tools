@@ -6,6 +6,8 @@ struct VRageExporter (
 	TempDirModels = "",
 
 	fn FBXSettings = (
+		
+		--print "setting fbx"
 		--Geometry------------------------------------------------------------------------
 		FBXExporterSetParam "SmoothingGroups" true
 		FBXExporterSetParam "NormalsPerPoly" false
@@ -16,6 +18,8 @@ struct VRageExporter (
 		FBXExporterSetParam "MaxBoneAsBone" true
 		FBXExporterSetParam "Triangulate" false
 		FBXExporterSetParam "PreserveEdgeOrientation" true
+		--FBXExporterSetParam "ScaleFactor" 0.01
+		
 		--Animation------------------------------------------------------------------------
 		FBXExporterSetParam "Animation" false
 		--Cameras------------------------------------------------------------------------
@@ -53,6 +57,7 @@ struct VRageExporter (
 		newRef.SetAttribute "Name" "RescaleFactor"
 		newRef.InnerText = "1.0"
 		root.appendChild newRef
+
 		for n in material_names do (
 			
 			newRef = xmlDoc.createElement "MaterialRef"
@@ -91,7 +96,7 @@ struct VRageExporter (
 		FBXSettings()
 
 		select MyObjects
-		exportFile (DestPath) #noprompt selectedOnly:true using:FBXEXPORTER  
+		exportFile (DestPath) #noprompt selectedOnly:true using:FBXEXP  
 	),
 
 	fn ExportModel MyObjects Path =
@@ -177,14 +182,14 @@ struct VRageExporter (
 	(
 		--MwmBuilder  /o:".\out" /l:".\out\log.log" /x:"E:\Steam\SteamApps\common\SpaceEngineersModSDK\OriginalContent\Materials" /showWarnings /e /f 
 		MyVRageLog.Info "Starting MwmBuilder.exe" 
-		Materialspath =  "\"" + MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials" + "\""
-		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#("/s:\"" + SrcPath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e","/gss")
+		Materialspath =  MyVRageCfg.PathModSDK + "\\OriginalContent\\Materials" 
+		Logdata = Dos_Command.run MyVRageCfg.PathMwmBuilder arg_array:#("\"" +"/s:" + SrcPath + "\"", "/x:" + Materialspath, "/o:" + Destpath + " ", "/f","/e","/gss")
 		
 		Tool_Success = 0
 		for i = 1 to Logdata.count do 
 		(
 			MyVRageLog.Info Logdata[i]
-			if matchPattern Logdata[i]  pattern: "Finished :*" do Tool_Success = 1
+			if matchPattern Logdata[i]  pattern: "Finished*" do Tool_Success = 1
 		)			
 		
 		if  Tool_Success == 0 do

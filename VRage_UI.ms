@@ -1,3 +1,5 @@
+global VrageSidebar
+
 struct Vrage_UI 
 (-- UI Struct for general/main UI
 	fn PaintUI = 
@@ -29,6 +31,23 @@ struct Vrage_UI
 					if Buttautoupdate.checked == true then	VrageScene.SetPaintColor TheColor:new_col
 				)
 			) 
+			 
+
+			button ButtEarthHDR "Earth HDR" width:30 height:30 align:#left across:4 \ 
+			toolTip:"Applies HDR Background in Earthlike Style" images: #( VRageIcons2, VRageIcons2, VRageIco2Leng, 2, 2, 2, 2)
+			on ButtEarthHDR pressed do (  VrageScene.SetEnvmap 2)
+
+			button ButtSpaceHDR "Space HDR" width:30 height:30 align:#left \ 
+			toolTip:"Applies HDR Background in Space Style" images: #( VRageIcons2, VRageIcons2, VRageIco2Leng, 4, 4, 4, 4)
+			on ButtSpaceHDR pressed do (  VrageScene.SetEnvmap 1)
+
+			checkbutton ButtUseEnvmap "Apply" width:20 height:20 align:#left  checked:true\ 
+			toolTip:"Use Envmap" images: #( VRageIcons2, VRageIcons2, VRageIco2Leng, 3, 3, 3, 3 )
+			on ButtUseEnvmap changed state do 
+			(
+				if state == on then useEnvironmentMap = true else useEnvironmentMap = false
+			)
+
 		)
 
 		try ( cui.UnRegisterDialogBar VRageEnvColorRollout ) catch () 
@@ -114,7 +133,7 @@ struct Vrage_UI
 			checkbutton btn_SwitchLayer "\x21BA" width:30 height:20 align:#center  checked:true \
 			toolTip:"Automatically switch to selected Layer" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 31, 31, 31, 31 )
 
-			timer clock "testClock" interval:10 --tick  every 2 sec
+			timer clock "testClock" interval:400 --tick  every 2 sec
 			on clock tick do
 			( 
 				
