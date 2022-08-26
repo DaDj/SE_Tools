@@ -300,7 +300,7 @@ struct VrageMaterial (
 			
 			if cm_map != undefined and doesFileexist ( get_path cm_map.innertext ) then 
 			(
-				--///Paintability - lloks good BUT: currently the mixing results in NOT whiter than the cm texture.
+				--///Paintability - looks good 
 				--ColorNode
 				PaintColorNode = VrageScene.getPaintNode()
 				Out_PaintColorNode = MultiOutputChannelTexmapToTexmap sourceMap:PaintColorNode outputChannelIndex:1
@@ -312,16 +312,20 @@ struct VrageMaterial (
 				--2. Mix Add alpha with our Paintcolor
 				OSL_Mix_ColorAdd =  osl_MixColor()
 				OSL_Mix_ColorAdd.A = color 255 255 255 255
+				OSL_Mix_ColorAdd.A_map = c_interface
 				OSL_Mix_ColorAdd.B_map = Out_PaintColorNode
 				OSL_Mix_ColorAdd.Mix_map = Out_AddAlpha
 
 				Out_Mix_ColorAdd =  MultiOutputChannelTexmapToTexmap sourceMap:OSL_Mix_ColorAdd outputChannelIndex:1
 
-				--2.Multiply Painted add with CM
-				OSL_Mul_PaintCM  = osl_ColorMul()
+				--2.Multiply Painted add with CM  -- was wrong I think. just mix colors
+				/*OSL_Mul_PaintCM  = osl_ColorMul()
 				OSL_Mul_PaintCM.A_map = Out_Mix_ColorAdd
 				OSL_Mul_PaintCM.B_map = c_interface
 				Out_Mul_PaintCM = MultiOutputChannelTexmapToTexmap sourceMap:OSL_Mul_PaintCM outputChannelIndex:1
+				material.base_color_map = Out_Mul_PaintCM
+					*/
+				Out_Mul_PaintCM = Out_Mix_ColorAdd
 				material.base_color_map = Out_Mul_PaintCM
 
 				-- Emisive by using osl_ColorMulitply.

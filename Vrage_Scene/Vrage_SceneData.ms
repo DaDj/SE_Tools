@@ -24,7 +24,7 @@ struct VrageScene
 		)
 		if rootnode.VrageSceneData.PaintColorNode == undefined then 
 		(
-			print "okey?"
+			--print "okey?"
 			rootnode.VrageSceneData.PaintColorNode = osl_SetColor()
 			rootnode.VrageSceneData.PaintColorNode.color = (color 144 144 144 255)
 		)
