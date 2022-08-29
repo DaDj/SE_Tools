@@ -1,4 +1,6 @@
-VrageLayer_CubeBlockData = attributes "VrageLayer_CubeBlockData" attribID:#( 0x20b6687b, 0x63bbfe0a )
+global VrageCubeSbc 
+
+VrageLayer_CubeBlockData = attributes VrageLayer_CubeBlockData attribID:#( 0x20b6687b, 0x63bbfe0a )
 (
 	parameters main
 	(
@@ -6,8 +8,60 @@ VrageLayer_CubeBlockData = attributes "VrageLayer_CubeBlockData" attribID:#( 0x2
 		TypeId type:#string	default:"CubeBlock" ;
 		SubtypeID type:#string	default:"MyBlock" ;
 		BBSize type:#point3 default:[1, 1, 1] ;
+		Definition type:#string default:"";
 	)
 )
+
+struct VrageCubeBlocksbc 
+(
+	TheTypeIds = #(),
+	TypesList = #(),
+	TheFiles = "",
+	sbcFolder = @"\\Content\\Data\\CubeBlocks\\",
+	
+	fn GetBlockTypes = 
+	(
+			-- read all xmls and genereate list
+		TheFiles = getFiles (MyVRageCfg.PathGame + sbcFolder +"*.sbc")
+		for aFile in TheFiles do 
+		(
+			--print aFile
+			xmlDoc = dotNetObject "system.xml.xmlDocument"
+			xmlDoc.PreserveWhitespace = true;
+			xmlDoc.load aFile
+		
+			docEle=xmlDoc.documentElement
+			local childNodes = docEle.selectNodes "CubeBlocks//Definition" 
+		 
+			for i = 0 to childNodes.count-1 do 
+			(
+				local TypeId = childNodes.item[i].selectNodes "Id//TypeId" 
+					--format "Element Name: %\n\n" docEle.name
+					--print TypeId.item[0].innertext
+				if findItem TheTypeIds TypeId.item[0].innertext == 0  do 
+				(
+					append TheTypeIds TypeId.item[0].innertext
+					append TypesList childNodes.item[i]
+					
+				)
+			)
+		)
+	),
+
+	fn GetBlockDef Name = 
+	(
+		-- get selected blockdef
+	),
+
+	fn Export = 
+	(
+
+	)
+
+
+)
+
+
 
 struct VrageCubeBlock
 (
@@ -88,7 +142,40 @@ struct VrageCubeBlock
 			)
 		)
 	)
+	
+)
+global Vrage_CubeBlockSBCRollout
+rollout Vrage_CubeBlockSBCRollout "CubeBlock Defintions" width:600 height:600
+(
+	
+	listbox Listb_TypeIDs "Types:" width:150 height:25
+	label lbl_CurrentType "Current TypeID:"  align: #left 	
+	edittext editt_TypeID "" fieldWidth:120 labelOnTop:true align: #left readOnly: true\ 
+		toolTip:"Type of Block. If no valid is entered, a default Cubeblock will be assumed"
+	
+	button btnrenameBlock "Set selected Type ID" width:120 height:25 align: #left across:2
+	
+--	dotNetControl textboxctrl "System.Windows.Forms.TextBox" width:400 height:600 pos:[165,20] align: #center
+	
+	
+	on Vrage_CubeBlockSBCRollout open do
+	(
+		---textboxctrl.AcceptsReturn = true;
+		--textboxctrl.AcceptsTab = true;
+		--textboxctrl.WordWrap = false;
+		--textboxctrl.Multiline = true;
+		--textboxctrl.ScrollBars = textboxctrl.ScrollBars.vertical;
+		
+		
 
+		Listb_TypeIDs.items = VrageCubeSbc.TheTypeIds
+	)
+	
+	
+	on Listb_TypeIDs selected nameIndex do 
+	(
+		--textboxctrl.text  = VrageCubeSbc.TypesList[nameIndex].innerxml
+	)
 )
 
 rollout Vrage_CubeBlockRollout "CubeBlock" width:300 height:200
@@ -263,3 +350,12 @@ rollout Vrage_CubeBlock_BBBoxRollout "BoundingBox"  width:300 height:200
 		
 	)
 )
+
+
+VrageCubeSbc = VrageCubeBlocksbc()
+VrageCubeSbc.GetBlockTypes()
+
+try ( cui.UnRegisterDialogBar Vrage_CubeBlockSBCRollout ) catch () 
+try ( DestroyDialog Vrage_CubeBlockSBCRollout ) catch () 
+CreateDialog Vrage_CubeBlockSBCRollout pos:[500, 400]
+cui.RegisterDialogBar Vrage_CubeBlockSBCRollout --style:#( #cui_dock_all, #cui_dock_vert, #cui_floatable )

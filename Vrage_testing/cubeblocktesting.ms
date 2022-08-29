@@ -32,7 +32,6 @@ fn recursivechildnames CurrentNode Mystring2=
 fn GetCubeBlocks CurrentNode = 
 (	local childNodes = CurrentNode.selectNodes "CubeBlocks//Definition" 
 
-
 	for i = 0 to childNodes.count-1 do 
 	(
 		child_name = childNodes.item[i].name
@@ -43,12 +42,35 @@ fn GetCubeBlocks CurrentNode =
 
 	
 		print TypeId.item[0].innertext
-		Mountpoints = childNodes.item[i].selectNodes "//MountPoints" 
-		recursivechildnames Mountpoints.item[0] ""
+		--Mountpoints = childNodes.item[i].selectNodes "//MountPoints" 
+		--recursivechildnames Mountpoints.item[0] ""
 	
 	--	format "%: %            \n" child_name child_value --child_type
 	)
+	childNodes
+)
 
+fn create_XML Path TheBlockNode = 
+(
+	xmlDoc = dotNetObject "system.xml.xmlDocument"
+
+	/* create header */
+	header = xmlDoc.CreateXmlDeclaration "1.0" "" ""
+	xmlDoc.AppendChild header
+
+	/*Add Definitions */
+	root = xmlDoc.createElement "Definitions"
+	xmlDoc.appendChild root
+
+	/*Add the selectd block */
+	
+	newref = xmlDoc.createElement "CubeBlocks"
+	root.appendChild newref
+
+	newBook = xmlDoc.ImportNode TheBlockNode True  -- import and
+	newref.appendChild newBook -- add it 
+	--xmlDoc.save Path
+	xmlDoc
 )
 
 clearListener()
@@ -59,6 +81,15 @@ xmlDoc.load filename
 -- 	--Check to make sure the xmlDoc has a root element. 
 docEle=xmlDoc.documentElement
 --format "Element Name: %\n\n" docEle.name
-GetCubeBlocks docEle
+thing = GetCubeBlocks docEle
+theDoc = create_XML @"C:\Users\patgr\Desktop\xml.xml" thing.item[3]
 
+TestString = theDoc.innerxml
+print TestString
+TheNewDoc = dotNetObject "system.xml.xmlDocument"
+TheNewDoc.innerxml = TestString
+TheNewDoc.save @"C:\Users\patgr\Desktop\xml.xml"
+print TheNewDoc
 --recursivechildnames docEle ""
+
+

@@ -32,20 +32,21 @@ struct Vrage_UI
 				)
 			) 
 			 
-
-			button ButtEarthHDR "Earth HDR" width:30 height:30 align:#left across:4 \ 
+			label mySplitterddd2 "\x2500\x2500\x2500\x2500\x2500\x2500\x2500\x2500\x2500\x2500" 
+			button ButtEarthHDR "Earth HDR" width:30 height:30  across:4 pos:[30,50]\ 
 			toolTip:"Applies HDR Background in Earthlike Style" images: #( VRageIcons2, VRageIcons2, VRageIco2Leng, 2, 2, 2, 2)
 			on ButtEarthHDR pressed do (  VrageScene.SetEnvmap 2)
 
-			button ButtSpaceHDR "Space HDR" width:30 height:30 align:#left \ 
+			button ButtSpaceHDR "Space HDR" width:30 height:30  pos:[65,50]\ 
 			toolTip:"Applies HDR Background in Space Style" images: #( VRageIcons2, VRageIcons2, VRageIco2Leng, 4, 4, 4, 4)
 			on ButtSpaceHDR pressed do (  VrageScene.SetEnvmap 1)
 
-			checkbutton ButtUseEnvmap "Apply" width:20 height:20 align:#left  checked:true\ 
-			toolTip:"Use Envmap" images: #( VRageIcons2, VRageIcons2, VRageIco2Leng, 3, 3, 3, 3 )
-			on ButtUseEnvmap changed state do 
+			button ButtUseEnvmap "Apply" width:30 height:30 pos:[100,50]  checked:true\ 
+			toolTip:"No Envmap" images: #( VRageIcons, VRageIcons, VRageIcoLeng, 6, 6, 6, 6 )
+			on ButtUseEnvmap pressed do 
 			(
-				if state == on then useEnvironmentMap = true else useEnvironmentMap = false
+				--if state == on then useEnvironmentMap = true else 
+				useEnvironmentMap = false
 			)
 
 		)

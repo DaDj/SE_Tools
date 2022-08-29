@@ -83,9 +83,24 @@ struct VRageExporter (
 	),
 
 	fn SetTempDirs = 
-	(
+	(		
 		TempDirHKT = MyVRageCfg.PathToolsFolder + @"\Temp" --Tempfolder for hkt creation
 		TempDirModels = MyVRageCfg.PathToolsFolder + @"\Temp\Expo\Content\Models"  -- Basically folder for mwmbuilder
+		try 
+		(
+			-- delete files first
+			files = getFiles TempDirHK  +"\\*.hkt"
+			for f in files do 	deleteFile f
+			files = getFiles TempDirModels  +"\\*.fbx"
+			print files
+			for f in files do  deleteFile f
+		)
+		catch 
+		(
+			MyVRageLog.Info ("Clean up of temporary data failed. Its possible that old models get rebuild.")  
+		)
+	
+
 		try ( makedir TempDirHKT )	catch (	MyVRageLog.Error ("Permission Error while trying to create: " + TempDirHKT) )
 		try ( makedir TempDirModels ) catch (MyVRageLog.Error ("Permission Error while trying to create: " + TempDirModels) )
 	),
@@ -363,7 +378,7 @@ struct VRageExporter (
 
 	fn ShowUI = 
 	(
-
+		
 		rollout rollExpUI "VRage Export Scene" width:400 height:200
 		(
 			button Btn_export "Export" width:200 height:40 toolTip:"Generates  MWM file/s from the selected Block/s" align:#center  across:2
