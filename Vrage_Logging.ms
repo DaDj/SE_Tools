@@ -8,6 +8,39 @@ global MyVrageGUI_LogFloater
 global MyVRageMessageFloater
 global MyVrageMessageArray = #()
 
+struct VrageLogData 
+(
+	Warnings = #(),
+	Errors = #(),
+	Infos = #(),
+	fn Init = 
+	(
+		Warnings[1] = "Object is not a Havok Collider " 
+		Warnings[2] = "More than 10 Collisionshapes in "
+		Warnings[3] = "Export: No Lods found. Nothing will be exported"
+		Warnings[4] = "Export: No Collision found. Standard Cube will be set."
+		Warnings[5] = "Failed to re/create Camera Objs" 
+		Warnings[6] = "Failed to render Icon Preview"
+		Warnings[7] = "Failed to Reset Icon Setup"
+		Warnings[8] = "Failed to render Icon "
+		Warnings[9] = "Failed to save Icon"
+		Warnings[10] = "Can't delete Construction Layer if a higher  ID exists"
+		Warnings[11] = "Something's wrong"
+
+		Errors[1] = "FBXimporter Failed to Export: "
+		Errors[2] = "hctStandAloneFilterManager Failed to Export:"
+		Errors[3] = "MwmBuilder Failed to Export:  "
+		Errors[4] = "Export: No Valid MainType found"
+		Errors[5] = "Couldn't open Material Browser"
+
+		Infos[1] = "Infos"
+		Infos[2] = "Infos"
+		Infos[3] = "Infos"
+		Infos[4] = "Infos"
+	)
+
+)
+
 rollout Rollout_VrageLog "VRage Utilies Log" width:900 height:500
 (
 	button btn_ClearLog "Clear Log" width:120 height:25 toolTip:"Clears the Logfile " align:#center across:3
